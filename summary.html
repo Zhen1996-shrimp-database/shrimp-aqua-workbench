@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>数据库综述 · 对虾养殖产业数据库工作台</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    对虾养殖产业数据库工作台
+  </div>
+  <nav>
+      <a href="index.html" >📊 总览</a>
+      <a href="search.html" >🔍 文献检索</a>
+      <a href="etl.html" >⚙️ ETL 流水线</a>
+      <a href="review.html" >✅ 数据审核</a>
+      <a href="quality.html" >🛡️ 数据质量</a>
+      <a href="dedup.html" >🔁 去重</a>
+      <a href="newlit.html" >🆕 新增文献</a>
+      <a href="database.html" >💾 主数据库</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">📑 数据库综述</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>系统正常</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">主页</a> / 数据库综述</div>
+  <h1>📑 数据库综述报告</h1>
+  <p>基于 1,585 条真实记录 · 多维度聚合 · 可导出为 HTML / CSV</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi primary"><div class="label">累计记录</div><div class="value">1,585</div><div class="sub">12 sheet 合计</div></div>
+  <div class="kpi success"><div class="label">养殖模式</div><div class="value">22</div><div class="sub">含工厂化/池塘/多营养</div></div>
+  <div class="kpi info"><div class="label">覆盖地点</div><div class="value">119</div><div class="sub" title="Rio Grande, RS, Brazil · Florianópolis, SC, Brazil · Rohtak, Haryana, India">Top：Rio Grande, RS, Brazil</div></div>
+  <div class="kpi warn"><div class="label">覆盖年份</div><div class="value">26</div><div class="sub">2000 — 2025</div></div>
+  <div class="kpi danger"><div class="label">2026 Q3 新增</div><div class="value">0</div><div class="sub">真实状态</div></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📚 5 个核心综述维度</h2>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="downloadReport()">📥 导出完整综述（HTML）</button>
+      <button class="btn btn-ghost" onclick="exportCSV('完整综述')">📥 导出 CSV</button>
+    </div>
+  </div>
+  
+  <div class="grid grid-2">
+    <div>
+      <h3>1️⃣ 养殖模式分布 Top 10</h3>
+      <div class="tbl-wrap" style="max-height:340px"><table><thead><tr><th>模式</th><th class="num">条数</th></tr></thead><tbody><tr><td>工厂化生物絮团</td><td class="num">420</td></tr><tr><td>工厂化换水</td><td class="num">141</td></tr><tr><td>池塘单养</td><td class="num">134</td></tr><tr><td>工厂化循环水</td><td class="num">71</td></tr><tr><td>池塘多营养层次综合养殖模式</td><td class="num">60</td></tr><tr><td>多营养层次综合养殖模式</td><td class="num">24</td></tr><tr><td>工厂化换水（生物炭改良底泥）</td><td class="num">15</td></tr><tr><td>工厂化生物絮团（LED光照）</td><td class="num">15</td></tr><tr><td>池塘单养（内陆咸水）</td><td class="num">12</td></tr><tr><td>多营养层次综合养殖</td><td class="num">11</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <h3>2️⃣ 地区/国家分布 Top 15</h3>
+      <div class="tbl-wrap" style="max-height:340px"><table><thead><tr><th>地区</th><th class="num">条数</th></tr></thead><tbody><tr><td>Rio Grande, RS, Brazil</td><td class="num">37</td></tr><tr><td>Florianópolis, SC, Brazil</td><td class="num">22</td></tr><tr><td>Rohtak, Haryana, India</td><td class="num">13</td></tr><tr><td>Frankfort, Kentucky, USA</td><td class="num">12</td></tr><tr><td>Frankfort, KY, USA</td><td class="num">12</td></tr><tr><td>中国湖南常德</td><td class="num">10</td></tr><tr><td>Mumbai, Maharashtra, India</td><td class="num">9</td></tr><tr><td>Rio Grande, Rio Grande do Sul, Brazil</td><td class="num">8</td></tr><tr><td>La Paz, Baja California Sur, Mexico</td><td class="num">8</td></tr><tr><td>Recife, Brazil</td><td class="num">8</td></tr><tr><td>Can Tho, Vietnam</td><td class="num">7</td></tr><tr><td>山东青岛</td><td class="num">6</td></tr><tr><td>Kakinada, Andhra Pradesh, India</td><td class="num">6</td></tr><tr><td>Rio Grande, Brazil</td><td class="num">6</td></tr><tr><td>Balsore, Odisha, India</td><td class="num">6</td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>3️⃣ 5 种主流模式 · 生长参数对比（孙跃 2023 论文）</h2>
+  </div>
+  <div class="tbl-wrap"><table data-name="模式对比"><thead><tr><th>养殖模式（中文）</th><th>年份</th><th>初体重 (g)</th><th>终体重 (g)</th><th>存活率 (%)</th><th>特定增长率 (%/day)</th><th>饵料系数 (FCR)</th><th>产量 (kg/m³)</th><th>数据来源</th><th>文献来源（作者+et al）</th><th>地点</th><th>经纬度</th></tr></thead><tbody><tr><td>工厂化循环水</td><td>2023</td><td>0.08</td><td>16.02</td><td>68.07</td><td>5.89</td><td>1.1</td><td>8.62</td><td>基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究（中国海洋大学博士学位论文）</td><td>孙跃，2023</td><td>—</td><td>—</td></tr><tr><td>工厂化生物絮团</td><td>2023</td><td>0.08</td><td>16.26</td><td>60.52</td><td>5.9</td><td>1.19</td><td>4.43</td><td>基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究（中国海洋大学博士学位论文）</td><td>孙跃，2023</td><td>—</td><td>—</td></tr><tr><td>工厂化换水</td><td>2023</td><td>0.08</td><td>16.14</td><td>72.15</td><td>5.9</td><td>1.17</td><td>10.03</td><td>基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究（中国海洋大学博士学位论文）</td><td>孙跃，2023</td><td>—</td><td>—</td></tr><tr><td>高位池</td><td>2023</td><td>0.08</td><td>15.68</td><td>64.03</td><td>5.87</td><td>1.33</td><td>1.55</td><td>基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究（中国海洋大学博士学位论文）</td><td>孙跃，2023</td><td>—</td><td>—</td></tr><tr><td>小棚养殖</td><td>2023</td><td>0.08</td><td>16.03</td><td>75.18</td><td>5.89</td><td>1.16</td><td>2.19</td><td>基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究（中国海洋大学博士学位论文）</td><td>孙跃，2023</td><td>—</td><td>—</td></tr></tbody></table></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>4️⃣ 5 种模式 · 经济效益对比</h2>
+  </div>
+  <div class="tbl-wrap"><table data-name="经济效益"><thead><tr><th>养殖模式</th><th>总成本
+（元/亩）</th><th>总收入
+（元/亩）</th><th>净利润
+（元/亩）</th><th>成本利润率
+（%）</th><th>盈亏平衡价格
+（元/kg）</th><th>实际产量
+（kg/亩）</th><th>数据来源</th><th>年份</th></tr></thead><tbody><tr><td>工厂化养殖换水模式</td><td>203843.54</td><td>282269.63</td><td>78594.86</td><td>38.56</td><td>33.99</td><td>5456.7</td><td>①</td><td>2023</td></tr><tr><td>工厂化养殖循环水模式</td><td>143266.43</td><td>166453.54</td><td>23187.11</td><td>16.18</td><td>58.5</td><td>2013.45</td><td>①</td><td>2023</td></tr><tr><td>工厂化养殖生物絮团模式</td><td>179746.99</td><td>252069.55</td><td>72322.56</td><td>40.24</td><td>24.45</td><td>2560</td><td>①</td><td>2023</td></tr><tr><td>多营养层次综合养殖模式</td><td>6308</td><td>12600</td><td>6292</td><td>99.75</td><td>—</td><td>870.15</td><td>①</td><td>2023</td></tr><tr><td>多营养层次综合养殖模式（对虾均摊）</td><td>1549.94</td><td>2400</td><td>850.06</td><td>54.8</td><td>21.99</td><td>40.05</td><td>①</td><td>2023</td></tr></tbody></table></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>5️⃣ 环境影响当量系数</h2>
+  </div>
+  <div class="tbl-wrap"><table data-name="环境影响"><thead><tr><th>环境影响类型</th><th>当量因子</th><th>贡献物质</th><th>特征值</th></tr></thead><tbody><tr><td>全球变暖潜势</td><td>kg CO2 eq</td><td>CO2</td><td>1</td></tr><tr><td>全球变暖潜势</td><td>kg CO2 eq</td><td>CH4(生物源)</td><td>28</td></tr><tr><td>全球变暖潜势</td><td>kg CO2 eq</td><td>CH4 (化石源)</td><td>30</td></tr><tr><td>富营养化潜势</td><td>kg PO4³⁻</td><td>PO4³⁻</td><td>1</td></tr><tr><td>富营养化潜势</td><td>kg PO4³⁻</td><td>N</td><td>3.06</td></tr><tr><td>富营养化潜势</td><td>kg PO4³⁻</td><td>NH3</td><td>0.42</td></tr><tr><td>富营养化潜势</td><td>kg PO4³⁻</td><td>NO3⁻</td><td>0.35</td></tr><tr><td>富营养化潜势</td><td>kg PO4³⁻</td><td>COD</td><td>0.01</td></tr><tr><td>酸化潜势</td><td>kg SO2</td><td>SO2</td><td>1.2</td></tr><tr><td>酸化潜势</td><td>kg SO2</td><td>NH3</td><td>1.6</td></tr><tr><td>酸化潜势</td><td>kg SO2</td><td>NOx</td><td>0.5</td></tr><tr><td>数据来源：基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究（中国海洋大学博士学位论文）
+Source: /Users/mac/Desktop/中海洋博士毕业论文/基于生命周期评价（LCA）的凡纳滨对虾养殖模式优化研究.pdf</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📊 模式 × 地区 交叉分布（Top 组合）</h2>
+  </div>
+  <div class="canvas-wrap tall"><canvas id="chCross"></canvas></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📊 各工作表文献按年份分布（按主题分组堆叠，2000-2025）</h2>
+  </div>
+  <div class="canvas-wrap tall"><canvas id="chQuarter"></canvas></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+try{new Chart(document.getElementById('chQuarter'),{"type": "bar", "data": {"labels": ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"], "datasets": [{"label": "水质参数", "data": [6, 0, 3, 0, 3, 5, 2, 10, 2, 5, 11, 15, 19, 8, 9, 34, 30, 19, 30, 74, 69, 38, 144, 71, 56, 12], "backgroundColor": "#0c8a8a", "borderRadius": 3, "stack": "y"}, {"label": "生长参数", "data": [2, 0, 1, 0, 1, 1, 0, 2, 0, 9, 3, 3, 5, 5, 10, 14, 8, 5, 6, 32, 19, 26, 60, 32, 19, 0], "backgroundColor": "#16a3a3", "borderRadius": 3, "stack": "y"}, {"label": "产污系数", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 36, 0, 0, 0, 55, 0, 0], "backgroundColor": "#3b82f6", "borderRadius": 3, "stack": "y"}, {"label": "经济效益", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0], "backgroundColor": "#f97316", "borderRadius": 3, "stack": "y"}, {"label": "成本构成", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 75, 0, 0], "backgroundColor": "#10b981", "borderRadius": 3, "stack": "y"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"position": "top", "labels": {"font": {"size": 11}}}, "tooltip": {"callbacks": {"footer": "all_stacked"}}}, "scales": {"x": {"stacked": true, "title": {"display": true, "text": "文献年份"}}, "y": {"stacked": true, "beginAtZero": true, "title": {"display": true, "text": "条数（堆叠）"}}}}});}catch(e){console.warn('chQuarter:',e);}
+
+const modeData=[{"k": "工厂化生物絮团", "v": 420}, {"k": "工厂化换水", "v": 141}, {"k": "池塘单养", "v": 134}, {"k": "工厂化循环水", "v": 71}, {"k": "池塘多营养层次综合养殖模式", "v": 60}];
+const locData=[{"k": "Rio Grande, RS, Brazil", "v": 37}, {"k": "Florianópolis, SC, Brazil", "v": 22}, {"k": "Rohtak, Haryana, India", "v": 13}, {"k": "Frankfort, Kentucky, USA", "v": 12}, {"k": "Frankfort, KY, USA", "v": 12}];
+new Chart(document.getElementById('chCross'),{type:'bar',data:{labels:modeData.flatMap(m=>locData.map(l=>m.k.slice(0,8)+'/'+l.k.slice(0,6))),datasets:[{label:'理论组合数',data:modeData.flatMap(m=>locData.map(l=>m.v+l.v)),backgroundColor:'#3b82f6',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+
+function downloadReport(){
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>对虾养殖产业数据库综述报告</title>
+<style>body{font-family:-apple-system,sans-serif;max-width:960px;margin:30px auto;padding:24px;line-height:1.7;color:#1f2937}
+h1{color:#0a6f6f;border-bottom:3px solid #0c8a8a;padding-bottom:10px}
+h2{color:#0a6f6f;margin-top:30px;border-left:4px solid #0c8a8a;padding-left:12px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid #e5e7eb;padding:8px 12px;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.kpi{background:#f9fafb;border-left:4px solid #0c8a8a;padding:14px;border-radius:6px}
+.kpi .v{font-size:22px;font-weight:700;color:#0a6f6f}
+.kpi .l{font-size:11px;color:#6b7280;text-transform:uppercase}
+.meta{color:#6b7280;font-size:12px}
+</style></head><body>
+<h1>🦐 对虾养殖产业数据库 · 综合综述报告</h1>
+<p class="meta">生成时间：${new Date().toLocaleString('zh-CN')}</p>
+<p class="meta">基于本地 <code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 12 个工作表 · 实时统计</p>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="l">累计记录</div><div class="v">1,585</div></div>
+  <div class="kpi"><div class="l">养殖模式</div><div class="v">22</div></div>
+  <div class="kpi"><div class="l">覆盖地区</div><div class="v">119</div></div>
+  <div class="kpi"><div class="l">2026 Q3 新增</div><div class="v">0</div></div>
+</div>
+
+<h2>1. 各工作表记录数</h2>
+<table><tr><th>工作表</th><th>有效记录数</th></tr>
+<tr><td>水质参数数据</td><td>376</td></tr><tr><td>生长参数</td><td>263</td></tr><tr><td>产污与污染当量</td><td>87</td></tr><tr><td>基础设施与饲养</td><td>30</td></tr><tr><td>环境影响</td><td>20</td></tr><tr><td>生物絮团养殖</td><td>31</td></tr><tr><td>经济效益分析</td><td>14</td></tr><tr><td>成本构成明细</td><td>135</td></tr><tr><td>环境成本及效率</td><td>92</td></tr><tr><td>东营工厂化数据库</td><td>108</td></tr><tr><td>水质参数与生长参数对应数据</td><td>305</td></tr><tr><td>调研与养殖试验数据</td><td>124</td></tr>
+</table>
+
+<h2>2. 养殖模式分布 Top 10</h2>
+<table><tr><th>模式</th><th>条数</th></tr>
+<tr><td>工厂化生物絮团</td><td>420</td></tr><tr><td>工厂化换水</td><td>141</td></tr><tr><td>池塘单养</td><td>134</td></tr><tr><td>工厂化循环水</td><td>71</td></tr><tr><td>池塘多营养层次综合养殖模式</td><td>60</td></tr><tr><td>多营养层次综合养殖模式</td><td>24</td></tr><tr><td>工厂化换水（生物炭改良底泥）</td><td>15</td></tr><tr><td>工厂化生物絮团（LED光照）</td><td>15</td></tr><tr><td>池塘单养（内陆咸水）</td><td>12</td></tr><tr><td>多营养层次综合养殖</td><td>11</td></tr>
+</table>
+
+<h2>3. 地区分布 Top 15</h2>
+<table><tr><th>地区</th><th>条数</th></tr>
+<tr><td>Rio Grande, RS, Brazil</td><td>37</td></tr><tr><td>Florianópolis, SC, Brazil</td><td>22</td></tr><tr><td>Rohtak, Haryana, India</td><td>13</td></tr><tr><td>Frankfort, Kentucky, USA</td><td>12</td></tr><tr><td>Frankfort, KY, USA</td><td>12</td></tr><tr><td>中国湖南常德</td><td>10</td></tr><tr><td>Mumbai, Maharashtra, India</td><td>9</td></tr><tr><td>Rio Grande, Rio Grande do Sul, Brazil</td><td>8</td></tr><tr><td>La Paz, Baja California Sur, Mexico</td><td>8</td></tr><tr><td>Recife, Brazil</td><td>8</td></tr><tr><td>Can Tho, Vietnam</td><td>7</td></tr><tr><td>山东青岛</td><td>6</td></tr><tr><td>Kakinada, Andhra Pradesh, India</td><td>6</td></tr><tr><td>Rio Grande, Brazil</td><td>6</td></tr><tr><td>Balsore, Odisha, India</td><td>6</td></tr>
+</table>
+
+<h2>4. 5 种模式 · 生长参数（孙跃 2023）</h2>
+<table><tr><th>模式</th><th>终体重(g)</th><th>成活率(%)</th><th>FCR</th><th>产量(kg/m³)</th></tr>
+<tr><td>工厂化循环水</td><td>16.02</td><td>68.07</td><td>1.10</td><td>8.62</td></tr>
+<tr><td>工厂化生物絮团</td><td>16.26</td><td>60.52</td><td>1.19</td><td>4.43</td></tr>
+<tr><td>工厂化换水</td><td>16.14</td><td>72.15</td><td>1.17</td><td>10.03</td></tr>
+<tr><td>高位池</td><td>15.68</td><td>64.03</td><td>1.33</td><td>1.55</td></tr>
+<tr><td>小棚养殖</td><td>16.03</td><td>75.18</td><td>1.16</td><td>2.19</td></tr>
+</table>
+
+<h2>5. 5 种模式 · 经济效益</h2>
+<table><tr><th>模式</th><th>总成本(元/亩)</th><th>总收入</th><th>净利润</th><th>成本利润率(%)</th><th>盈亏平衡价(元/kg)</th></tr>
+<tr><td>工厂化养殖换水模式</td><td>203843.54</td><td>282269.63</td><td>78594.86</td><td>38.56</td><td>33.99</td></tr><tr><td>工厂化养殖循环水模式</td><td>143266.43</td><td>166453.54</td><td>23187.11</td><td>16.18</td><td>58.5</td></tr><tr><td>工厂化养殖生物絮团模式</td><td>179746.99</td><td>252069.55</td><td>72322.56</td><td>40.24</td><td>24.45</td></tr><tr><td>多营养层次综合养殖模式</td><td>6308</td><td>12600</td><td>6292</td><td>99.75</td><td>—</td></tr><tr><td>多营养层次综合养殖模式（对虾均摊）</td><td>1549.94</td><td>2400</td><td>850.06</td><td>54.8</td><td>21.99</td></tr>
+</table>
+
+<p style="margin-top:40px;color:#9ca3af;font-size:11px">本报告由对虾养殖产业数据库工作台自动生成 · 数据源：xlsx 本地文件</p>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='对虾养殖数据库综述报告_'+new Date().toISOString().slice(0,10)+'.html';a.click();
+  alert('✅ 综述报告已导出 · 可直接打开 / 打印 / 转 PDF');
+}
+
+function exportCSV(name){
+  const tb = document.querySelector('table[data-name="'+name+'"]');
+  if(!tb){
+    const rows=[['导出名称',name],['导出时间',new Date().toISOString()],['说明','该面板无可导出表格（可能是图表）']];
+    const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='\ufeff'+rows.map(r=>r.map(c=>esc(c)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    return;
+  }
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[];
+  if(tb.tHead && tb.tHead.rows[0]) rows.push(Array.from(tb.tHead.rows[0].cells).map(c=>esc(c.innerText.trim())));
+  if(tb.tBodies && tb.tBodies[0]) Array.from(tb.tBodies[0].rows).forEach(tr=>{if(tr.style.display==='none')return;rows.push(Array.from(tr.cells).map(c=>esc(c.innerText.trim())));});
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  console.log('已导出 '+name+'：'+rows.length+' 行');
+}
+</script>
+
+<div class="footer">
+对虾养殖产业数据库工作台 · 数据源：<code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 累计 1,585 条有效记录 · 新增文献待确认 17 篇（每周三 08:00 自动检索，人工确认后并入主库）<br>
+<a href="index.html">返回主页</a> · <a href="newlit.html">新增文献</a> · <a href="database.html">浏览主库</a> · <a href="schema.html">Schema 字典</a>
+</div>
+</div>
+</body>
+</html>

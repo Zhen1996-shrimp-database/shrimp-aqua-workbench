@@ -1,0 +1,1391 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>对虾养殖产业数据库工作台 技术实现方案</title>
+<style>
+:root {
+  --c-bg: #fafbfc;
+  --c-panel: #ffffff;
+  --c-text: #1f2937;
+  --c-muted: #6b7280;
+  --c-border: #e5e7eb;
+  --c-primary: #0969da;
+  --c-accent: #f97316;
+  --c-code: #f6f8fa;
+  --r: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.7;
+}
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+aside {
+  position: sticky; top: 0; align-self: start;
+  height: 100vh; overflow-y: auto;
+  background: var(--c-panel);
+  border-right: 1px solid var(--c-border);
+  padding: 24px 18px;
+}
+.toc h3 { font-size: 13px; text-transform: uppercase; color: var(--c-muted); margin: 0 0 12px; }
+.toc ol { padding-left: 18px; font-size: 13px; }
+.toc li { margin: 4px 0; }
+.toc a { color: var(--c-text); text-decoration: none; }
+.toc a:hover { color: var(--c-primary); }
+main { max-width: 980px; margin: 0 auto; padding: 40px 56px; }
+h1, h2, h3, h4 { color: var(--c-text); }
+h1 { font-size: 30px; border-bottom: 2px solid var(--c-primary); padding-bottom: 12px; }
+h2 { font-size: 22px; margin-top: 36px; border-bottom: 1px solid var(--c-border); padding-bottom: 6px; }
+h3 { font-size: 17px; }
+blockquote {
+  border-left: 4px solid var(--c-primary);
+  padding: 8px 16px;
+  background: #f0f7ff;
+  border-radius: 0 var(--r) var(--r) 0;
+  color: #1e40af;
+  margin: 12px 0;
+}
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+th, td { border: 1px solid var(--c-border); padding: 8px 10px; vertical-align: top; text-align: left; }
+th { background: #f3f4f6; }
+tbody tr:nth-child(even) { background: #fafbfc; }
+code { background: var(--c-code); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+pre { background: var(--c-code); padding: 14px; border-radius: var(--r); overflow-x: auto; font-size: 13px; line-height: 1.55; }
+li { margin: 4px 0; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #fff7ed; color: var(--c-accent); font-size: 12px; }
+.hero {
+  background: linear-gradient(135deg, #0969da, #0ea5e9);
+  color: #fff; padding: 32px; border-radius: var(--r); margin-bottom: 24px;
+}
+.hero h1 { color: #fff; border: 0; margin-top: 0; }
+.hero p { margin: 6px 0; opacity: 0.92; }
+.badge { display: inline-block; padding: 3px 10px; border: 1px solid #cbd5e1; border-radius: 999px; font-size: 11px; margin-right: 6px; opacity: 0.92; }
+@media (max-width: 980px) { .layout { grid-template-columns: 1fr; } aside { position: static; height: auto; } main { padding: 24px 18px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="toc">
+    <h3>目录</h3>
+    <ol>
+      <li><a href="#1-总体技术架构">总体技术架构</a></li>
+      <li><a href="#2-文献检索与采集方案">文献检索与采集</a></li>
+      <li><a href="#3-解析与-etl-流程设计">解析与 ETL</a></li>
+      <li><a href="#4-重复文献去重机制">重复文献去重</a></li>
+      <li><a href="#5-数据质量校验规则">数据质量校验</a></li>
+      <li><a href="#6-存储模型与增量合并机制">存储与增量合并</a></li>
+      <li><a href="#7-季度自动化执行流程">季度自动化</a></li>
+      <li><a href="#8-技术选型与成本估算">技术选型与成本</a></li>
+      <li><a href="#9-实施路线图">实施路线图</a></li>
+      <li><a href="#附录-a统一数据库表结构">附录 A：表结构</a></li>
+      <li><a href="#附录-b检索词矩阵与字段映射字典">附录 B：字段映射</a></li>
+    </ol>
+  </div>
+</aside>
+<main>
+<hr />
+<p>title: "对虾养殖产业数据库工作台 —— 技术实现方案"
+date: 2026-09-08
+version: 1.0
+author: WorkBuddy
+status: 设计稿</p>
+<hr />
+<h1 id="_1">对虾养殖产业数据库工作台 —— 技术实现方案</h1>
+<blockquote>
+<p><strong>目标</strong>：打通"中英文文献检索 → 自动解析 → 结构化抽取 → 数据治理 → 季度增量合并"全链路，构建可复用、可审计、可持续运营的对虾养殖产业数据中台。</p>
+<p><strong>适配基础</strong>：基于现有的《对虾养殖产业数据库2.xlsx》（11 个工作表，1300+ 行存量记录）做增量扩展与统一治理。</p>
+</blockquote>
+<hr />
+<h2 id="_2">目录</h2>
+<ol>
+<li><a href="#1-总体技术架构">总体技术架构</a></li>
+<li><a href="#2-文献检索与采集方案">文献检索与采集方案</a></li>
+<li><a href="#3-解析与-etl-流程设计">解析与 ETL 流程设计</a></li>
+<li><a href="#4-重复文献去重机制">重复文献去重机制</a></li>
+<li><a href="#5-数据质量校验规则">数据质量校验规则</a></li>
+<li><a href="#6-存储模型与增量合并机制">存储模型与增量合并机制</a></li>
+<li><a href="#7-季度自动化执行流程">季度自动化执行流程</a></li>
+<li><a href="#8-技术选型与成本估算">技术选型与成本估算</a></li>
+<li><a href="#9-实施路线图">实施路线图</a></li>
+<li><a href="#附录-a统一数据库表结构">附录 A：统一数据库表结构</a></li>
+<li><a href="#附录-b检索词矩阵与字段映射字典">附录 B：检索词矩阵与字段映射字典</a></li>
+</ol>
+<hr />
+<h2 id="1">1. 总体技术架构</h2>
+<h3 id="11">1.1 设计原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>存算分离</strong></td>
+<td>原始 PDF/HTML 入对象存储（元数据入库），解析结果入结构化库，计算节点无状态</td>
+</tr>
+<tr>
+<td><strong>人机协同</strong></td>
+<td>AI 抽取 + 人工校验的关键卡点（"人确认"环节）必须由工作流强制</td>
+</tr>
+<tr>
+<td><strong>可观测</strong></td>
+<td>每条数据记录可追溯到原文页码 / 表格编号 / 抽取 prompt 版本</td>
+</tr>
+<tr>
+<td><strong>可扩展</strong></td>
+<td>新增数据源/字段时只需新增 Adapter / Field，无需重构流水线</td>
+</tr>
+<tr>
+<td><strong>合规优先</strong></td>
+<td>严格遵守各数据库 robots 与版权条款，仅采集公开摘要与授权全文</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12">1.2 六层分层架构</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ ⑥ 应用层 App Layer                                              │
+│  • Web 工作台（React + Ant Design）                              │
+│  • 字段映射编辑器 / 规则配置台 / 数据审核台                       │
+│  • 检索结果可视化 / 季度报告生成                                 │
+├─────────────────────────────────────────────────────────────────┤
+│ ⑤ 治理层 Governance Layer                                       │
+│  • 元数据管理 / 单位换算引擎 / 字段标准化字典                     │
+│  • 数据质量规则引擎（Great Expectations / Soda Core）            │
+│  • 审计日志 / 人工审核工作流                                     │
+├─────────────────────────────────────────────────────────────────┤
+│ ④ 服务层 Service Layer                                          │
+│  • 检索 API / 解析 API / 抽取 API / 合并 API                     │
+│  • 异步任务中心（Celery / ARQ）                                  │
+│  • 鉴权、限流、版本管理                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ ③ 数据层 Data Layer                                             │
+│  • PostgreSQL（结构化业务数据）                                  │
+│  • pgvector（向量检索、去重 fingerprint）                        │
+│  • TimescaleDB（时序水质数据）                                   │
+│  • MinIO / S3（PDF / 元数据 / 快照）                             │
+│  • Redis（任务队列、缓存、限流令牌）                             │
+├─────────────────────────────────────────────────────────────────┤
+│ ② 计算层 Compute Layer（无状态）                                 │
+│  • 文献检索 Worker（LIT 适配器）                                 │
+│  • 全文解析 Worker（PDF / HTML / XML 三模）                      │
+│  • 字段抽取 Worker（规则 + LLM 双通道）                          │
+│  • 季度聚合 Worker / 报告生成                                    │
+├─────────────────────────────────────────────────────────────────┤
+│ ① 接入层 Ingestion Layer                                        │
+│  • CNKI / Wanfang / VIP / WoS / Scopus / ScienceDirect 适配器   │
+│  • 行业报告源（FAO / NACA / 中国水产流通与加工协会 等）          │
+│  • 自动政策公报源（农业农村部 / 海关总署 / 地方政府）             │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="13">1.3 数据流向</h3>
+<pre><code>外部源 ─→ ①采集 ─→ ②解析(Layout/OCR)
+                        ↓
+                  ③抽取(规则/LLM)
+                        ↓
+                  ④标准化
+                        ↓
+                ⑤去重+质控 ─→ 审核工作流(人确认)
+                        ↓
+                  主数据库(主表/时序表/文献表)
+                        ↓
+                  ⑥季度合并(临时表比对) ─→ 写入主表
+</code></pre>
+<h3 id="14-excel">1.4 与现有 Excel 的兼容路径</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>处理动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T0 现状审计</strong></td>
+<td>解析 xlsx 11 个工作表为 CSV / Parquet 入库</td>
+</tr>
+<tr>
+<td><strong>Schema 对齐</strong></td>
+<td>制定《统一字段字典 V1》将既有字段名映射到新模型</td>
+</tr>
+<tr>
+<td><strong>历史回填</strong></td>
+<td>用半自动工具回填缺失字段、补充地点/经纬度</td>
+</tr>
+<tr>
+<td><strong>双库并行</strong></td>
+<td>保留 xlsx 同步快照，新数据只入新库，按周导出 xlsx 备份</td>
+</tr>
+<tr>
+<td><strong>全量切换</strong></td>
+<td>一年后冻结 xlsx，仅维护主库，保留 xlsx 为只读归档</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2">2. 文献检索与采集方案</h2>
+<h3 id="21">2.1 数据源清单与接入策略</h3>
+<table>
+<thead>
+<tr>
+<th>数据源</th>
+<th>类型</th>
+<th>接入方式</th>
+<th>频率</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Web of Science (Core Collection)</strong></td>
+<td>英文 SCI</td>
+<td>官方 API（WOS Web Service）+ 机构订阅</td>
+<td>季度</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>Scopus</strong></td>
+<td>英文</td>
+<td>Elsevier Scopus API（机构 token）</td>
+<td>季度</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>ScienceDirect / Elsevier</strong></td>
+<td>英文</td>
+<td>Crossref + DOI 直连 + ScienceDirect API</td>
+<td>季度</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>知网 CNKI</strong></td>
+<td>中文</td>
+<td>仅抓取公开摘要 + 合作单位 API；全文走文件交换</td>
+<td>季度</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>万方数据</strong></td>
+<td>中文</td>
+<td>公开摘要抓取 + 自营 API</td>
+<td>季度</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>维普 VIP</strong></td>
+<td>中文</td>
+<td>VIP 官方 API（需授权）</td>
+<td>季度</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>CAB Abstracts</strong></td>
+<td>英文水产</td>
+<td>Web of Science 平台同源 + 自营采购</td>
+<td>季度</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>AGRIS（FAO）</strong></td>
+<td>多语种</td>
+<td>FAO API（公开）</td>
+<td>月度</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>Google Scholar</strong></td>
+<td>索引</td>
+<td>SerpAPI / 学术镜像，仅用于查重，不入正文</td>
+<td>实时</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><strong>ProQuest Dissertations</strong></td>
+<td>学位论文</td>
+<td>ProQuest API / 馆际互借</td>
+<td>半年</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><strong>行业报告（咨询/智库）</strong></td>
+<td>灰色文献</td>
+<td>RSS / 订阅 + 站内抓取（China-fish、Fisheries Census、FAO、NACA、SeafoodSource）</td>
+<td>月度</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>政府公报</strong></td>
+<td>公文</td>
+<td>RSS / 政府邮件订阅（农业农村部、海关总署、各省厅）</td>
+<td>月度</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>合规要点：仅采集"机构已订阅"的全文；对 CNKI 等仅在获得授权时下载 PDF；其余保存 Abstract + DOI + OpenURL 链接。</p>
+</blockquote>
+<h3 id="22-32-query">2.2 检索词矩阵（核心 32 个 query）</h3>
+<p>按 <strong>"基础词 × 时间窗 × 物种 × 限定"</strong> 组合构造。Schema 保存为 YAML/JSON 以便人工维护。</p>
+<pre><code class="language-yaml">base_species:
+  cn: [&quot;凡纳滨对虾&quot;, &quot;南美白对虾&quot;, &quot;对虾&quot;, &quot;斑节对虾&quot;, &quot;中国对虾&quot;, &quot;日本对虾&quot;]
+  en: [&quot;Litopenaeus vannamei&quot;, &quot;Penaeus vannamei&quot;, &quot;shrimp&quot;, &quot;Pacific white shrimp&quot;,
+       &quot;Penaeus monodon&quot;, &quot;Marsupenaeus japonicus&quot;, &quot;Fenneropenaeus chinensis&quot;]
+
+base_topics_cn:
+  - 养殖模式: [&quot;工厂化循环水&quot;, &quot;工厂化换水&quot;, &quot;高位池&quot;, &quot;池塘养殖&quot;, &quot;小棚养殖&quot;,
+              &quot;生物絮团&quot;, &quot;跑道式&quot;, &quot;多营养层次综合养殖(IMTA)&quot;]
+  - 水质: [&quot;水质&quot;, &quot;溶解氧&quot;, &quot;氨氮&quot;, &quot;亚硝酸盐&quot;, &quot;亚硝酸盐氮&quot;, &quot;化学需氧量&quot;,
+          &quot;总氮&quot;, &quot;总磷&quot;, &quot;pH&quot;, &quot;盐度&quot;, &quot;透明度&quot;]
+  - 成本收益: [&quot;经济效益&quot;, &quot;成本效益分析&quot;, &quot;投资回报&quot;, &quot;饲料系数&quot;, &quot;FCR&quot;,
+              &quot;养殖成本&quot;, &quot;投入产出&quot;]
+  - 病害/规范: [&quot;白斑综合征&quot;, &quot;EMS&quot;, &quot;对虾养殖规范&quot;, &quot;GAP&quot;, &quot;HACCP&quot;]
+
+base_topics_en:
+  - culture_mode: [&quot;recirculating aquaculture&quot;, &quot;RAS&quot;, &quot;biofloc&quot;, &quot;BFT&quot;,
+                  &quot;intensive pond&quot;, &quot;high-density polyethylene pond&quot;, &quot;IMTA&quot;]
+  - water: [&quot;water quality&quot;, &quot;dissolved oxygen&quot;, &quot;ammonia&quot;, &quot;nitrite&quot;, &quot;nitrate&quot;,
+           &quot;BOD&quot;, &quot;COD&quot;, &quot;total nitrogen&quot;, &quot;total phosphorus&quot;, &quot;salinity&quot;, &quot;pH&quot;]
+  - economics: [&quot;economic analysis&quot;, &quot;cost-benefit&quot;, &quot;feed conversion ratio&quot;,
+               &quot;FCR&quot;, &quot;feed cost ratio&quot;, &quot;profitability&quot;, &quot;production cost&quot;]
+  - health: [&quot;WSSV&quot;, &quot;AHPND&quot;, &quot;EMS&quot;, &quot;white spot syndrome&quot;, &quot;good aquaculture practice&quot;]
+
+time_window:
+  start: &quot;2025-09&quot;
+  end:   &quot;2026-09&quot;
+
+filters:
+  doc_type_cn: [&quot;学术论文&quot;, &quot;综述&quot;, &quot;学位论文&quot;, &quot;行业报告&quot;, &quot;技术规范&quot;, &quot;地方标准&quot;]
+  doc_type_en: [&quot;Article&quot;, &quot;Review&quot;, &quot;Conference Paper&quot;, &quot;Data Paper&quot;,
+                &quot;Industry Report&quot;, &quot;Standardization&quot;]
+</code></pre>
+<p><strong>示例构造检索串</strong>（Scopus TITLE-ABS-KEY）：</p>
+<pre><code>( TITLE-ABS-KEY(&quot;Litopenaeus vannamei&quot; OR &quot;Penaeus vannamei&quot; OR &quot;shrimp aquaculture&quot;)
+  AND ( TITLE-ABS-KEY(&quot;water quality&quot;) OR TITLE-ABS-KEY(&quot;FCR&quot;) OR
+        TITLE-ABS-KEY(&quot;recirculating aquaculture system&quot;) OR TITLE-ABS-KEY(&quot;biofloc&quot;) )
+  AND PUBYEAR &gt; 2024 AND PUBYEAR &lt; 2027 )
+</code></pre>
+<h3 id="23">2.3 采集频率与触发</h3>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>频率</th>
+<th>触发器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主检索（32 query × 6 源）</td>
+<td>季度</td>
+<td>Cron：<code>0 2 1 */3 *</code>（季度首日 02:00）</td>
+</tr>
+<tr>
+<td>灰文献 / 公报增量</td>
+<td>月度</td>
+<td>Cron：<code>0 3 1 * *</code>（每月 1 日 03:00）</td>
+</tr>
+<tr>
+<td>优先级 Top 期刊快通道</td>
+<td>周度</td>
+<td>仅做新发表监控，写入 watchlist 而不入增量</td>
+</tr>
+<tr>
+<td>Backfill（2018-2025 一次性）</td>
+<td>一次性</td>
+<td>手动 + 二级审批</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24-doi">2.4 采集元数据最小集（统一 DOI/文献实体）</h3>
+<p>无论来源，每条文献记录以下字段是必填：</p>
+<pre><code>source_id, source_db, source_url, doi, title, title_en,
+authors[], author_affiliations[], journal, volume, issue, page,
+pub_year, pub_date, doc_type, language, abstract, keywords[],
+fulltext_url, fulltext_pdf_local, access_type (open / subscription / n/a),
+collection_batch_id, collection_time, harvested_by
+</code></pre>
+<hr />
+<h2 id="3-etl">3. 解析与 ETL 流程设计</h2>
+<h3 id="31-13">3.1 全链路流水线（13 步）</h3>
+<pre><code>┌──────────────────────────────────────────────────────────────┐
+│  Step 1  检索查询生成         QueryBuilder                   │
+│  Step 2  多源并发抓取         SourceAdapter (async)          │
+│  Step 3  元数据归一化         MetadataNormalizer             │
+│  Step 4  全文获取             Fetcher (PDF/HTML/XML, 301重试) │
+│  Step 5  文件落地             MinIO / S3                     │
+│  Step 6  文档解析 Layout      PyMuPDF + pdfplumber + Tika     │
+│  Step 7  表格/数值定位        TableExtractor (CAMERO/版面分析)│
+│  Step 8  候选字段粗筛         NumericPreFilter (regex+slot)  │
+│  Step 9  LLM 语义抽取         FieldExtractor (GPT-4/Claude) │
+│  Step 10 规则后置校验         RuleValidator                  │
+│  Step 11 单位换算+标准化      UnitNormalizer                 │
+│  Step 12 字段存草稿表         DraftStorage                   │
+│  Step 13 人工审核→写入主表    ReviewQueue + MergeService     │
+└──────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="32-step-6">3.2 Step 6：文档解析双引擎</h3>
+<table>
+<thead>
+<tr>
+<th>引擎</th>
+<th>用途</th>
+<th>关键能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PyMuPDF (fitz)</strong></td>
+<td>学术 PDF 默认首选项</td>
+<td>快、坐标精确、表格框选</td>
+</tr>
+<tr>
+<td><strong>pdfplumber</strong></td>
+<td>二维表格抽取</td>
+<td>行列识别 + 字符级重排</td>
+</tr>
+<tr>
+<td><strong>Apache Tika</strong></td>
+<td>兜底</td>
+<td>万能格式归一化（DOCX/HTML/EPUB）</td>
+</tr>
+<tr>
+<td><strong>PaddleOCR / Marker</strong></td>
+<td>扫描件 OCR</td>
+<td>旧规范、政府公文、JPG 表格图片</td>
+</tr>
+</tbody>
+</table>
+<p>输出统一为 <strong>Docling Common Format</strong>（每页含 blocks, tables, figures, refs）。</p>
+<h3 id="33-step-7-9-llm">3.3 Step 7-9：字段抽取 = "规则 + LLM" 双通道</h3>
+<p><strong>通道 A：规则抽取（首选）</strong></p>
+<p>针对高频模板的论文（中国海洋大学博论文 / 期刊固定栏目）：
+- 训练 CRF/正则匹配置信度 ≥ 0.9 时直接采纳。
+- 例：<code>r"存活率.*?(\d+(?:\.\d+)?)\s*%"</code>
+- 例：<code>r"饲料系数[为:为可低]?\s*(\d+(?:\.\d+)?)"</code></p>
+<p><strong>通道 B：LLM 抽取（兜底）</strong></p>
+<pre><code>SYSTEM:
+你是水产养殖数据抽取专家。每次给出 JSON，禁止输出解释。
+抽取字段集合（schema 注入，禁止越界）：
+  water_quality: {水温WT, pH, DO, 盐度, NH3-N, NO2-N, NO3-N, COD, TN, TP,
+                  透明度, 总碱度, 钙离子}
+  cost_items: {苗种, 饲料, 动保, 人工, 租金, 水电, 设备折旧}
+  benefit: {单产, 总产, 产值, 净利润, 投入产出比, ROI, FCR, 成活率}
+  meta: {养殖模式, 养殖周期, 放苗密度, 规格, 地域, 时间, 文献来源}
+
+USER:
+[原文片段 chunk N of M] (含页码/表格编号)
+请输出 JSON。每个字段都给出 evidence_text 与 page_no。
+找不到则留 null 并说明缺失原因。
+
+约束：
+- 数值必须与原文一致，禁止换算
+- 含义不明时给 &quot;&quot;unknown&quot;&quot;
+- 单条记录只对应同一篇文献同一组数据
+- 不要把单位写成数字的一部分
+</code></pre>
+<p><strong>两通道融合规则</strong>：
+1. 规则先跑；命中且置信度 &gt; 0.9 → 直接采纳。
+2. 未命中字段 → 调用 LLM。
+3. LLM 抽取与规则一致 → 二者皆入库（投票机制）。
+4. 二者冲突 → 进 L2 人工核验队列。</p>
+<h3 id="34">3.4 字段标准化（治理层）</h3>
+<pre><code class="language-yaml">culture_mode_mapping:
+  &quot;工厂化换水&quot;: Indoor_Water_Exchange (IWE)
+  &quot;工厂化循环水&quot;: Indoor_Recirculating (RAS)
+  &quot;工厂化生物絮团&quot;: Indoor_Biofloc (BFT)
+  &quot;高位池&quot;: HDPE_Pond (HPP)
+  &quot;小棚养殖&quot;: Greenhouse_Shed (GS)
+  &quot;池塘单养&quot;: Earthen_Pond_Monoculture (EPM)
+  &quot;多营养层次综合养殖&quot;: IMTA
+
+unit_conversion:
+  temperature: &quot;°C&quot;          # 摄氏度统一
+  pressure: &quot;mg/L&quot;
+  area_yield: &quot;kg/亩 或 kg/m² 或 kg/m³&quot;  # 三种单位并行保留
+  currency_year: &quot;CNY_2025&quot;  # 用 CPI 平减到 2025 基准
+  inflation_source: &quot;国家统计局 CPI 文件&quot;
+
+region_normalize:
+  &quot;山东省青岛市&quot;: country=CN, province=山东, city=青岛
+  &quot;山东日照&quot;: country=CN, province=山东, city=日照
+</code></pre>
+<h3 id="35">3.5 抽取失败兜底</h3>
+<ul>
+<li>若文献无可用全文 → 仅入库"文献实体表"，不入数据表，标 <code>fulltext=missing</code>。</li>
+<li>若 OCR 失败 3 次 → 转人工 transcription queue。</li>
+<li>若 LLM 调用超时 / token 超限 → 分 chunk 重试 + 异步合并。</li>
+</ul>
+<hr />
+<h2 id="4">4. 重复文献去重机制</h2>
+<p>采用 <strong>"指纹 + 文本相似度" 三级漏斗</strong>，3 分钟内处理 1 万条记录。</p>
+<h3 id="41">4.1 三级去重漏斗</h3>
+<pre><code>输入记录
+   │
+   ▼
+Level 1 — DOI / PMID / CN号 精确匹配                命中 → 跳过
+   │ 未命中
+   ▼
+Level 2 — 标题指纹（SimHash 64-bit / MinHash）      汉明距离 ≤ 3 → 提示合并
+   │ 未命中
+   ▼
+Level 3 — 嵌入向量召回（pgvector, text-embedding-3-small）
+          + 余弦阈值 0.93 → 进入人工合并决策          未命中 → 入新记录
+</code></pre>
+<h3 id="42-level-1">4.2 Level 1 精确匹配</h3>
+<pre><code class="language-sql">SELECT id FROM literature
+WHERE doi = ?
+   OR (pmid IS NOT NULL AND pmid = ?)
+   OR (cn_no IS NOT NULL AND cn_no = ?);
+</code></pre>
+<h3 id="43-level-2">4.3 Level 2 标题指纹</h3>
+<ul>
+<li>预处理：去标点 → 转小写 → 去前后空格 → 中文用 jieba 分词 + 英文用 NLTK 词形还原。</li>
+<li>Hash：SimHash 64bit（也可切 MinHash-128 用于候选召回）。</li>
+<li>命中：汉明距离 ≤ 3 或 Jaccard ≥ 0.85。</li>
+</ul>
+<h3 id="44-level-3">4.4 Level 3 嵌入向量</h3>
+<table>
+<thead>
+<tr>
+<th>索引</th>
+<th>推荐</th>
+<th>维度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pgvector + HNSW</td>
+<td>默认</td>
+<td>1536</td>
+</tr>
+<tr>
+<td>备选 Qdrant + IVF</td>
+<td>大规模</td>
+<td>1536</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-sql">CREATE TABLE lit_embedding (
+  lit_id BIGINT PRIMARY KEY,
+  embedding vector(1536) NOT NULL
+);
+CREATE INDEX lit_embedding_hnsw ON lit_embedding
+USING hnsw (embedding vector_cosine_ops);
+</code></pre>
+<h3 id="45">4.5 合并策略</h3>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同一文献在不同数据库（CNKI 与 WoS 各有一条）</td>
+<td>合并为一条，由"主源"承载元数据，其他源写进 <code>duplicate_of</code></td>
+</tr>
+<tr>
+<td>同一数据集在不同期刊发表的姊妹篇</td>
+<td>保留两条，标记 <code>related_paper_of</code></td>
+</tr>
+<tr>
+<td>同一数据被多次引用</td>
+<td>每条抽取独立入库，文献实体的 <code>cited_by_records</code> 反查计数</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5">5. 数据质量校验规则</h2>
+<h3 id="51">5.1 校验规则引擎架构</h3>
+<p>采用 <strong>Great Expectations</strong> + <strong>Soda Core</strong> 双核：</p>
+<ul>
+<li><strong>GE</strong>：schema、强类型、范围、跨表一致性。</li>
+<li><strong>Soda</strong>：自定义业务规则（典型：成本占比合计 = 100%）。</li>
+</ul>
+<p>所有规则代码入库 <code>data-quality/rules/</code>，<strong>rule-as-code</strong>，每次 ETL 自动跑。</p>
+<h3 id="52-12">5.2 12 类规则全景</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>类别</th>
+<th>规则示例</th>
+<th>失败处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01</td>
+<td><strong>完整性</strong></td>
+<td>必填字段非空：<code>source_id, doi/title, literature_id, year</code></td>
+<td>严重 → 拒收；非严重 → 进补全队列</td>
+</tr>
+<tr>
+<td>R02</td>
+<td><strong>唯一性</strong></td>
+<td><code>literature_id</code> 主键唯一；草稿表内 <code>lit_id + section_no</code> 唯一</td>
+<td>拒收</td>
+</tr>
+<tr>
+<td>R03</td>
+<td><strong>数值类型</strong></td>
+<td>WT, DO, pH 等必须是 float；不可夹杂单位字符串</td>
+<td>解析前清洗</td>
+</tr>
+<tr>
+<td>R04</td>
+<td><strong>范围 sanity check</strong></td>
+<td>WT ∈ [5, 40]°C；DO ∈ [0, 20] mg/L；pH ∈ [5, 11]；盐度 ∈ [0, 50]‰；NH₃-N ∈ [0, 50] mg/L</td>
+<td>警示 + 进人工核对</td>
+</tr>
+<tr>
+<td>R05</td>
+<td><strong>逻辑一致性</strong></td>
+<td>放苗密度 × 养成规格 × 周期 → 总产应满足密度约束；溶解氧 &lt; 0 时 FCR 必有显著偏高</td>
+<td>警示</td>
+</tr>
+<tr>
+<td>R06</td>
+<td><strong>比例约束</strong></td>
+<td>成本分项占比合计 = 100% ± 0.5%；若是± 5% 进差异队列</td>
+<td>警示 + 重核</td>
+</tr>
+<tr>
+<td>R07</td>
+<td><strong>单位一致</strong></td>
+<td><code>mg/L</code> <code>μg/L</code> <code>g/m³</code> 自动归一，单位跟随默认</td>
+<td>自动换算</td>
+</tr>
+<tr>
+<td>R08</td>
+<td><strong>货币时间归一</strong></td>
+<td>价格 → 2025 基准 CPI 折算；汇率取人民银行年中值</td>
+<td>自动</td>
+</tr>
+<tr>
+<td>R09</td>
+<td><strong>跨表交叉验证</strong></td>
+<td>水质表 vs 生长表：同一 <code>lit_id + culture_mode</code> 的 WT 偏差 &gt; 3°C 必查</td>
+<td>警示</td>
+</tr>
+<tr>
+<td>R10</td>
+<td><strong>来源可追溯</strong></td>
+<td>每条抽取记录必含 <code>evidence_text + page_no + extraction_prompt_ver</code></td>
+<td>拒收</td>
+</tr>
+<tr>
+<td>R11</td>
+<td><strong>经纬度一致性</strong></td>
+<td>同一地点经纬度偏差 &gt; 0.2° → 提示；省份与经纬反查行政编码不一致则阻断</td>
+<td>阻断</td>
+</tr>
+<tr>
+<td>R12</td>
+<td><strong>可重复性</strong></td>
+<td>同一篇文献二次抽取结果差异 &gt; 5% 字段 → 进配置巡检</td>
+<td>提示</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53">5.3 校验失败的分级处置</h3>
+<pre><code>PASS            ─ 入主库 L1
+WARN            ─ 入主库 L2（黄色标），触发邮件给数据管理员
+BLOCKED         ─ 仅入草稿 + Review 队列，需人工确认
+CRITICAL        ─ 自动告警到飞书/钉钉群 + 创建 Jira
+</code></pre>
+<hr />
+<h2 id="6">6. 存储模型与增量合并机制</h2>
+<h3 id="61">6.1 存储技术栈</h3>
+<table>
+<thead>
+<tr>
+<th>数据</th>
+<th>库</th>
+<th>表</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文献实体</td>
+<td>PostgreSQL</td>
+<td><code>literature</code>、<code>author</code>、<code>affiliation</code>、<code>keyword</code></td>
+</tr>
+<tr>
+<td>抽取草稿</td>
+<td>PostgreSQL</td>
+<td><code>extraction_draft</code></td>
+</tr>
+<tr>
+<td>主数据（4 类核心）</td>
+<td>PostgreSQL</td>
+<td><code>water_quality_fact</code>、<code>growth_fact</code>、<code>cost_fact</code>、<code>benefit_fact</code></td>
+</tr>
+<tr>
+<td>时序水质</td>
+<td>TimescaleDB</td>
+<td><code>water_quality_timeseries</code></td>
+</tr>
+<tr>
+<td>文档原文/图片</td>
+<td>MinIO/S3</td>
+<td><code>pdf/{sha256.pdf}</code></td>
+</tr>
+<tr>
+<td>向量索引</td>
+<td>pgvector</td>
+<td><code>lit_embedding</code></td>
+</tr>
+<tr>
+<td>任务队列</td>
+<td>Redis</td>
+<td><code>rq:job:*</code></td>
+</tr>
+<tr>
+<td>报表导出</td>
+<td>Parquet + Pandas / DuckDB</td>
+<td><code>/warehouse/</code> 分区</td>
+</tr>
+<tr>
+<td>元数据</td>
+<td>Hive 风格 meta schema</td>
+<td><code>meta_schema</code>、<code>field_dictionary</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-schema">6.2 核心表 schema（合并表）</h3>
+<pre><code class="language-sql">-- 主表：文献级记录
+CREATE TABLE fact_record (
+  record_id          BIGSERIAL PRIMARY KEY,
+  literature_id      BIGINT NOT NULL REFERENCES literature(id),
+  batch_id           UUID NOT NULL,             -- 季度/批次标识
+  quarter            TEXT,                       -- 2025Q3、2026Q1...
+  source_url         TEXT,
+  culture_mode       TEXT,
+  region_country     TEXT,
+  region_province    TEXT,
+  region_city        TEXT,
+  latitude           NUMERIC(9,6),
+  longitude          NUMERIC(9,6),
+  cycle_days         INT,
+  stocking_density   NUMERIC,
+  initial_size_g     NUMERIC,
+  final_size_g       NUMERIC,
+  wild_culture_mode  BOOLEAN DEFAULT FALSE,
+  inserted_at        TIMESTAMPTZ DEFAULT now(),
+  updated_at         TIMESTAMPTZ DEFAULT now(),
+  status             TEXT DEFAULT 'pending'      -- pending/approved/rejected
+);
+CREATE INDEX ON fact_record (literature_id);
+CREATE INDEX ON fact_record (culture_mode, region_province, quarter);
+
+-- 水质参数（逐项）
+CREATE TABLE water_quality_fact (
+  id BIGSERIAL PRIMARY KEY,
+  record_id BIGINT NOT NULL REFERENCES fact_record ON DELETE CASCADE,
+  wt_c          NUMERIC,  do_mg_l      NUMERIC,  ph          NUMERIC,
+  salinity_ppt  NUMERIC,  nh3n_mg_l    NUMERIC,
+  no2n_mg_l     NUMERIC,  no3n_mg_l    NUMERIC,  cod_mg_l    NUMERIC,
+  tn_mg_l       NUMERIC,  tp_mg_l      NUMERIC,  transparency_cm NUMERIC,
+  alkalinity_mg_l NUMERIC, calcium_mg_l NUMERIC
+);
+
+-- 成本（逐项）
+CREATE TABLE cost_fact (
+  id BIGSERIAL PRIMARY KEY,
+  record_id BIGINT NOT NULL REFERENCES fact_record ON DELETE CASCADE,
+  seed_cost  NUMERIC, feed_cost NUMERIC, healthcare NUMERIC, labor NUMERIC,
+  rent NUMERIC, utility NUMERIC, equipment_depr NUMERIC, other NUMERIC,
+  total_cost NUMERIC, cost_year_basis INT DEFAULT 2025
+);
+
+-- 收益
+CREATE TABLE benefit_fact (
+  id BIGSERIAL PRIMARY KEY,
+  record_id BIGINT NOT NULL REFERENCES fact_record ON DELETE CASCADE,
+  yield_per_unit NUMERIC, total_production_kg NUMERIC,
+  gross_value NUMERIC, net_profit NUMERIC, io_ratio NUMERIC,
+  roi NUMERIC, fcr NUMERIC, survival_rate NUMERIC
+);
+</code></pre>
+<h3 id="63">6.3 季度增量合并的两阶段流程</h3>
+<p><strong>阶段一：草稿期（自动化）</strong></p>
+<ul>
+<li>季度运行结束后，将所有记录写入 <code>extraction_draft</code> 表，<code>status='pending'</code>。</li>
+<li>生成 <em>增量报告 xlsx</em>（一份Sheet对应一张事实表）发往审核队列。</li>
+</ul>
+<p><strong>阶段二：人工确认期（人工）</strong></p>
+<ul>
+<li>数据审核员在 Web 工作台勾选：</li>
+<li><strong>Approve</strong> → 调用 <code>MergeService.merge(record_id)</code>：<ul>
+<li>计算 <code>record_id + literature_id</code> 指纹</li>
+<li>若主表存在同 lit+mode+region+year 的记录 → 选择"覆盖 / 跳过 / 合并"</li>
+<li>默认策略：lit 唯一则追加；重复则保留<strong>更新时间最新</strong>者</li>
+</ul>
+</li>
+<li><strong>Reject</strong> → 草稿状态置 <code>rejected</code> 并记录原因</li>
+<li><strong>Edit</strong> → 进入字段编辑器（双栏：原文 / 字段值）</li>
+</ul>
+<p><strong>审计字段</strong>（每张事实表必备）：</p>
+<pre><code class="language-sql">merged_by   TEXT,
+merged_at   TIMESTAMPTZ,
+merger_version TEXT,         -- merge_strategy 的版本号
+evidence_blob BYTEA,         -- 来自原文 evidence_text+page
+</code></pre>
+<h3 id="64-xlsx">6.4 与现有 xlsx 的兼容</h3>
+<p>现有 11 个工作表 ⇒ 一次性反向 ETL 入新库（一次性脚本），生成 <code>legacy_xlsx_audit</code> 报告，列出：
+- 重名字段（如 "硝氮" 与 "硝酸盐氮"）
+- 单位散乱（如"kg/亩"与"kg/m³"并存的产量列）
+- 经纬度空值（占 39%）</p>
+<p>后续主表 schema 与 xlsx <strong>影子对比</strong>：
+- 每周五自动导出 xlsx 镜像
+- 每月 1 日对账两张表的关键指标 hash</p>
+<hr />
+<h2 id="7">7. 季度自动化执行流程</h2>
+<h3 id="71-cron">7.1 调度（Cron 编排）</h3>
+<p>主调度任务用 <strong>Apache Airflow</strong>（企业级首选）或 <strong>Celery Beat</strong>（轻量级够用）二选一。</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>DAG / 周期任务</th>
+<th>调度</th>
+<th>上游依赖</th>
+<th>SLA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>lit_search_quarterly</code>（季度检索）</td>
+<td><code>0 2 1 */3 *</code></td>
+<td>—</td>
+<td>6h</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>lit_fetch_fulltext</code>（全文获取）</td>
+<td>由 1 触发</td>
+<td>1 成功</td>
+<td>24h</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>lit_extract</code>（解析+抽取）</td>
+<td>由 2 触发</td>
+<td>2 成功</td>
+<td>36h</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>data_quality_check</code>（质控）</td>
+<td>由 3 触发</td>
+<td>3 成功</td>
+<td>4h</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>human_review_queue</code>（推送审核）</td>
+<td>由 4 触发</td>
+<td>4 完成</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>merge_to_main</code>（合并入主表）</td>
+<td>由 5 + 人工 Approve</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>quarterly_report_export</code>（导出报告）</td>
+<td><code>0 22 28-31 */3 *</code></td>
+<td>1-6 全完成</td>
+<td>2h</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>db_health_backup</code>（备份）</td>
+<td>每日</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-runbook">7.2 季度执行 Runbook</h3>
+<pre><code>D 日：00:00 调度器启动检索
+  ├─ 02:00 完成 32 query × 6 源 = 192 个调用（自适应并发 ≤ 6）
+  └─ 06:00 全文抓取（比例：英文 ≤ 80%、中文摘要 100%）
+D+1 日：08:00 解析+抽取
+  ├─ 14:00 抽取完成；草稿表落库
+  └─ 16:00 质控报告
+D+2 日：~ 数据审核员 Review
+  ├─ APPROVE → MergeService 入主表
+  └─ REJECT/EDIT → 反馈循环
+D+2 末日 23:00：批次封板，落季度归档快照
+</code></pre>
+<h3 id="73">7.3 失败兜底</h3>
+<ul>
+<li>任一 DAG 任务 3 次自动重试失败 → 写入 Dead Letter Queue（DLQ）。</li>
+<li>DLQ 在工作台"异常队列"页面可手动重跑或回退版本。</li>
+<li>人工通知：钉钉/飞书机器人推送失败 Summary。</li>
+</ul>
+<h3 id="74">7.4 季度报告产出物</h3>
+<table>
+<thead>
+<tr>
+<th>输出</th>
+<th>格式</th>
+<th>受众</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>增量数据 xlsx</td>
+<td>.xlsx</td>
+<td>数据库维护者</td>
+</tr>
+<tr>
+<td>季度趋势图表（HTML）</td>
+<td>.html</td>
+<td>项目组</td>
+</tr>
+<tr>
+<td>文献清单 CSV</td>
+<td>.csv</td>
+<td>信息咨询</td>
+</tr>
+<tr>
+<td>异常报告 PDF</td>
+<td>.pdf</td>
+<td>治理委员会</td>
+</tr>
+<tr>
+<td>主数据归档 Parquet</td>
+<td>.parquet 分区 <code>quarter=2026Q3/</code></td>
+<td>数据科学家</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8">8. 技术选型与成本估算</h2>
+<h3 id="81">8.1 技术栈汇总</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>选型</th>
+<th>备选</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语言</td>
+<td>Python 3.12</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Web 后端</td>
+<td>FastAPI + Pydantic v2</td>
+<td>Django</td>
+</tr>
+<tr>
+<td>Web 前端</td>
+<td>React 18 + Ant Design Pro</td>
+<td>Vue 3</td>
+</tr>
+<tr>
+<td>任务编排</td>
+<td>Apache Airflow 2.9</td>
+<td>Prefect</td>
+</tr>
+<tr>
+<td>异步任务</td>
+<td>Celery + Redis</td>
+<td>ARQ</td>
+</tr>
+<tr>
+<td>数据清洗</td>
+<td>Pandas 2 + Polars</td>
+<td>Dask</td>
+</tr>
+<tr>
+<td>文档解析</td>
+<td>Docling + PyMuPDF + pdfplumber</td>
+<td>Unstructured.io</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>GPT-4o-mini / Claude 3.5 Sonnet / Qwen2.5-72B 本地</td>
+<td>DeepSeek</td>
+</tr>
+<tr>
+<td>嵌入模型</td>
+<td>text-embedding-3-small</td>
+<td>bge-m3</td>
+</tr>
+<tr>
+<td>关系库</td>
+<td>PostgreSQL 16 + pgvector</td>
+<td>MySQL</td>
+</tr>
+<tr>
+<td>时序库</td>
+<td>TimescaleDB</td>
+<td>InfluxDB</td>
+</tr>
+<tr>
+<td>对象存储</td>
+<td>MinIO</td>
+<td>S3 / 阿里云 OSS</td>
+</tr>
+<tr>
+<td>容器</td>
+<td>Docker Compose / K8s</td>
+<td>—</td>
+</tr>
+<tr>
+<td>监控</td>
+<td>Grafana + Prometheus + Loki</td>
+<td>—</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>GitHub Actions</td>
+<td>GitLab CI</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-1000">8.2 季度成本估算（按 1000 条入库）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>单价</th>
+<th>数量</th>
+<th>小计</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WoS API</td>
+<td>订阅制（按账户）</td>
+<td>1 账户</td>
+<td>¥5000/季</td>
+</tr>
+<tr>
+<td>Scopus / ScienceDirect</td>
+<td>订阅制（按账户）</td>
+<td>1 账户</td>
+<td>¥7000/季</td>
+</tr>
+<tr>
+<td>CNKI / 万方 / VIP</td>
+<td>需机构合作</td>
+<td>—</td>
+<td>¥3000/季</td>
+</tr>
+<tr>
+<td>LLM 抽取（GPT-4o-mini）</td>
+<td>¥0.15/M token</td>
+<td>~10M token</td>
+<td>¥1500</td>
+</tr>
+<tr>
+<td>嵌入向量（OpenAI）</td>
+<td>¥0.07/M token</td>
+<td>~5M token</td>
+<td>¥350</td>
+</tr>
+<tr>
+<td>服务器（4C8G × 2）</td>
+<td>¥300/月</td>
+<td>—</td>
+<td>¥900/季</td>
+</tr>
+<tr>
+<td>对象存储 + DB</td>
+<td>¥200/月</td>
+<td>—</td>
+<td>¥600/季</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td>—</td>
+<td>—</td>
+<td><strong>约 ¥18,350/季</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>选开源 LLM（如 Qwen2.5-72B / DeepSeek-V3 自部署）可将 LLM 部分压至 ¥300/季，年省 ~¥5,000。</p>
+</blockquote>
+<hr />
+<h2 id="9">9. 实施路线图</h2>
+<h3 id="02">阶段 0：奠基（2 周）</h3>
+<ul>
+<li>团队组建、数据源合同签订</li>
+<li>数据库 schema V1 落地</li>
+<li>现有 xlsx 一次性入新库（legacy load）</li>
+<li>工作台脚手架（FastAPI + React 启动）</li>
+</ul>
+<h3 id="1mvp4">阶段 1：MVP（4 周）</h3>
+<ul>
+<li>对接 WoS + Scopus（API token 已就绪假设）</li>
+<li>解析 → 抽取 → 草稿 → 人工 Review → 合并 闭环</li>
+<li>12 类质量规则 V1 上线</li>
+<li>季度报告自动导出</li>
+</ul>
+<h3 id="24">阶段 2：扩源（4 周）</h3>
+<ul>
+<li>对接 CNKI / 万方（公开摘要 + 论文交换）</li>
+<li>接入 NACA / FAO 月度灰文献流</li>
+<li>pgvector + SimHash 三级去重</li>
+<li>启用 TimescaleDB 时序水质</li>
+</ul>
+<h3 id="34_1">阶段 3：智能化（4 周）</h3>
+<ul>
+<li>LLM 抽取 prompt 自动优化（DSPy）</li>
+<li>处理 OCR 扫描件 / 政府公文 PDF</li>
+<li>接入 LLM 自评（self-consistency）</li>
+<li>工作台数据可视化（图表、地图）</li>
+</ul>
+<h3 id="4ongoing">阶段 4：自动化运营（ongoing）</h3>
+<ul>
+<li>季度 cron 灰度</li>
+<li>异常 DLQ 监控 + 自愈脚本</li>
+<li>指标看板：覆盖率、抽取准确率、人工审核时长</li>
+<li>每季度迭代字段字典与单位规则</li>
+</ul>
+<hr />
+<h2 id="a">附录 A：统一数据库表结构</h2>
+<p>详见 <code>schema.sql</code>（随仓库提供）。包含：
+1. <code>literature</code> / <code>author</code> / <code>affiliation</code> 文献实体三件套
+2. <code>fact_record</code> 主表
+3. <code>water_quality_fact</code> / <code>growth_fact</code> / <code>cost_fact</code> / <code>benefit_fact</code> 4 张事实表
+4. <code>extraction_draft</code> 与 <code>audit_log</code> 数据治理表
+5. <code>lit_embedding</code> 向量表
+6. <code>quality_rule</code> 数据质量规则表（自描述）</p>
+<p>ER 关系（核心）：</p>
+<pre><code>literature ─&lt; fact_record ─&lt; water_quality_fact
+                          ─&lt; growth_fact
+                          ─&lt; cost_fact
+                          ─&lt; benefit_fact
+lit_embedding (1:1) ─ literature
+extraction_draft ─ literature
+quality_rule ─ fact_record (DSEL via rule_id)
+</code></pre>
+<hr />
+<h2 id="b">附录 B：检索词矩阵与字段映射字典</h2>
+<h3 id="b1-query">B.1 检索词矩阵（核心 query 模板）</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>cn_query</th>
+<th>en_query</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q01</td>
+<td>凡纳滨对虾 + 工厂化循环水 + 水质</td>
+<td>"Litopenaeus vannamei" AND "RAS" AND "water quality"</td>
+</tr>
+<tr>
+<td>Q02</td>
+<td>凡纳滨对虾 + 生物絮团 + 生长性能</td>
+<td>"biofloc" AND "Litopenaeus vannamei" AND "growth"</td>
+</tr>
+<tr>
+<td>Q03</td>
+<td>凡纳滨对虾 + 经济效益分析 + 养殖成本</td>
+<td>"Penaeus vannamei" AND ("economic analysis" OR "cost-benefit")</td>
+</tr>
+<tr>
+<td>Q04</td>
+<td>凡纳滨对虾 + FCR + 饲料系数</td>
+<td>"Litopenaeus vannamei" AND ("FCR" OR "feed conversion ratio")</td>
+</tr>
+<tr>
+<td>Q05</td>
+<td>凡纳滨对虾 + 高位池 + 池塘</td>
+<td>"HDPE pond" AND "shrimp"</td>
+</tr>
+<tr>
+<td>Q06</td>
+<td>凡纳滨对虾 + 氨氮 + 亚硝酸盐</td>
+<td>"ammonia" AND "nitrite" AND "shrimp"</td>
+</tr>
+<tr>
+<td>Q07</td>
+<td>凡纳滨对虾 + 工厂化 + 中国 + 山东 / 广东 / 海南</td>
+<td>"indoor aquaculture" AND "China" AND "shrimp"</td>
+</tr>
+<tr>
+<td>Q08</td>
+<td>凡纳滨对虾 + 多营养层次综合养殖</td>
+<td>"IMTA" AND "shrimp"</td>
+</tr>
+<tr>
+<td>Q09</td>
+<td>凡纳滨对虾 + LCA + 生命周期评价</td>
+<td>"LCA" AND "Penaeus vannamei"</td>
+</tr>
+<tr>
+<td>Q10</td>
+<td>凡纳滨对虾 + 白斑综合征 + 病害</td>
+<td>"WSSV" AND "shrimp"</td>
+</tr>
+<tr>
+<td>...</td>
+<td>(省略, 共 32 个 query)</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b2">B.2 字段映射字典（节选）</h3>
+<table>
+<thead>
+<tr>
+<th>标准字段</th>
+<th>旧字段名（xlsx）</th>
+<th>英文</th>
+<th>单位</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wt_c</code></td>
+<td>水温 (°C)、水温</td>
+<td>Water temperature</td>
+<td>°C</td>
+<td>摄氏度统一</td>
+</tr>
+<tr>
+<td><code>do_mg_l</code></td>
+<td>溶解氧 (mg/L)</td>
+<td>Dissolved oxygen</td>
+<td>mg/L</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>ph</code></td>
+<td>pH、PH</td>
+<td>pH</td>
+<td>unitless</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>salinity_ppt</code></td>
+<td>盐度</td>
+<td>Salinity</td>
+<td>‰/ppt</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>nh3n_mg_l</code></td>
+<td>氨氮 (mg/L)</td>
+<td>Total ammonia nitrogen</td>
+<td>mg/L as N</td>
+<td>注明以 N 计</td>
+</tr>
+<tr>
+<td><code>no2n_mg_l</code></td>
+<td>亚硝氮 (mg/L)</td>
+<td>Nitrite nitrogen</td>
+<td>mg/L as N</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>no3n_mg_l</code></td>
+<td>硝氮 (mg/L)</td>
+<td>Nitrate nitrogen</td>
+<td>mg/L as N</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>fcr</code></td>
+<td>饵料系数、饲料系数</td>
+<td>Feed Conversion Ratio</td>
+<td>ratio</td>
+<td>0.8–2.5 正常</td>
+</tr>
+<tr>
+<td><code>survival_rate</code></td>
+<td>存活率、成活率</td>
+<td>Survival rate</td>
+<td>%</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>yield_per_unit</code></td>
+<td>实际产量 (kg/亩)、产量 (kg/m³)</td>
+<td>Yield</td>
+<td>kg/亩 / kg/m³</td>
+<td>单位必标注</td>
+</tr>
+<tr>
+<td><code>total_production_kg</code></td>
+<td>总产</td>
+<td>Total production</td>
+<td>kg</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>gross_value</code></td>
+<td>总收入 (元/亩)</td>
+<td>Gross value</td>
+<td>CNY/亩</td>
+<td>按 2025 折算</td>
+</tr>
+<tr>
+<td><code>net_profit</code></td>
+<td>净利润</td>
+<td>Net profit</td>
+<td>CNY/亩</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><code>roi</code></td>
+<td>成本利润率、成本利润率</td>
+<td>Cost-margin / ROI</td>
+<td>%</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>cycle_days</code></td>
+<td>养殖周期</td>
+<td>Culture cycle</td>
+<td>day</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>stocking_density</code></td>
+<td>放苗密度</td>
+<td>Stocking density</td>
+<td>ind/m² / ind/m³</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p><strong>结束语</strong>：本方案给出可立即落地的端到端设计，实现路径以"先对接 WoS/Scopus + 规则抽取 + 人工 review"为最小闭环，再以"加 CNKI/万方 + LLM 抽取 + 自动质控"为渐进强化。建议先按 MVP 节奏 6-8 周上线，运行两个季度后即可支撑长期产业研究。</p>
+</blockquote>
+</main>
+</div>
+</body>
+</html>

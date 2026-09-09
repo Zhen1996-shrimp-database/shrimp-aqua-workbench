@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>新增文献 · 对虾养殖产业数据库工作台</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+
+.nl-card{border:1px solid var(--c-border);border-radius:10px;padding:16px 18px;margin-bottom:14px;background:var(--c-panel);box-shadow:var(--shadow);border-left:4px solid #cbd5e1;transition:.15s}
+.nl-card.pending{border-left-color:var(--c-warn)}
+.nl-card.merged{border-left-color:var(--c-success)}
+.nl-card.ignored{border-left-color:#cbd5e1;opacity:.68}
+.nl-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.nl-badge{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#374151;background:#f3f4f6;padding:2px 8px;border-radius:999px}
+.nl-title{font-size:15px;font-weight:600;margin:0 0 6px;line-height:1.45}
+.nl-meta{font-size:12.5px;color:var(--c-muted);margin-bottom:8px}
+.nl-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.nl-summary{font-size:13px;color:#374151;background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.nl-reason{font-size:12.5px;color:#065f46;background:#ecfdf5;border-radius:6px;padding:6px 10px;margin-bottom:10px}
+.nl-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--c-border);padding-top:10px}
+.nl-hint{font-size:12px;color:var(--c-primary-d);background:var(--c-primary-l);border-radius:6px;padding:6px 10px;display:none;margin-bottom:10px}
+.nl-hint.show{display:block}
+.nl-empty{text-align:center;color:var(--c-muted);padding:44px 20px}
+.nl-empty .big{font-size:40px;margin-bottom:10px}
+.sr-hero{background:linear-gradient(135deg,#f0fdfa,#fefce8);border:1px solid #a7f3d0;border-left:4px solid var(--c-primary);border-radius:10px;padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.sr-tip{font-size:12px;color:var(--c-muted);background:#fff;border:1px dashed var(--c-border);border-radius:6px;padding:6px 10px;margin-top:10px}
+.sr-body{margin-top:12px;border-top:1px dashed #d1fae5;padding-top:12px}
+.sr-card{border:1px solid #d1fae5;background:#fff;border-radius:8px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.sr-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.sr-opts{font-size:12px;color:#374151}
+.sr-opts select{font-size:12px;padding:3px 4px;border:1px solid var(--c-border);border-radius:6px;background:#fff;color:#111827;max-width:160px}
+.sr-note{font-size:11.5px;color:#6b7280;background:#f9fafb;border-radius:6px;padding:4px 8px;margin:6px 0 0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    对虾养殖产业数据库工作台
+  </div>
+  <nav>
+      <a href="index.html" >📊 总览</a>
+      <a href="search.html" >🔍 文献检索</a>
+      <a href="etl.html" >⚙️ ETL 流水线</a>
+      <a href="review.html" >✅ 数据审核</a>
+      <a href="quality.html" >🛡️ 数据质量</a>
+      <a href="dedup.html" >🔁 去重</a>
+      <a href="newlit.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">🆕 新增文献</a>
+      <a href="database.html" >💾 主数据库</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" >📑 数据库综述</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>系统正常</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">主页</a> / 新增文献（每周三 08:00 自动检索 · 人工确认后并入主库）</div>
+  <h1>🆕 新增文献 · 待确认区</h1>
+  <p>仅记录每周新检索到的文献，<b>不会自动并入主库</b>；并入主库前会由助理展示拟写入内容、经你确认后执行。支持<b>每周三自动检索</b>与<b>随时一键即时检索</b>两种方式。本页内容不影响主库累计记录 / 覆盖年份 / 模式数等既有统计。</p>
+</div>
+
+<div class="alert success">
+📌 <b>自动检索计划</b> · 每周三 <b>08:00</b> 搜索新发布的 <b>5 篇</b> 符合数据库范围（对虾养殖：水质/生长/产污/效益/成本/环境等）的文献并写入本页。最近一轮：<b>2026-W37</b>（2026-09-09 09:03）。
+</div>
+
+<div class="sr-hero">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+    <h2 style="margin:0;font-size:15px;font-weight:600">🔍 一键即时检索（随时手动触发 · 先审后入）</h2>
+    <span class="tag primary">不自动入库 · 由你挑选</span>
+  </div>
+  <p style="margin:0 0 10px;font-size:13px;color:#374151">
+    点下方按钮，会把<b>下方筛选栏当前设置（关键词 / 来源平台 / 养殖平台）自动作为本次搜索条件</b>，在<b>本页直接生成检索结果</b>：实时聚合开放学术库（OpenAlex / Crossref，关键词自动中英互译），逐条展示<b>论文情况</b>（作者 / 期刊 / 年份 / 摘要要点）与 <b>🔗 原文下载链接</b>（OA PDF / DOI / 期刊官网）；满意就点「➕ 加入待确认」<b>直接写入本页下方「待确认」区</b> —— 之后仍可走「确认并入主库」二次确认，全程不碰主库。
+  </p>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <select id="srWin" style="font-size:13px;padding:7px 8px;border:1px solid var(--c-border);border-radius:8px;background:#fff;color:#111827">
+      <option value="7">近 1 周</option>
+      <option value="30">近 1 个月</option>
+      <option value="90" selected>近 3 个月</option>
+      <option value="365">近 1 年</option>
+    </select>
+    <button id="btnSearchNow" class="btn btn-primary" style="font-size:14px;padding:9px 18px" onclick="doInstantSearch()">🚀 立即搜索最新文献</button>
+    <span style="font-size:12px;color:var(--c-muted)">搜索条件留空 = 不限制，按全范围（凡纳滨对虾养殖）检索最新文献</span>
+  </div>
+  <div id="srState" class="nl-hint" style="margin-top:10px;margin-bottom:0"></div>
+  <div id="srToolbar" style="display:none;margin-top:10px;padding:8px 10px;background:#ecfdf5;border:1px dashed #6ee7b7;border-radius:6px;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="srSelAll" onchange="srToggleAll(this.checked)"> 全选</label>
+    <span>已选 <b id="srSelCount">0</b> 篇</span>
+    <button class="btn btn-primary btn-sm" id="srBatchJoin" onclick="srBatchJoin()">📥 一键加入已选</button>
+    <span style="color:var(--c-muted)">·</span>
+    <button class="btn btn-ghost btn-sm" onclick="srClearSel()">清空选择</button>
+  </div>
+  <div id="srResults" class="sr-body"></div>
+  <div class="sr-tip">💡 需要「本机实时工作台」支持（本页需由 WorkBuddy 会话内的实时服务提供）。若直接打开线上只读链接，检索会提示无法连接 —— 请回到本工作台实时预览窗口（http://127.0.0.1:8787）操作。</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi warn"><div class="label">待确认</div><div class="value">17</div><div class="sub">等待人工确认并入</div></div>
+  <div class="kpi info"><div class="label">累计发现</div><div class="value">17</div><div class="sub">暂存库全部记录</div></div>
+  <div class="kpi success"><div class="label">已并入主库</div><div class="value">0</div><div class="sub">经人工确认后并入</div></div>
+  <div class="kpi"><div class="label">最近检索</div><div class="value" style="font-size:16px">2026-09-09 09:03</div><div class="sub">round 2026-W37</div></div>
+</div><div class="toolbar">
+  <input id="kw" type="text" placeholder="🔍 关键词（标题/作者/摘要/理由）" style="min-width:220px">
+  <select id="fSource"><option value="">全部来源平台</option><option value="Google Scholar">Google Scholar</option><option value="知网 CNKI">知网 CNKI</option><option value="万方">万方</option><option value="维普 VIP">维普 VIP</option><option value="Web of Science">Web of Science</option><option value="Scopus">Scopus</option><option value="ScienceDirect">ScienceDirect</option><option value="PubMed">PubMed</option><option value="期刊官网">期刊官网</option><option value="其他">其他</option></select>
+  <select id="fFarm"><option value="">全部养殖平台/模式</option><option value="工厂化循环水">工厂化循环水</option><option value="工厂化生物絮团">工厂化生物絮团</option><option value="工厂化换水">工厂化换水</option><option value="高位池">高位池</option><option value="小棚养殖">小棚养殖</option><option value="池塘精养">池塘精养</option><option value="土塘">土塘</option><option value="粗放或半精养">粗放或半精养</option><option value="多营养级综合养殖(IMTA)">多营养级综合养殖(IMTA)</option><option value="其他">其他</option><option value="未说明">未说明</option></select>
+  <select id="fStatus"><option value="">全部状态</option><option value="pending">待确认</option><option value="merged">已并入主库</option><option value="ignored">已忽略</option></select>
+  <span style="font-size:12px;color:var(--c-muted)">当前显示 <b id="nlCount">0 篇</b></span>
+  <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <label style="display:flex;align-items:center;gap:4px;font-size:12.5px;cursor:pointer;color:var(--c-muted)"><input type="checkbox" id="nlSelAll" onchange="nlToggleAll(this.checked)"> 全选（仅待确认）</label>
+    <button class="btn btn-ghost btn-sm" id="nlBatchDel" onclick="nlBatchDel()">🗑 删除已选</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportNLCSV()">📥 导出 CSV</button>
+  </span>
+</div>
+<div id="nlList"><div class="nl-card pending" data-id="NL-20260908-01" data-src="期刊官网" data-farm="工厂化循环水" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-01" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260908-01</span> <span class="tag warn nl-status" data-id="NL-20260908-01">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-08T15:40:23+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">两种循环水养殖模式的凡纳滨对虾生长和水质比较研究</h3>
+  <div class="nl-meta">袁新程; 徐嘉波; 施永海; 刘永士; 张峰 · 上海市水产研究所 / 上海市水产技术推广站 · 期刊论文 · 2026 · 水产科技情报（DOI 前缀 1007-9580）</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：工厂化循环水</span>
+    <span class="tag info">拟入主表：水质参数与生长参数对应数据</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">工厂化循环水</span><span class="tag">生长</span><span class="tag">水质</span><span class="tag">池塘大棚循环水</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>特定生长率</td><td>室外池塘大棚循环水</td><td>2.05 %/d</td><td>与室内相同初始规格/密度</td></tr><tr><td>收捕体重</td><td>室内工厂化循环水</td><td>11.03±2.60 g</td><td>收捕体长9.50±0.81 cm</td></tr><tr><td>存活率</td><td>两模式</td><td>≥80.9%</td><td>试验全程</td></tr><tr><td>TN/TP与NO3--N</td><td>室外 vs 室内</td><td>室外显著低于室内</td><td>养殖后期</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 对比室外池塘大棚循环水与室内工厂化循环水两种模式（相同初始规格/密度/时长）下凡纳滨对虾生长与水质变化。两模式体质量特定生长率均超1.62%/d，室外更快（2.05%/d）；室外收捕体长10.17±0.76 cm、体重12.98±2.27 g，室内体长9.50±0.81 cm、体重11.03±2.60 g，存活率均≥80.9%。TAN/NO2--N/NO3--N/CODMn/TN/TP两模式差异明显，室外TN/TP及后期NO3--N显著低于室内。</div>
+  <div class="nl-reason">🎯 入选理由：直接命中：水质参数 + 生长参数同批对应数据，模式属工厂化循环水（可并入循环水/水质-生长对应表）</div>
+  <div class="nl-hint" data-id="NL-20260908-01"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.agrijournal.com.cn/article/detail/2CF69B42-6E1D-4FE3-A228-34FE3A343C4A" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.26958/j.cnki.1007-9580.2026.01.006</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-01">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-01">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-01" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-02" data-src="期刊官网" data-farm="池塘精养" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-02" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260908-02</span> <span class="tag warn nl-status" data-id="NL-20260908-02">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-08T15:40:23+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">福建省凡纳滨对虾养殖现状、技术创新与发展策略</h3>
+  <div class="nl-meta">黄永春; 林楠; 李国勇 等 · 集美大学水产学院 / 福建省水产技术推广总站 · 期刊论文 · 2026 · 渔业研究 2026,48(3):427-436</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：池塘精养</span>
+    <span class="tag info">拟入主表：调研与养殖试验数据</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">福建</span><span class="tag">养殖现状</span><span class="tag">养殖模式</span><span class="tag">产业调查</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>养殖总产量</td><td>福建省 2024</td><td>26.14×10^7 kg（占全国11.01%，第4）</td><td>海水+淡水</td></tr><tr><td>海水单位面积产量</td><td>福建省 2024</td><td>14.14×10^3 kg/hm2</td><td>较2014年提高79.22%</td></tr><tr><td>虾苗产量</td><td>福建省 2024</td><td>753.73亿尾（占全国6.62%）</td><td>凡纳滨对虾苗占全省70%以上</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 基于2014—2024年福建对虾产业数据+问卷/实地调查，系统分析凡纳滨对虾苗种、养殖模式、产量、技术与发展策略。2024年全省对虾苗产量753.73亿尾（占全国6.62%）；凡纳滨对虾养殖总产量26.14×10^7 kg（占全国11.01%，第4位）；海水养殖单位面积年产量14.14×10^3 kg/hm2，较2014年提高79.22%。特色模式包括“白+黑”生态轮养、池塘工程化、连续多茬等，并采用水质实时监控+生态调水+智能投饵。</div>
+  <div class="nl-reason">🎯 入选理由：产业宏观数据+模式/技术调查，拟入「调研与养殖试验数据」，需人工确认列映射；含产量、单产、苗种等可并入调研统计</div>
+  <div class="nl-hint" data-id="NL-20260908-02"></div>
+  <div class="nl-foot">
+    <div><a href="http://www.hyyysci.com/cn/article/doi/10.14012/j.jfr.2025136" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.14012/j.jfr.2025136</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-02">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-02">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-02" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-03" data-src="期刊官网" data-farm="其他" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-03" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260908-03</span> <span class="tag warn nl-status" data-id="NL-20260908-03">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-08T15:40:23+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">草鱼-多茬凡纳滨对虾生态养殖的水质变化和鱼虾生长特性</h3>
+  <div class="nl-meta">梅泊承; 徐嘉波; 施永海; 刘永士; 蒋飞; 袁新程; 杨明; 贾垂攀; 林威港; 孙卓 · 上海市水产研究所 / 上海市水产技术推广站 · 期刊论文 · 2025 · 浙江大学学报（农业与生命科学版）</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：其他</span>
+    <span class="tag info">拟入主表：水质参数与生长参数对应数据</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">草鱼混养</span><span class="tag">生长模型</span><span class="tag">水质</span><span class="tag">生态养殖</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>生长模型</td><td>第1茬</td><td>体长/体重均Logistic R2&gt;0.96</td><td>3平行塘</td></tr><tr><td>生长拐点</td><td>第1茬</td><td>49.54 d(6.83 cm) / 55.91 d(6.44 g)</td><td>体长/体重拐点</td></tr><tr><td>生长拐点</td><td>第2茬</td><td>13.76 d(3.70 cm) / 15.95 d(2.60 g)</td><td>受高温与底质影响生长逊于第1茬</td></tr><tr><td>TAN/TN/TP</td><td>草鱼-对虾混养</td><td>先升后降，全程未超排放限值</td><td>养殖全程</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 草鱼与2茬凡纳滨对虾混养（3平行塘）生态试验：第1茬对虾体长/体重最优模型为Logistic（R2&gt;0.96），第2茬体长Gompertz（R2&gt;0.97）、体重Logistic（R2&gt;0.94）；第1茬体长、体重拐点49.54 d（6.83 cm）与55.91 d（6.44 g），第2茬13.76 d（3.70 cm）与15.95 d（2.60 g）。各塘TAN/TN/TP先升后降且全程未超养殖排放标准限值，水温符合正弦变化，说明鱼虾混养利于水体自净。</div>
+  <div class="nl-reason">🎯 入选理由：命中：生长参数（多茬混养生长模型/拐点）+ 水质变化（TAN/TN/TP不超标），可并入水质-生长对应表；养殖模式为鱼虾多茬生态混养</div>
+  <div class="nl-hint" data-id="NL-20260908-03"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.academax.com/doi/10.3785/j.issn.1008-9209.2025.11.092" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.3785/j.issn.1008-9209.2025.11.092</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-03">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-03">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-03" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-04" data-src="Google Scholar" data-farm="其他" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-04" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260908-04</span> <span class="tag warn nl-status" data-id="NL-20260908-04">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-08T15:40:23+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Sustainability Status of Vannamei Shrimp (Litopenaeus vannamei) Aquaculture in Millennial Pond Model</h3>
+  <div class="nl-meta">Prayitno A G; Purnomo S; Purnomo P 等 · Diponegoro University / BBPBAP Jepara, Indonesia · 期刊论文 · 2025 · Journal of Aquaculture and Fish Health 2025,14(3):321-335</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：Google Scholar</span>
+    <span class="tag success">养殖平台/模式：其他</span>
+    <span class="tag info">拟入主表：环境影响</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">Millennial Pond</span><span class="tag">可持续性</span><span class="tag">MDS</span><span class="tag">印尼</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>综合可持续指数</td><td>千年塘模式</td><td>88.94（很可持续）</td><td>MDS多维标度</td></tr><tr><td>分维度</td><td>生态/经济/社会/技术/法规</td><td>88.39 / 81.05 / 75.25 / 99.996 / 99.996</td><td>2024-10至12月调查</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 以印尼哲帕拉（Jepara）BBPBAP“千年塘”（Millennial Pond，塘中央设集污点以降低病毒致病风险）凡纳滨对虾养殖为对象，用MDS多维标度分析生态/经济/社会/技术/法规5个维度的可持续性（2024年10-12月调查）。综合可持续指数88.94（很可持续）；分维度：生态88.39、经济81.05、社会75.25、技术99.996、法规99.996。杠杆分析识别关键敏感属性（病害、土地利用率与适宜性、价格趋势、市场、养殖利润等）。</div>
+  <div class="nl-reason">🎯 入选理由：命中：养殖可持续性/生态-经济评价，可对应「环境影响」（生态维度）并备选「经济效益分析」；含模式设计与关键制约因素，供人工确认归表</div>
+  <div class="nl-hint" data-id="NL-20260908-04"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.mendeley.com/catalogue/25385ae7-81ec-3db1-b31e-93e435931e05" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.20473/jafh.v14i3.73619</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-04">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-04">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-04" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-05" data-src="期刊官网" data-farm="土塘" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-05" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260908-05</span> <span class="tag warn nl-status" data-id="NL-20260908-05">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-08T15:40:23+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Risk and Income Analysis of Vaname Shrimp Cultivation Business (Litopenaeus vannamei) in Bantan District, Bengkalis Regency</h3>
+  <div class="nl-meta">Sarah M; Arief H; Yanti C W · Universitas Riau, Indonesia · 期刊论文 · 2025 · Jurnal Perikanan dan Kelautan 2025,30(2):261-267</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：土塘</span>
+    <span class="tag info">拟入主表：经济效益分析</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">收入分析</span><span class="tag">风险</span><span class="tag">印度尼西亚</span><span class="tag">养殖经济</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>平均收入</td><td>Bantan区 2025调查</td><td>IDR 614,516,253/ha</td><td>26名养殖户</td></tr><tr><td>产量风险CV</td><td>Bantan区</td><td>0.0887</td><td>风险较低</td></tr><tr><td>收入风险CV</td><td>Bantan区</td><td>0.1139</td><td>风险较低</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 2025年4月对印尼廖内省Bengkalis Bantan区26名凡纳滨对虾养殖户调查：平均产量660,558.85 kg/Ha（原文口径，疑为单位笔误，需核实），平均收入IDR 614,516,253/Ha；产量风险变异系数0.0887、收入风险变异系数0.1139，风险总体较低。</div>
+  <div class="nl-reason">🎯 入选理由：命中：养殖收入/风险分析，可并入「经济效益分析」；为国外（印尼）经济数据，注意币种与口径</div>
+  <div class="nl-hint" data-id="NL-20260908-05"></div>
+  <div class="nl-foot">
+    <div><a href="https://sociora.ejournal.unri.ac.id/index.php/jpk/article/view/2842" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.31258/jpk.30.2.261-267</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-05">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-05">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-05" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-01" data-src="期刊官网" data-farm="未说明" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-01" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-01</span> <span class="tag warn nl-status" data-id="NL-20260909-01">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T07:50:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Dietary Rosmarinic Acid Improved the Growth, Immunity and Antioxidation of Litopenaeus vannamei</h3>
+  <div class="nl-meta">Yuting Xu; Shunxiao Shi; Beiping Tan; Xiaoqin Li; Xiangjun Leng · 上海海洋大学 / 广东海洋大学 · 期刊论文 · 2026 · Animals 2026, 16(17):2767 (MDPI, OA)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：未说明</span>
+    <span class="tag info">拟入主表：生长参数</span>
+    <span class="tag">迷迭香酸</span><span class="tag">饲料添加剂</span><span class="tag">生长</span><span class="tag">免疫</span><span class="tag">抗氧化</span><span class="tag">凡纳滨对虾</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>增重率/FCR</td><td>RA450 (450 mg/kg)</td><td>增重更高，FCR 显著降低</td><td>8 周试验，初始 1.80±0.03 g</td></tr><tr><td>免疫酶活性</td><td>RA450</td><td>ACP/ACH50/LZM/AKP 显著升高</td><td>血清</td></tr><tr><td>抗氧化</td><td>RA450</td><td>SOD/T-AOC 升高，MDA 降低</td><td>肝胰脏</td></tr><tr><td>抗病力</td><td>RA450</td><td>副溶血弧菌抗性增强</td><td>攻毒试验</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 8 周养殖试验（初始体重 1.80±0.03 g）评估迷迭香酸（RA）饲料添加剂：RA450 组（450 mg/kg）增重更高、FCR 显著降低；血清 ACP/ACH50/LZM/AKP 与肝胰脏 SOD/T-AOC 显著升高、MDA 降低；对副溶血弧菌抗性增强，并附肝胰脏转录组分析。2026-09-03 上线，属近一周最新文献。</div>
+  <div class="nl-reason">🎯 入选理由：命中：生长参数（增重率/FCR）+ 免疫抗氧化指标；近一周新文，OA 全文可直接提取数值</div>
+  <div class="nl-hint" data-id="NL-20260909-01"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.3390/ani16172767" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.3390/ani16172767</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-01">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-01">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-01" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-02" data-src="Google Scholar" data-farm="工厂化生物絮团" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-02" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-02</span> <span class="tag warn nl-status" data-id="NL-20260909-02">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T07:50:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Dose-dependent supplementation of Schizochytrium in the biofloc system modulates dual microbiomes to enhance growth and survival in Pacific white shrimp (Litopenaeus vannamei)</h3>
+  <div class="nl-meta">Zhi Li; Xiaohan Li; Buwen Sun; Hongwei Wu; Jingyi Zhang; Xiulin Wan; Baohua Zhao; Nasi Xiao; Zhen Qi; Qingyang Li; Haiyan Liu · 河北师范大学 等 · 期刊论文 · 2026 · Frontiers in Microbiology 17:1867320 (OA)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：Google Scholar</span>
+    <span class="tag success">养殖平台/模式：工厂化生物絮团</span>
+    <span class="tag info">拟入主表：生物絮团养殖</span>
+    <span class="tag">裂殖壶菌</span><span class="tag">生物絮团</span><span class="tag">微生物组</span><span class="tag">生长</span><span class="tag">存活率</span><span class="tag">凡纳滨对虾</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>生长性能/饲料效率</td><td>高剂量 10⁶ cells/mL</td><td>显著提升</td><td>与对照及低剂量组比</td></tr><tr><td>存活率</td><td>高剂量组</td><td>进一步增加</td><td>养殖全程</td></tr><tr><td>消化基因</td><td>高剂量组</td><td>胰蛋白酶/脂肪酶上调</td><td>肝胰脏/肠道</td></tr><tr><td>絮团有益菌</td><td>高剂量组</td><td>Aureispira、Marivita 富集</td><td>絮团微生物组</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 生物絮团系统中补施裂殖壶菌（Schizochytrium，10³ vs 10⁶ cells/mL vs 清水对照）的剂量依赖试验：高剂量组生长性能与饲料效率提升、存活率进一步增加；上调胰蛋白酶/脂肪酶等消化基因与溶菌酶/penaeidin 3a 抗菌基因；絮团中富集 Aureispira、Marivita 等有益菌属，同时调控絮团与肠道双微生物组。</div>
+  <div class="nl-reason">🎯 入选理由：直接命中：生物絮团养殖（絮团微生物组+剂量效应）+ 生长/存活数据，OA 全文</div>
+  <div class="nl-hint" data-id="NL-20260909-02"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.3389/fmicb.2026.1867320" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.3389/fmicb.2026.1867320</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-02">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-02">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-02" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-03" data-src="期刊官网" data-farm="其他" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-03" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-03</span> <span class="tag warn nl-status" data-id="NL-20260909-03">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T07:50:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Increasing Production and Reducing Costs through Aquamimicry Approach in Litopenaeus vannamei Farming in Gomishan</h3>
+  <div class="nl-meta">Mostafa Kordkatouli; Hossein Chitsaz; Reza Akrami; Tahereh Bagheri · Islamic Azad University 等, Iran · 期刊论文 · 2026 · Journal of Utilization and Cultivation of Aquatics（在线优先）</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：其他</span>
+    <span class="tag info">拟入主表：水质参数与生长参数对应数据</span>
+    <span class="tag">仿生态系统</span><span class="tag">Aquamimicry</span><span class="tag">水质</span><span class="tag">生长</span><span class="tag">成本</span><span class="tag">伊朗</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>FCR</td><td>仿生态 vs 对照</td><td>1.26 vs 1.51</td><td>120 天养殖</td></tr><tr><td>总生物量</td><td>仿生态组</td><td>+44.4%</td><td>相对对照</td></tr><tr><td>单位生产成本</td><td>仿生态组</td><td>-25.4%</td><td>相对对照</td></tr><tr><td>DO/pH</td><td>仿生态组</td><td>DO 6.5 mg/L 更稳；pH 7.6-8.1</td><td>全程监测</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 伊朗 Gomishan 120 天高密度养殖试验（PL12，20 尾/m²）：对照组（商品料+常规换水）vs 仿生态组（发酵米糠 16 kg + 益生菌 14 L + 20% 换水）。仿生态组 DO 更稳（6.5 vs 6.2 mg/L）、pH 稳定 7.6-8.1、TSS 下降；生长显著更优，FCR 1.26 vs 1.51，总生物量 +44.4%，单位生产成本 -25.4%。</div>
+  <div class="nl-reason">🎯 入选理由：命中：水质-生长对应数据（DO/pH/TSS vs 生长）+ 经济数据（FCR/生物量/成本），仿生态模式</div>
+  <div class="nl-hint" data-id="NL-20260909-03"></div>
+  <div class="nl-foot">
+    <div><a href="https://japu.gau.ac.ir/article_7718.html" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.22069/japu.2026.24704.2021</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-03">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-03">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-03" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-04" data-src="ScienceDirect" data-farm="工厂化生物絮团" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-04" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-04</span> <span class="tag warn nl-status" data-id="NL-20260909-04">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T07:50:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Effects of different sources of dietary non-starch polysaccharides on Pacific white shrimp (Litopenaeus vannamei) performance, water quality and biofloc nutritional and microbial composition</h3>
+  <div class="nl-meta">Apriana Vinasyiam; Julie Ekasari; Fotini Kokou; Johan W. Schrama; Marc C.J. Verdegem · Bogor Agricultural University / Wageningen University 等 · 期刊论文 · 2026 · Aquaculture (Elsevier)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：ScienceDirect</span>
+    <span class="tag success">养殖平台/模式：工厂化生物絮团</span>
+    <span class="tag info">拟入主表：生物絮团养殖</span>
+    <span class="tag">非淀粉多糖</span><span class="tag">NSP</span><span class="tag">生物絮团</span><span class="tag">碳源</span><span class="tag">水质</span><span class="tag">饲料</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>碳源添加</td><td>NSP 日粮组</td><td>可免除额外碳源添加</td><td>与淀粉对照水质等同</td></tr><tr><td>蛋白含量</td><td>等氮投喂组</td><td>虾体与絮团蛋白提高</td><td>等氮处理</td></tr><tr><td>虾性能</td><td>各 NSP 处理</td><td>无显著差异</td><td>NSP 类型间比较</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 30 天消化率 + 42 天生长试验，5 个处理（等氮/等量 × 难/中发酵 NSP 日粮 + 淀粉对照）：NSP 日粮可免除絮团系统额外碳源添加，水质维持与淀粉日粮等同；等氮投喂提高虾与絮团蛋白含量；NSP 类型对虾性能无显著影响。对降低絮团碳源成本有直接参考价值。</div>
+  <div class="nl-reason">🎯 入选理由：命中：生物絮团养殖（碳源策略/絮团营养与微生物组成）+ 水质维持数据</div>
+  <div class="nl-hint" data-id="NL-20260909-04"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.1016/j.aquaculture.2026.743854" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.1016/j.aquaculture.2026.743854</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-04">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-04">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-04" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-05" data-src="期刊官网" data-farm="其他" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-05" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-05</span> <span class="tag warn nl-status" data-id="NL-20260909-05">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T07:50:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Life Cycle Assessment and Life Cycle Costing of a Greenhouse Culture Model for Litopenaeus vannamei</h3>
+  <div class="nl-meta">Yuzhen Wang; Zhao Chen; Jiajia Wang; Zhiqiang Chang; Shuangyong Zhang; Jian Li · 中国水产科学研究院 等 · 期刊论文 · 2026 · Fishes 2026, 11(3):131 (MDPI, OA)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：其他</span>
+    <span class="tag info">拟入主表：环境成本及效率</span>
+    <span class="tag">生命周期评价</span><span class="tag">LCA</span><span class="tag">全生命周期成本</span><span class="tag">温室养殖</span><span class="tag">环境排放</span><span class="tag">经济效益</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>全生命周期成本</td><td>温室养殖</td><td>3.56 USD/kg</td><td>LCC 核算</td></tr><tr><td>净利/成本利润率</td><td>温室养殖</td><td>5.31 USD/m²/周期；60.47%</td><td>高于室内超集约 ISIC</td></tr><tr><td>GWP</td><td>温室养殖</td><td>3.279 kg CO₂eq/kg</td><td>LCA</td></tr><tr><td>AP/EP</td><td>温室养殖</td><td>0.369 kg SO₂eq/kg；0.212 kg PO₄eq/kg</td><td>LCA</td></tr><tr><td>成本结构</td><td>单周期</td><td>3510.76 USD/栋（饲料30.54%/地租15.86%）</td><td>建设成本 4.58 USD/m²</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 基于实地调研与企业生产记录的温室养虾全生命周期评价：全生命周期成本 3.56 USD/kg；建设成本 4.58 USD/m²（钢管+薄膜为主）；单周期养殖成本 3510.76 USD/栋（饲料 30.54%、地租 15.86%）；净利 5.31 USD/m²/周期，成本利润率 60.47%（显著高于室内超集约 ISIC）。环境：GWP 3.279 kg CO₂eq/kg、AP 0.369 kg SO₂eq、EP 0.212 kg PO₄eq/kg。</div>
+  <div class="nl-reason">🎯 入选理由：命中：环境成本及效率（LCA/LCC 双口径）+ 成本构成明细 + 产污当量（GWP/AP/EP），主库稀缺数据</div>
+  <div class="nl-hint" data-id="NL-20260909-05"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.3390/fishes11030131" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.3390/fishes11030131</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-05">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-05">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-05" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-06" data-src="期刊官网" data-farm="工厂化循环水" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-06" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-06</span> <span class="tag warn nl-status" data-id="NL-20260909-06">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:00:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">低盐度循环水模式下养殖密度对凡纳对虾生长及生理指标的影响</h3>
+  <div class="nl-meta">陈晓瑛; 黄宣瑜; 鲁慧杰; 赵吉臣; 黄文; 郭慧; 孙育平 · 广东省农业科学院动物科学研究所 / 农业农村部华南动物营养与饲料重点实验室 / 广东海洋大学水产学院 · 期刊论文 · 2026 · 渔业科学进展 2026, 47(5)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：工厂化循环水</span>
+    <span class="tag info">拟入主表：水质参数与生长参数对应数据</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">低盐度</span><span class="tag">循环水</span><span class="tag">养殖密度</span><span class="tag">生长</span><span class="tag">饲料系数</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>特定生长率/增重率</td><td>M90 (300 ind./m³)</td><td>显著最低</td><td>49 d</td></tr><tr><td>存活率</td><td>M60 (200 ind./m³)</td><td>最高</td><td>49 d</td></tr><tr><td>饲料系数(FCR)</td><td>M60</td><td>最低</td><td>49 d</td></tr><tr><td>适宜密度</td><td>低盐度循环水</td><td>60 尾/300 L（约 200 ind./m³）</td><td>盐度 3.5±0.5</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 在盐度 3.5±0.5 的循环水系统（RAS）中，以初始体质量 1.04±0.01 g 的凡纳对虾幼虾设置 30/45/60/75/90 尾/300 L（100–300 ind./m³）5 个密度组，养殖 49 d。随密度升高，终末体长、日增体长、体长增长率、终末体质量、日增重、增重率及特定生长率均显著下降，M90 组最低；M60 组存活率最高且 FCR 最低。综合生长、饲料利用和免疫抗氧化响应，60 尾/300 L（约 200 ind./m³）为该低盐度循环水条件下较适宜密度。</div>
+  <div class="nl-reason">🎯 入选理由：命中：工厂化循环水模式下养殖密度对生长、饲料利用、血清生化及免疫抗氧化指标的影响，可并入「水质参数与生长参数对应数据」或「基础设施与饲养」。</div>
+  <div class="nl-hint" data-id="NL-20260909-06"></div>
+  <div class="nl-foot">
+    <div><a href="https://journal.yykxjz.cn/yykxjz/article/html/20260506" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.3969/j.issn.2095-9869.20251117002</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-06">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-06">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-06" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-07" data-src="ScienceDirect" data-farm="工厂化循环水" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-07" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-07</span> <span class="tag warn nl-status" data-id="NL-20260909-07">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:00:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Assessment of carrying capacity and management practices for Litopenaeus vannamei industrialized aquaculture based on an ecosystem model</h3>
+  <div class="nl-meta">Kaiyang Jiang; Teng Jiang; Shipeng Dong; Fang Wang · 中国水产科学研究院 / 崂山实验室 / 德国 GEOMAR 亥姆霍兹海洋研究中心等 · 期刊论文 · 2026 · Aquaculture 613 (2026)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：ScienceDirect</span>
+    <span class="tag success">养殖平台/模式：工厂化循环水</span>
+    <span class="tag info">拟入主表：环境影响</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">工厂化循环水</span><span class="tag">承载力</span><span class="tag">尾水</span><span class="tag">氮磷</span><span class="tag">生态系统模型</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>承载力</td><td>幼虾(体长 4.24±0.37 cm)</td><td>409 ind·m⁻²</td><td>基于尾水排放标准</td></tr><tr><td>产量降幅/经济效益降幅</td><td>当前密度 880 vs 承载力</td><td>53.5% / 71.5%</td><td>模型模拟</td></tr><tr><td>尾水处理后承载力</td><td>尾水处理技术</td><td>1193 ind·m⁻²</td><td>模型优化</td></tr><tr><td>经济效益/尾水排放</td><td>尾水处理</td><td>+33.5% / -26.2%</td><td>单位产量</td></tr><tr><td>总氮/总磷排放削减</td><td>尾水处理</td><td>-48.2% / -49.0%</td><td>相对当前</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 构建凡纳滨对虾工厂化养殖生态系统模型，模拟生长及氮磷动态；以尾水氮磷排放标准评估系统承载力。幼虾（体长 4.24±0.37 cm）承载力为 409 ind·m⁻²；相比当前放养密度 880 ind·m⁻²，产量和经济效益分别下降 53.5% 和 71.5%。提升饲料质量、增加换水、采用尾水处理技术可分别将承载力提升至 449/593/1193 ind·m⁻²；尾水处理可使经济效益提高 33.5%，单位产量尾水排放减少 26.2%，总氮/总磷排放分别减少 48.2% 和 49.0%。</div>
+  <div class="nl-reason">🎯 入选理由：命中：工厂化循环水养殖承载力、尾水排放与氮磷污染当量，可并入「环境影响」「产污与污染当量」及「经济效益分析」。</div>
+  <div class="nl-hint" data-id="NL-20260909-07"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.sciencedirect.com/science/article/pii/S0044848625013390" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.1016/j.aquaculture.2025.743453</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-07">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-07">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-07" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-08" data-src="期刊官网" data-farm="工厂化生物絮团" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-08" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-08</span> <span class="tag warn nl-status" data-id="NL-20260909-08">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:00:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Effects of Low-Salinity Condition on Water Quality and Phytoplankton Community in Biofloc-Based Litopenaeus vannamei Culture Ponds</h3>
+  <div class="nl-meta">Alfina Pagita Larasati; Mohammad Mahmudi; Asus Maizar Suryanto Hertika; Mohammad Musa; Sunadji; Evellin Dewi Lusiana · Universitas Brawijaya / Universitas Nusa Cendana, Indonesia · 期刊论文 · 2026 · International Journal of Design &amp; Nature and Ecodynamics (IJDNE), 2026</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：期刊官网</span>
+    <span class="tag success">养殖平台/模式：工厂化生物絮团</span>
+    <span class="tag info">拟入主表：水质参数数据</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">生物絮团</span><span class="tag">低盐度</span><span class="tag">水质</span><span class="tag">浮游植物</span><span class="tag">群落稳定性</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>氨氮</td><td>低盐度 vs 正常盐度</td><td>0.067±0.044 vs 1.114±0.753 mg/L</td><td>90 d</td></tr><tr><td>透明度</td><td>低盐度 vs 正常盐度</td><td>18.08±3.77 vs 37.21±7.93 cm</td><td>90 d</td></tr><tr><td>群落稳定性</td><td>低盐度 vs 正常盐度</td><td>4.40–5.28 vs 1.82–2.75</td><td>90 d</td></tr><tr><td>物种周转率</td><td>低盐度 vs 正常盐度</td><td>0.21 vs 0.25</td><td>90 d</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 90 d 养殖试验比较低盐度与正常盐度生物絮团池塘的水质与浮游植物群落。低盐度组氨氮（0.067±0.044 vs 1.114±0.753 mg/L）和透明度（18.08±3.77 vs 37.21±7.93 cm）显著低于正常盐度组，硝酸盐和总有机物也更低。低盐度池塘浮游植物群落更稳定（4.40–5.28 vs 1.82–2.75）、物种周转率更低（0.21 vs 0.25），群落以 Bacillariophyceae 为主。</div>
+  <div class="nl-reason">🎯 入选理由：命中：生物絮团养殖模式下盐度对水质（氨氮、透明度、硝酸盐、TOM）及浮游植物群落的影响，可并入「水质参数数据」。</div>
+  <div class="nl-hint" data-id="NL-20260909-08"></div>
+  <div class="nl-foot">
+    <div><a href="https://iieta.org/node/23808" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.18280/ijdne.210607</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-08">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-08">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-08" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-09" data-src="ScienceDirect" data-farm="工厂化生物絮团" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-09" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-09</span> <span class="tag warn nl-status" data-id="NL-20260909-09">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:00:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Quorum sensing mediates spatiotemporal microbial community dynamics and nitrogen metabolism in biofloc-based Litopenaeus vannamei aquaculture systems</h3>
+  <div class="nl-meta">Ni Liu; Yuhang Zhang; Yuanshuai Zhang; Yun Yang; Hao Long; Aiyou Huang; Yanhua Zeng; Zhenyu Xie · 海南大学海洋学院 / 热带海洋生物资源利用与保护教育部重点实验室 / 海南大学文昌先进渔业研究院等 · 期刊论文 · 2026 · Bioresource Technology 440 (2026)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：ScienceDirect</span>
+    <span class="tag success">养殖平台/模式：工厂化生物絮团</span>
+    <span class="tag info">拟入主表：生物絮团养殖</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">生物絮团</span><span class="tag">群体感应</span><span class="tag">微生物组</span><span class="tag">氮代谢</span><span class="tag">反硝化</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>亚硝酸盐下降</td><td>生物絮团系统</td><td>1.21 → 0.03 mg/L</td><td>下降阶段</td></tr><tr><td>优势门</td><td>生物絮团</td><td>Pseudomonadota / Actinomycetota / Bacteroidota</td><td>82 d 全程</td></tr><tr><td>氮代谢基因富集</td><td>生物絮团 vs 水体</td><td>反硝化/异化硝酸盐还原基因更丰</td><td>宏基因组</td></tr><tr><td>QS 通路</td><td>初始/稳定期</td><td>AHLs+AI-2 / AHKs+c-di-GMP</td><td>时间异质性</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 82 d 生物絮团养殖系统微生物群落与氮代谢研究。氨氮和亚硝酸盐经历初始、上升、下降和稳定 4 个阶段，亚硝酸盐从 1.21 mg/L 快速降至 0.03 mg/L。Pseudomonadota、Actinomycetota 和 Bacteroidota 为优势门；群体感应（QS）通路呈时间异质性：AHLs/AI-2 在初始期占优势，AHKs/c-di-GMP 在稳定期富集。反硝化和异化硝酸盐还原基因显著富集，QS 信号协调 30 个优势菌属（如 Amaricoccus、Ruegeria）的碳氮硫代谢互作网络。</div>
+  <div class="nl-reason">🎯 入选理由：命中：生物絮团养殖系统微生物组动态、群体感应与氮代谢（脱氮）机制，可并入「生物絮团养殖」和「产污与污染当量」。</div>
+  <div class="nl-hint" data-id="NL-20260909-09"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.sciencedirect.com/science/article/pii/S0960852425014269" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.1016/j.biortech.2025.133459</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-09">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-09">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-09" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-10" data-src="ScienceDirect" data-farm="工厂化循环水" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-10" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-10</span> <span class="tag warn nl-status" data-id="NL-20260909-10">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:00:00+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Optimizing shrimp growth and water quality in constructed wetland recirculating aquaculture systems: Effects of stocking density and shrimp size</h3>
+  <div class="nl-meta">Meimei Hu; Yanyan Wang; Jianlei Chen; Hongwu Cui; Shengmin Zhu; Tongtong Jin; Keming Qu; Zhengguo Cui · 中国水产科学研究院黄海水产研究所 / 青岛海洋科学与技术国家实验室等 · 期刊论文 · 2026 · Aquaculture 612 (2026)</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：ScienceDirect</span>
+    <span class="tag success">养殖平台/模式：工厂化循环水</span>
+    <span class="tag info">拟入主表：水质参数与生长参数对应数据</span>
+    <span class="tag">凡纳滨对虾</span><span class="tag">循环水养殖系统</span><span class="tag">人工湿地</span><span class="tag">养殖密度</span><span class="tag">虾规格</span><span class="tag">水质净化</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>指标</th><th>模式/组别</th><th>值</th><th>条件</th></tr></thead><tbody><tr><td>系统面积/养殖周期</td><td>湿地-RAS</td><td>112 m² / 90 d</td><td>4 密度处理</td></tr><tr><td>大规格虾密度敏感性</td><td>9–16 cm / 1.16–3.67 g</td><td>灰色关联 0.819</td><td>密度效应更敏感</td></tr><tr><td>小规格虾密度敏感性</td><td>4–9 cm / 16.37–19.04 g</td><td>灰色关联 0.667</td><td>密度效应较不敏感</td></tr><tr><td>生长抑制密度</td><td>小规格虾</td><td>540 ind/m³ 显著抑制生长</td><td>90 d</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 112 m² 湿地-循环水养殖系统（RAS）90 d 养殖，设置 90/135/180/360 ind/m³ 四个密度。垂直流湿地对铵氮、亚硝氮和 COD 去除有效，去除效率随密度升高而提高；硝氮和磷去除则随密度升高而下降。大规格虾（9–16 cm；1.16–3.67 g）对密度效应更敏感（灰色关联 0.819），小规格虾（4–9 cm；16.37–19.04 g）敏感性较低（0.667）。高密度 540 ind/m³ 显著抑制小虾生长。</div>
+  <div class="nl-reason">🎯 入选理由：命中：湿地耦合 RAS 中密度与规格对水质净化及生长的交互影响，可并入「水质参数与生长参数对应数据」。</div>
+  <div class="nl-hint" data-id="NL-20260909-10"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.sciencedirect.com/science/article/pii/S0044848625011081" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.1016/j.aquaculture.2025.743222</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-10">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-10">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-10" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-11" data-src="其他" data-farm="未说明" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-11" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-11</span> <span class="tag warn nl-status" data-id="NL-20260909-11">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:23:24+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Microdroplet-based high-throughput screening for antagonistic bacteria targeting penaeid shrimp pathogenic Vibrio harveyi</h3>
+  <div class="nl-meta">Hajime Yuasa; Yuri Katayama; Kayo Konishi; Miho Furukawa; Reiko Nozaki; Hidehiro Kondo; Ikuo Hırono; Keiichiro Koiwai · 期刊论文 · 2026 · Scientific Reports</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：其他</span>
+    <span class="tag success">养殖平台/模式：未说明</span>
+    <span class="tag info">拟入主表：待定</span>
+    <span class="tag">对虾养殖</span>
+  </div>
+  
+  <div class="nl-summary">📄 Antagonistic bacteria that suppress the growth of specific bacteria have attracted attention as an antibiotics-independent strategy for infectious disease control in aquaculture. Microfluidics-based water-in-oil droplets (microdroplets) enable high-throughput screening of antagonistic bacteria in the field of medicine or agriculture. However, the use of this screening system in aquaculture has not yet been reported. In particular, penaeid shrimp aquaculture, one of the largest sectors of global aquaculture, has a strong demand for alternative disease control strategies because vaccination is i…</div>
+  <div class="nl-reason">🎯 入选理由：本机即时检索命中：标题/摘要含凡纳滨对虾（Litopenaeus vannamei）养殖相关主题，符合数据库收录范围；具体命中工作表需打开原文后人工确认。</div>
+  <div class="nl-hint" data-id="NL-20260909-11"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.1038/s41598-026-68242-x" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.1038/s41598-026-68242-x</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-11">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-11">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-11" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-12" data-src="其他" data-farm="未说明" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-12" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="勾选后可用上方「🗑 删除已选」批量删除"><span class="nl-badge">NL-20260909-12</span> <span class="tag warn nl-status" data-id="NL-20260909-12">待确认</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">发现时间 2026-09-09T08:55:02+08:00 · 轮次 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Production and economic performance of Penaeus vannamei Boone, 1931 cultured in HDPE-lined circular tanks across increasing stocking densities: a commercial case study</h3>
+  <div class="nl-meta">Eirnest D. S. R. Eliver; Lorriane F. C. Balandan · 期刊论文 · 2026 · Aquaculture Aquarium Conservation &amp; Legislation</div>
+  <div class="nl-tags">
+    <span class="tag primary">来源平台：其他</span>
+    <span class="tag success">养殖平台/模式：未说明</span>
+    <span class="tag info">拟入主表：待定</span>
+    <span class="tag">凡纳滨对虾</span>
+  </div>
+  
+  <div class="nl-summary">📄 The increasing demand for aquaculture production under limited land availability requires efficient intensive culture systems. This commercial case study evaluated the production performance and economic viability of whiteleg shrimp, Penaeus vannamei Boone, 1931, cultured in an HDPE-lined circular tank system under commercial farm conditions across three sequential production cycles with progressively increasing stocking densities (318-467 ind m⁻²). Progressive intensification was associated with higher biomass production, increasing total biomass from 1,500 to 2,015 kg and yield from 4.78 to …</div>
+  <div class="nl-reason">🎯 入选理由：本机即时检索命中：标题/摘要含凡纳滨对虾（Litopenaeus vannamei）养殖相关主题，符合数据库收录范围；具体命中工作表需打开原文后人工确认。</div>
+  <div class="nl-hint" data-id="NL-20260909-12"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.67784/0037" target="_blank" rel="noopener">🔗 打开原文</a> · <span class="num">DOI: 10.67784/0037</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-12">✅ 确认并入主库</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-12">忽略</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-12" title="从待确认区彻底删除此条">🗑 删除</button></div>
+  </div>
+</div></div><script>
+const NL_ITEMS = [{"id": "NL-20260908-01", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "两种循环水养殖模式的凡纳滨对虾生长和水质比较研究", "authors": "袁新程; 徐嘉波; 施永海; 刘永士; 张峰", "institution": "上海市水产研究所 / 上海市水产技术推广站", "year": 2026, "journal": "水产科技情报（DOI 前缀 1007-9580）", "pub_type": "期刊论文", "source_platform": "期刊官网", "farm_platform": "工厂化循环水", "target_sheet": "水质参数与生长参数对应数据", "doi": "10.26958/j.cnki.1007-9580.2026.01.006", "link": "https://www.agrijournal.com.cn/article/detail/2CF69B42-6E1D-4FE3-A228-34FE3A343C4A", "summary": "对比室外池塘大棚循环水与室内工厂化循环水两种模式（相同初始规格/密度/时长）下凡纳滨对虾生长与水质变化。两模式体质量特定生长率均超1.62%/d，室外更快（2.05%/d）；室外收捕体长10.17±0.76 cm、体重12.98±2.27 g，室内体长9.50±0.81 cm、体重11.03±2.60 g，存活率均≥80.9%。TAN/NO2--N/NO3--N/CODMn/TN/TP两模式差异明显，室外TN/TP及后期NO3--N显著低于室内。", "relevance_reason": "直接命中：水质参数 + 生长参数同批对应数据，模式属工厂化循环水（可并入循环水/水质-生长对应表）", "keywords": ["凡纳滨对虾", "工厂化循环水", "生长", "水质", "池塘大棚循环水"], "data_points": [{"指标": "特定生长率", "模式/组别": "室外池塘大棚循环水", "值": "2.05 %/d", "条件": "与室内相同初始规格/密度"}, {"指标": "收捕体重", "模式/组别": "室内工厂化循环水", "值": "11.03±2.60 g", "条件": "收捕体长9.50±0.81 cm"}, {"指标": "存活率", "模式/组别": "两模式", "值": "≥80.9%", "条件": "试验全程"}, {"指标": "TN/TP与NO3--N", "模式/组别": "室外 vs 室内", "值": "室外显著低于室内", "条件": "养殖后期"}], "status": "pending", "note": "试运行轮人工检索。收稿2025-08-08，2026年第1期刊出；并入前需对照原文核对数值与期刊卷期。"}, {"id": "NL-20260908-02", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "福建省凡纳滨对虾养殖现状、技术创新与发展策略", "authors": "黄永春; 林楠; 李国勇 等", "institution": "集美大学水产学院 / 福建省水产技术推广总站", "year": 2026, "journal": "渔业研究 2026,48(3):427-436", "pub_type": "期刊论文", "source_platform": "期刊官网", "farm_platform": "池塘精养", "target_sheet": "调研与养殖试验数据", "doi": "10.14012/j.jfr.2025136", "link": "http://www.hyyysci.com/cn/article/doi/10.14012/j.jfr.2025136", "summary": "基于2014—2024年福建对虾产业数据+问卷/实地调查，系统分析凡纳滨对虾苗种、养殖模式、产量、技术与发展策略。2024年全省对虾苗产量753.73亿尾（占全国6.62%）；凡纳滨对虾养殖总产量26.14×10^7 kg（占全国11.01%，第4位）；海水养殖单位面积年产量14.14×10^3 kg/hm2，较2014年提高79.22%。特色模式包括“白+黑”生态轮养、池塘工程化、连续多茬等，并采用水质实时监控+生态调水+智能投饵。", "relevance_reason": "产业宏观数据+模式/技术调查，拟入「调研与养殖试验数据」，需人工确认列映射；含产量、单产、苗种等可并入调研统计", "keywords": ["凡纳滨对虾", "福建", "养殖现状", "养殖模式", "产业调查"], "data_points": [{"指标": "养殖总产量", "模式/组别": "福建省 2024", "值": "26.14×10^7 kg（占全国11.01%，第4）", "条件": "海水+淡水"}, {"指标": "海水单位面积产量", "模式/组别": "福建省 2024", "值": "14.14×10^3 kg/hm2", "条件": "较2014年提高79.22%"}, {"指标": "虾苗产量", "模式/组别": "福建省 2024", "值": "753.73亿尾（占全国6.62%）", "条件": "凡纳滨对虾苗占全省70%以上"}], "status": "pending", "note": "试运行轮人工检索。2026年48卷3期在线（DOI已注册）；并入前建议确认原文正式页码。"}, {"id": "NL-20260908-03", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "草鱼-多茬凡纳滨对虾生态养殖的水质变化和鱼虾生长特性", "authors": "梅泊承; 徐嘉波; 施永海; 刘永士; 蒋飞; 袁新程; 杨明; 贾垂攀; 林威港; 孙卓", "institution": "上海市水产研究所 / 上海市水产技术推广站", "year": 2025, "journal": "浙江大学学报（农业与生命科学版）", "pub_type": "期刊论文", "source_platform": "期刊官网", "farm_platform": "其他", "target_sheet": "水质参数与生长参数对应数据", "doi": "10.3785/j.issn.1008-9209.2025.11.092", "link": "https://www.academax.com/doi/10.3785/j.issn.1008-9209.2025.11.092", "summary": "草鱼与2茬凡纳滨对虾混养（3平行塘）生态试验：第1茬对虾体长/体重最优模型为Logistic（R2>0.96），第2茬体长Gompertz（R2>0.97）、体重Logistic（R2>0.94）；第1茬体长、体重拐点49.54 d（6.83 cm）与55.91 d（6.44 g），第2茬13.76 d（3.70 cm）与15.95 d（2.60 g）。各塘TAN/TN/TP先升后降且全程未超养殖排放标准限值，水温符合正弦变化，说明鱼虾混养利于水体自净。", "relevance_reason": "命中：生长参数（多茬混养生长模型/拐点）+ 水质变化（TAN/TN/TP不超标），可并入水质-生长对应表；养殖模式为鱼虾多茬生态混养", "keywords": ["凡纳滨对虾", "草鱼混养", "生长模型", "水质", "生态养殖"], "data_points": [{"指标": "生长模型", "模式/组别": "第1茬", "值": "体长/体重均Logistic R2>0.96", "条件": "3平行塘"}, {"指标": "生长拐点", "模式/组别": "第1茬", "值": "49.54 d(6.83 cm) / 55.91 d(6.44 g)", "条件": "体长/体重拐点"}, {"指标": "生长拐点", "模式/组别": "第2茬", "值": "13.76 d(3.70 cm) / 15.95 d(2.60 g)", "条件": "受高温与底质影响生长逊于第1茬"}, {"指标": "TAN/TN/TP", "模式/组别": "草鱼-对虾混养", "值": "先升后降，全程未超排放限值", "条件": "养殖全程"}], "status": "pending", "note": "试运行轮人工检索。2025年11月在线（DOI已注册）；并入前需核对原文。"}, {"id": "NL-20260908-04", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Sustainability Status of Vannamei Shrimp (Litopenaeus vannamei) Aquaculture in Millennial Pond Model", "authors": "Prayitno A G; Purnomo S; Purnomo P 等", "institution": "Diponegoro University / BBPBAP Jepara, Indonesia", "year": 2025, "journal": "Journal of Aquaculture and Fish Health 2025,14(3):321-335", "pub_type": "期刊论文", "source_platform": "Google Scholar", "farm_platform": "其他", "target_sheet": "环境影响", "doi": "10.20473/jafh.v14i3.73619", "link": "https://www.mendeley.com/catalogue/25385ae7-81ec-3db1-b31e-93e435931e05", "summary": "以印尼哲帕拉（Jepara）BBPBAP“千年塘”（Millennial Pond，塘中央设集污点以降低病毒致病风险）凡纳滨对虾养殖为对象，用MDS多维标度分析生态/经济/社会/技术/法规5个维度的可持续性（2024年10-12月调查）。综合可持续指数88.94（很可持续）；分维度：生态88.39、经济81.05、社会75.25、技术99.996、法规99.996。杠杆分析识别关键敏感属性（病害、土地利用率与适宜性、价格趋势、市场、养殖利润等）。", "relevance_reason": "命中：养殖可持续性/生态-经济评价，可对应「环境影响」（生态维度）并备选「经济效益分析」；含模式设计与关键制约因素，供人工确认归表", "keywords": ["凡纳滨对虾", "Millennial Pond", "可持续性", "MDS", "印尼"], "data_points": [{"指标": "综合可持续指数", "模式/组别": "千年塘模式", "值": "88.94（很可持续）", "条件": "MDS多维标度"}, {"指标": "分维度", "模式/组别": "生态/经济/社会/技术/法规", "值": "88.39 / 81.05 / 75.25 / 99.996 / 99.996", "条件": "2024-10至12月调查"}], "status": "pending", "note": "试运行轮人工检索（2025年刊）。英文文献，并入前需核对作者全名与归表口径。"}, {"id": "NL-20260908-05", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Risk and Income Analysis of Vaname Shrimp Cultivation Business (Litopenaeus vannamei) in Bantan District, Bengkalis Regency", "authors": "Sarah M; Arief H; Yanti C W", "institution": "Universitas Riau, Indonesia", "year": 2025, "journal": "Jurnal Perikanan dan Kelautan 2025,30(2):261-267", "pub_type": "期刊论文", "source_platform": "期刊官网", "farm_platform": "土塘", "target_sheet": "经济效益分析", "doi": "10.31258/jpk.30.2.261-267", "link": "https://sociora.ejournal.unri.ac.id/index.php/jpk/article/view/2842", "summary": "2025年4月对印尼廖内省Bengkalis Bantan区26名凡纳滨对虾养殖户调查：平均产量660,558.85 kg/Ha（原文口径，疑为单位笔误，需核实），平均收入IDR 614,516,253/Ha；产量风险变异系数0.0887、收入风险变异系数0.1139，风险总体较低。", "relevance_reason": "命中：养殖收入/风险分析，可并入「经济效益分析」；为国外（印尼）经济数据，注意币种与口径", "keywords": ["凡纳滨对虾", "收入分析", "风险", "印度尼西亚", "养殖经济"], "data_points": [{"指标": "平均收入", "模式/组别": "Bantan区 2025调查", "值": "IDR 614,516,253/ha", "条件": "26名养殖户"}, {"指标": "产量风险CV", "模式/组别": "Bantan区", "值": "0.0887", "条件": "风险较低"}, {"指标": "收入风险CV", "模式/组别": "Bantan区", "值": "0.1139", "条件": "风险较低"}], "status": "pending", "note": "试运行轮人工检索（2025年刊）。论文原表产量数值疑似单位笔误，并入前必须核对原文。"}, {"id": "NL-20260909-01", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "期刊论文", "status": "pending", "title": "Dietary Rosmarinic Acid Improved the Growth, Immunity and Antioxidation of Litopenaeus vannamei", "authors": "Yuting Xu; Shunxiao Shi; Beiping Tan; Xiaoqin Li; Xiangjun Leng", "institution": "上海海洋大学 / 广东海洋大学", "year": 2026, "journal": "Animals 2026, 16(17):2767 (MDPI, OA)", "source_platform": "期刊官网", "farm_platform": "未说明", "target_sheet": "生长参数", "doi": "10.3390/ani16172767", "link": "https://doi.org/10.3390/ani16172767", "summary": "8 周养殖试验（初始体重 1.80±0.03 g）评估迷迭香酸（RA）饲料添加剂：RA450 组（450 mg/kg）增重更高、FCR 显著降低；血清 ACP/ACH50/LZM/AKP 与肝胰脏 SOD/T-AOC 显著升高、MDA 降低；对副溶血弧菌抗性增强，并附肝胰脏转录组分析。2026-09-03 上线，属近一周最新文献。", "relevance_reason": "命中：生长参数（增重率/FCR）+ 免疫抗氧化指标；近一周新文，OA 全文可直接提取数值", "keywords": ["迷迭香酸", "饲料添加剂", "生长", "免疫", "抗氧化", "凡纳滨对虾"], "data_points": [{"指标": "增重率/FCR", "模式/组别": "RA450 (450 mg/kg)", "值": "增重更高，FCR 显著降低", "条件": "8 周试验，初始 1.80±0.03 g"}, {"指标": "免疫酶活性", "模式/组别": "RA450", "值": "ACP/ACH50/LZM/AKP 显著升高", "条件": "血清"}, {"指标": "抗氧化", "模式/组别": "RA450", "值": "SOD/T-AOC 升高，MDA 降低", "条件": "肝胰脏"}, {"指标": "抗病力", "模式/组别": "RA450", "值": "副溶血弧菌抗性增强", "条件": "攻毒试验"}], "note": "2026-09-09 人工即时检索轮（近一周新文）。OA PDF：https://www.mdpi.com/2076-2615/16/17/2767/pdf"}, {"id": "NL-20260909-02", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "期刊论文", "status": "pending", "title": "Dose-dependent supplementation of Schizochytrium in the biofloc system modulates dual microbiomes to enhance growth and survival in Pacific white shrimp (Litopenaeus vannamei)", "authors": "Zhi Li; Xiaohan Li; Buwen Sun; Hongwei Wu; Jingyi Zhang; Xiulin Wan; Baohua Zhao; Nasi Xiao; Zhen Qi; Qingyang Li; Haiyan Liu", "institution": "河北师范大学 等", "year": 2026, "journal": "Frontiers in Microbiology 17:1867320 (OA)", "source_platform": "Google Scholar", "farm_platform": "工厂化生物絮团", "target_sheet": "生物絮团养殖", "doi": "10.3389/fmicb.2026.1867320", "link": "https://doi.org/10.3389/fmicb.2026.1867320", "summary": "生物絮团系统中补施裂殖壶菌（Schizochytrium，10³ vs 10⁶ cells/mL vs 清水对照）的剂量依赖试验：高剂量组生长性能与饲料效率提升、存活率进一步增加；上调胰蛋白酶/脂肪酶等消化基因与溶菌酶/penaeidin 3a 抗菌基因；絮团中富集 Aureispira、Marivita 等有益菌属，同时调控絮团与肠道双微生物组。", "relevance_reason": "直接命中：生物絮团养殖（絮团微生物组+剂量效应）+ 生长/存活数据，OA 全文", "keywords": ["裂殖壶菌", "生物絮团", "微生物组", "生长", "存活率", "凡纳滨对虾"], "data_points": [{"指标": "生长性能/饲料效率", "模式/组别": "高剂量 10⁶ cells/mL", "值": "显著提升", "条件": "与对照及低剂量组比"}, {"指标": "存活率", "模式/组别": "高剂量组", "值": "进一步增加", "条件": "养殖全程"}, {"指标": "消化基因", "模式/组别": "高剂量组", "值": "胰蛋白酶/脂肪酶上调", "条件": "肝胰脏/肠道"}, {"指标": "絮团有益菌", "模式/组别": "高剂量组", "值": "Aureispira、Marivita 富集", "条件": "絮团微生物组"}], "note": "2026-09-09 人工即时检索轮（2026-07-22 上线）。全文免费可读。"}, {"id": "NL-20260909-03", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "期刊论文", "status": "pending", "title": "Increasing Production and Reducing Costs through Aquamimicry Approach in Litopenaeus vannamei Farming in Gomishan", "authors": "Mostafa Kordkatouli; Hossein Chitsaz; Reza Akrami; Tahereh Bagheri", "institution": "Islamic Azad University 等, Iran", "year": 2026, "journal": "Journal of Utilization and Cultivation of Aquatics（在线优先）", "source_platform": "期刊官网", "farm_platform": "其他", "target_sheet": "水质参数与生长参数对应数据", "doi": "10.22069/japu.2026.24704.2021", "link": "https://japu.gau.ac.ir/article_7718.html", "summary": "伊朗 Gomishan 120 天高密度养殖试验（PL12，20 尾/m²）：对照组（商品料+常规换水）vs 仿生态组（发酵米糠 16 kg + 益生菌 14 L + 20% 换水）。仿生态组 DO 更稳（6.5 vs 6.2 mg/L）、pH 稳定 7.6-8.1、TSS 下降；生长显著更优，FCR 1.26 vs 1.51，总生物量 +44.4%，单位生产成本 -25.4%。", "relevance_reason": "命中：水质-生长对应数据（DO/pH/TSS vs 生长）+ 经济数据（FCR/生物量/成本），仿生态模式", "keywords": ["仿生态系统", "Aquamimicry", "水质", "生长", "成本", "伊朗"], "data_points": [{"指标": "FCR", "模式/组别": "仿生态 vs 对照", "值": "1.26 vs 1.51", "条件": "120 天养殖"}, {"指标": "总生物量", "模式/组别": "仿生态组", "值": "+44.4%", "条件": "相对对照"}, {"指标": "单位生产成本", "模式/组别": "仿生态组", "值": "-25.4%", "条件": "相对对照"}, {"指标": "DO/pH", "模式/组别": "仿生态组", "值": "DO 6.5 mg/L 更稳；pH 7.6-8.1", "条件": "全程监测"}], "note": "2026-09-09 人工即时检索轮（2026-06-03 在线）。DOI 在 Crossref 未注册成功，请以期刊官网页面为准核对。"}, {"id": "NL-20260909-04", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "期刊论文", "status": "pending", "title": "Effects of different sources of dietary non-starch polysaccharides on Pacific white shrimp (Litopenaeus vannamei) performance, water quality and biofloc nutritional and microbial composition", "authors": "Apriana Vinasyiam; Julie Ekasari; Fotini Kokou; Johan W. Schrama; Marc C.J. Verdegem", "institution": "Bogor Agricultural University / Wageningen University 等", "year": 2026, "journal": "Aquaculture (Elsevier)", "source_platform": "ScienceDirect", "farm_platform": "工厂化生物絮团", "target_sheet": "生物絮团养殖", "doi": "10.1016/j.aquaculture.2026.743854", "link": "https://doi.org/10.1016/j.aquaculture.2026.743854", "summary": "30 天消化率 + 42 天生长试验，5 个处理（等氮/等量 × 难/中发酵 NSP 日粮 + 淀粉对照）：NSP 日粮可免除絮团系统额外碳源添加，水质维持与淀粉日粮等同；等氮投喂提高虾与絮团蛋白含量；NSP 类型对虾性能无显著影响。对降低絮团碳源成本有直接参考价值。", "relevance_reason": "命中：生物絮团养殖（碳源策略/絮团营养与微生物组成）+ 水质维持数据", "keywords": ["非淀粉多糖", "NSP", "生物絮团", "碳源", "水质", "饲料"], "data_points": [{"指标": "碳源添加", "模式/组别": "NSP 日粮组", "值": "可免除额外碳源添加", "条件": "与淀粉对照水质等同"}, {"指标": "蛋白含量", "模式/组别": "等氮投喂组", "值": "虾体与絮团蛋白提高", "条件": "等氮处理"}, {"指标": "虾性能", "模式/组别": "各 NSP 处理", "值": "无显著差异", "条件": "NSP 类型间比较"}], "note": "2026-09-09 人工即时检索轮（Aquaculture 2026 年 5 月卷期）。需订阅或机构权限获取全文。"}, {"id": "NL-20260909-05", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "期刊论文", "status": "pending", "title": "Life Cycle Assessment and Life Cycle Costing of a Greenhouse Culture Model for Litopenaeus vannamei", "authors": "Yuzhen Wang; Zhao Chen; Jiajia Wang; Zhiqiang Chang; Shuangyong Zhang; Jian Li", "institution": "中国水产科学研究院 等", "year": 2026, "journal": "Fishes 2026, 11(3):131 (MDPI, OA)", "source_platform": "期刊官网", "farm_platform": "其他", "target_sheet": "环境成本及效率", "doi": "10.3390/fishes11030131", "link": "https://doi.org/10.3390/fishes11030131", "summary": "基于实地调研与企业生产记录的温室养虾全生命周期评价：全生命周期成本 3.56 USD/kg；建设成本 4.58 USD/m²（钢管+薄膜为主）；单周期养殖成本 3510.76 USD/栋（饲料 30.54%、地租 15.86%）；净利 5.31 USD/m²/周期，成本利润率 60.47%（显著高于室内超集约 ISIC）。环境：GWP 3.279 kg CO₂eq/kg、AP 0.369 kg SO₂eq、EP 0.212 kg PO₄eq/kg。", "relevance_reason": "命中：环境成本及效率（LCA/LCC 双口径）+ 成本构成明细 + 产污当量（GWP/AP/EP），主库稀缺数据", "keywords": ["生命周期评价", "LCA", "全生命周期成本", "温室养殖", "环境排放", "经济效益"], "data_points": [{"指标": "全生命周期成本", "模式/组别": "温室养殖", "值": "3.56 USD/kg", "条件": "LCC 核算"}, {"指标": "净利/成本利润率", "模式/组别": "温室养殖", "值": "5.31 USD/m²/周期；60.47%", "条件": "高于室内超集约 ISIC"}, {"指标": "GWP", "模式/组别": "温室养殖", "值": "3.279 kg CO₂eq/kg", "条件": "LCA"}, {"指标": "AP/EP", "模式/组别": "温室养殖", "值": "0.369 kg SO₂eq/kg；0.212 kg PO₄eq/kg", "条件": "LCA"}, {"指标": "成本结构", "模式/组别": "单周期", "值": "3510.76 USD/栋（饲料30.54%/地租15.86%）", "条件": "建设成本 4.58 USD/m²"}], "note": "2026-09-09 人工即时检索轮（2026-02-25 刊出，超出 3 个月窗口但为 LCA+成本双命中稀缺数据）。OA PDF：https://www.mdpi.com/2410-3888/11/3/131/pdf"}, {"id": "NL-20260909-06", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "低盐度循环水模式下养殖密度对凡纳对虾生长及生理指标的影响", "authors": "陈晓瑛; 黄宣瑜; 鲁慧杰; 赵吉臣; 黄文; 郭慧; 孙育平", "institution": "广东省农业科学院动物科学研究所 / 农业农村部华南动物营养与饲料重点实验室 / 广东海洋大学水产学院", "year": 2026, "journal": "渔业科学进展 2026, 47(5)", "pub_type": "期刊论文", "source_platform": "期刊官网", "farm_platform": "工厂化循环水", "target_sheet": "水质参数与生长参数对应数据", "doi": "10.3969/j.issn.2095-9869.20251117002", "link": "https://journal.yykxjz.cn/yykxjz/article/html/20260506", "summary": "在盐度 3.5±0.5 的循环水系统（RAS）中，以初始体质量 1.04±0.01 g 的凡纳对虾幼虾设置 30/45/60/75/90 尾/300 L（100–300 ind./m³）5 个密度组，养殖 49 d。随密度升高，终末体长、日增体长、体长增长率、终末体质量、日增重、增重率及特定生长率均显著下降，M90 组最低；M60 组存活率最高且 FCR 最低。综合生长、饲料利用和免疫抗氧化响应，60 尾/300 L（约 200 ind./m³）为该低盐度循环水条件下较适宜密度。", "relevance_reason": "命中：工厂化循环水模式下养殖密度对生长、饲料利用、血清生化及免疫抗氧化指标的影响，可并入「水质参数与生长参数对应数据」或「基础设施与饲养」。", "keywords": ["凡纳滨对虾", "低盐度", "循环水", "养殖密度", "生长", "饲料系数"], "data_points": [{"指标": "特定生长率/增重率", "模式/组别": "M90 (300 ind./m³)", "值": "显著最低", "条件": "49 d"}, {"指标": "存活率", "模式/组别": "M60 (200 ind./m³)", "值": "最高", "条件": "49 d"}, {"指标": "饲料系数(FCR)", "模式/组别": "M60", "值": "最低", "条件": "49 d"}, {"指标": "适宜密度", "模式/组别": "低盐度循环水", "值": "60 尾/300 L（约 200 ind./m³）", "条件": "盐度 3.5±0.5"}], "status": "pending", "note": "2026-09-09 周三 08:00 自动检索轮；2026 年 47 卷 5 期。并入前建议核对原文数值与期刊正式页码。"}, {"id": "NL-20260909-07", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Assessment of carrying capacity and management practices for Litopenaeus vannamei industrialized aquaculture based on an ecosystem model", "authors": "Kaiyang Jiang; Teng Jiang; Shipeng Dong; Fang Wang", "institution": "中国水产科学研究院 / 崂山实验室 / 德国 GEOMAR 亥姆霍兹海洋研究中心等", "year": 2026, "journal": "Aquaculture 613 (2026)", "pub_type": "期刊论文", "source_platform": "ScienceDirect", "farm_platform": "工厂化循环水", "target_sheet": "环境影响", "doi": "10.1016/j.aquaculture.2025.743453", "link": "https://www.sciencedirect.com/science/article/pii/S0044848625013390", "summary": "构建凡纳滨对虾工厂化养殖生态系统模型，模拟生长及氮磷动态；以尾水氮磷排放标准评估系统承载力。幼虾（体长 4.24±0.37 cm）承载力为 409 ind·m⁻²；相比当前放养密度 880 ind·m⁻²，产量和经济效益分别下降 53.5% 和 71.5%。提升饲料质量、增加换水、采用尾水处理技术可分别将承载力提升至 449/593/1193 ind·m⁻²；尾水处理可使经济效益提高 33.5%，单位产量尾水排放减少 26.2%，总氮/总磷排放分别减少 48.2% 和 49.0%。", "relevance_reason": "命中：工厂化循环水养殖承载力、尾水排放与氮磷污染当量，可并入「环境影响」「产污与污染当量」及「经济效益分析」。", "keywords": ["凡纳滨对虾", "工厂化循环水", "承载力", "尾水", "氮磷", "生态系统模型"], "data_points": [{"指标": "承载力", "模式/组别": "幼虾(体长 4.24±0.37 cm)", "值": "409 ind·m⁻²", "条件": "基于尾水排放标准"}, {"指标": "产量降幅/经济效益降幅", "模式/组别": "当前密度 880 vs 承载力", "值": "53.5% / 71.5%", "条件": "模型模拟"}, {"指标": "尾水处理后承载力", "模式/组别": "尾水处理技术", "值": "1193 ind·m⁻²", "条件": "模型优化"}, {"指标": "经济效益/尾水排放", "模式/组别": "尾水处理", "值": "+33.5% / -26.2%", "条件": "单位产量"}, {"指标": "总氮/总磷排放削减", "模式/组别": "尾水处理", "值": "-48.2% / -49.0%", "条件": "相对当前"}], "status": "pending", "note": "2026-09-09 周三 08:00 自动检索轮；Aquaculture 2026 年第 613 卷。原文为付费/机构权限，并入前需核对作者机构与完整数值。"}, {"id": "NL-20260909-08", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Effects of Low-Salinity Condition on Water Quality and Phytoplankton Community in Biofloc-Based Litopenaeus vannamei Culture Ponds", "authors": "Alfina Pagita Larasati; Mohammad Mahmudi; Asus Maizar Suryanto Hertika; Mohammad Musa; Sunadji; Evellin Dewi Lusiana", "institution": "Universitas Brawijaya / Universitas Nusa Cendana, Indonesia", "year": 2026, "journal": "International Journal of Design & Nature and Ecodynamics (IJDNE), 2026", "pub_type": "期刊论文", "source_platform": "期刊官网", "farm_platform": "工厂化生物絮团", "target_sheet": "水质参数数据", "doi": "10.18280/ijdne.210607", "link": "https://iieta.org/node/23808", "summary": "90 d 养殖试验比较低盐度与正常盐度生物絮团池塘的水质与浮游植物群落。低盐度组氨氮（0.067±0.044 vs 1.114±0.753 mg/L）和透明度（18.08±3.77 vs 37.21±7.93 cm）显著低于正常盐度组，硝酸盐和总有机物也更低。低盐度池塘浮游植物群落更稳定（4.40–5.28 vs 1.82–2.75）、物种周转率更低（0.21 vs 0.25），群落以 Bacillariophyceae 为主。", "relevance_reason": "命中：生物絮团养殖模式下盐度对水质（氨氮、透明度、硝酸盐、TOM）及浮游植物群落的影响，可并入「水质参数数据」。", "keywords": ["凡纳滨对虾", "生物絮团", "低盐度", "水质", "浮游植物", "群落稳定性"], "data_points": [{"指标": "氨氮", "模式/组别": "低盐度 vs 正常盐度", "值": "0.067±0.044 vs 1.114±0.753 mg/L", "条件": "90 d"}, {"指标": "透明度", "模式/组别": "低盐度 vs 正常盐度", "值": "18.08±3.77 vs 37.21±7.93 cm", "条件": "90 d"}, {"指标": "群落稳定性", "模式/组别": "低盐度 vs 正常盐度", "值": "4.40–5.28 vs 1.82–2.75", "条件": "90 d"}, {"指标": "物种周转率", "模式/组别": "低盐度 vs 正常盐度", "值": "0.21 vs 0.25", "条件": "90 d"}], "status": "pending", "note": "2026-09-09 周三 08:00 自动检索轮；2026-06-30 在线（OA）。并入前需核对原文浮游植物丰度数据。"}, {"id": "NL-20260909-09", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Quorum sensing mediates spatiotemporal microbial community dynamics and nitrogen metabolism in biofloc-based Litopenaeus vannamei aquaculture systems", "authors": "Ni Liu; Yuhang Zhang; Yuanshuai Zhang; Yun Yang; Hao Long; Aiyou Huang; Yanhua Zeng; Zhenyu Xie", "institution": "海南大学海洋学院 / 热带海洋生物资源利用与保护教育部重点实验室 / 海南大学文昌先进渔业研究院等", "year": 2026, "journal": "Bioresource Technology 440 (2026)", "pub_type": "期刊论文", "source_platform": "ScienceDirect", "farm_platform": "工厂化生物絮团", "target_sheet": "生物絮团养殖", "doi": "10.1016/j.biortech.2025.133459", "link": "https://www.sciencedirect.com/science/article/pii/S0960852425014269", "summary": "82 d 生物絮团养殖系统微生物群落与氮代谢研究。氨氮和亚硝酸盐经历初始、上升、下降和稳定 4 个阶段，亚硝酸盐从 1.21 mg/L 快速降至 0.03 mg/L。Pseudomonadota、Actinomycetota 和 Bacteroidota 为优势门；群体感应（QS）通路呈时间异质性：AHLs/AI-2 在初始期占优势，AHKs/c-di-GMP 在稳定期富集。反硝化和异化硝酸盐还原基因显著富集，QS 信号协调 30 个优势菌属（如 Amaricoccus、Ruegeria）的碳氮硫代谢互作网络。", "relevance_reason": "命中：生物絮团养殖系统微生物组动态、群体感应与氮代谢（脱氮）机制，可并入「生物絮团养殖」和「产污与污染当量」。", "keywords": ["凡纳滨对虾", "生物絮团", "群体感应", "微生物组", "氮代谢", "反硝化"], "data_points": [{"指标": "亚硝酸盐下降", "模式/组别": "生物絮团系统", "值": "1.21 → 0.03 mg/L", "条件": "下降阶段"}, {"指标": "优势门", "模式/组别": "生物絮团", "值": "Pseudomonadota / Actinomycetota / Bacteroidota", "条件": "82 d 全程"}, {"指标": "氮代谢基因富集", "模式/组别": "生物絮团 vs 水体", "值": "反硝化/异化硝酸盐还原基因更丰", "条件": "宏基因组"}, {"指标": "QS 通路", "模式/组别": "初始/稳定期", "值": "AHLs+AI-2 / AHKs+c-di-GMP", "条件": "时间异质性"}], "status": "pending", "note": "2026-09-09 周三 08:00 自动检索轮；Bioresource Technology 2026 年第 440 卷。原文为付费/机构权限。"}, {"id": "NL-20260909-10", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Optimizing shrimp growth and water quality in constructed wetland recirculating aquaculture systems: Effects of stocking density and shrimp size", "authors": "Meimei Hu; Yanyan Wang; Jianlei Chen; Hongwu Cui; Shengmin Zhu; Tongtong Jin; Keming Qu; Zhengguo Cui", "institution": "中国水产科学研究院黄海水产研究所 / 青岛海洋科学与技术国家实验室等", "year": 2026, "journal": "Aquaculture 612 (2026)", "pub_type": "期刊论文", "source_platform": "ScienceDirect", "farm_platform": "工厂化循环水", "target_sheet": "水质参数与生长参数对应数据", "doi": "10.1016/j.aquaculture.2025.743222", "link": "https://www.sciencedirect.com/science/article/pii/S0044848625011081", "summary": "112 m² 湿地-循环水养殖系统（RAS）90 d 养殖，设置 90/135/180/360 ind/m³ 四个密度。垂直流湿地对铵氮、亚硝氮和 COD 去除有效，去除效率随密度升高而提高；硝氮和磷去除则随密度升高而下降。大规格虾（9–16 cm；1.16–3.67 g）对密度效应更敏感（灰色关联 0.819），小规格虾（4–9 cm；16.37–19.04 g）敏感性较低（0.667）。高密度 540 ind/m³ 显著抑制小虾生长。", "relevance_reason": "命中：湿地耦合 RAS 中密度与规格对水质净化及生长的交互影响，可并入「水质参数与生长参数对应数据」。", "keywords": ["凡纳滨对虾", "循环水养殖系统", "人工湿地", "养殖密度", "虾规格", "水质净化"], "data_points": [{"指标": "系统面积/养殖周期", "模式/组别": "湿地-RAS", "值": "112 m² / 90 d", "条件": "4 密度处理"}, {"指标": "大规格虾密度敏感性", "模式/组别": "9–16 cm / 1.16–3.67 g", "值": "灰色关联 0.819", "条件": "密度效应更敏感"}, {"指标": "小规格虾密度敏感性", "模式/组别": "4–9 cm / 16.37–19.04 g", "值": "灰色关联 0.667", "条件": "密度效应较不敏感"}, {"指标": "生长抑制密度", "模式/组别": "小规格虾", "值": "540 ind/m³ 显著抑制生长", "条件": "90 d"}], "status": "pending", "note": "2026-09-09 周三 08:00 自动检索轮；Aquaculture 2026 年第 612 卷。原文为付费/机构权限，密度处理具体数值需核对原文。"}, {"id": "NL-20260909-11", "found_at": "2026-09-09T08:23:24+08:00", "round": "2026-W37", "title": "Microdroplet-based high-throughput screening for antagonistic bacteria targeting penaeid shrimp pathogenic Vibrio harveyi", "authors": "Hajime Yuasa; Yuri Katayama; Kayo Konishi; Miho Furukawa; Reiko Nozaki; Hidehiro Kondo; Ikuo Hırono; Keiichiro Koiwai", "institution": "", "year": 2026, "journal": "Scientific Reports", "pub_type": "期刊论文", "source_platform": "其他", "farm_platform": "未说明", "target_sheet": "待定", "doi": "10.1038/s41598-026-68242-x", "link": "https://doi.org/10.1038/s41598-026-68242-x", "summary": "Antagonistic bacteria that suppress the growth of specific bacteria have attracted attention as an antibiotics-independent strategy for infectious disease control in aquaculture. Microfluidics-based water-in-oil droplets (microdroplets) enable high-throughput screening of antagonistic bacteria in the field of medicine or agriculture. However, the use of this screening system in aquaculture has not yet been reported. In particular, penaeid shrimp aquaculture, one of the largest sectors of global aquaculture, has a strong demand for alternative disease control strategies because vaccination is i…", "relevance_reason": "本机即时检索命中：标题/摘要含凡纳滨对虾（Litopenaeus vannamei）养殖相关主题，符合数据库收录范围；具体命中工作表需打开原文后人工确认。", "keywords": ["对虾养殖"], "data_points": [], "status": "pending", "note": "经本机即时检索（OpenAlex）加入待确认，人工并入前请核对原文与出处。"}, {"id": "NL-20260909-12", "found_at": "2026-09-09T08:55:02+08:00", "round": "2026-W37", "title": "Production and economic performance of Penaeus vannamei Boone, 1931 cultured in HDPE-lined circular tanks across increasing stocking densities: a commercial case study", "authors": "Eirnest D. S. R. Eliver; Lorriane F. C. Balandan", "institution": "", "year": 2026, "journal": "Aquaculture Aquarium Conservation & Legislation", "pub_type": "期刊论文", "source_platform": "其他", "farm_platform": "未说明", "target_sheet": "待定", "doi": "10.67784/0037", "link": "https://doi.org/10.67784/0037", "summary": "The increasing demand for aquaculture production under limited land availability requires efficient intensive culture systems. This commercial case study evaluated the production performance and economic viability of whiteleg shrimp, Penaeus vannamei Boone, 1931, cultured in an HDPE-lined circular tank system under commercial farm conditions across three sequential production cycles with progressively increasing stocking densities (318-467 ind m⁻²). Progressive intensification was associated with higher biomass production, increasing total biomass from 1,500 to 2,015 kg and yield from 4.78 to …", "relevance_reason": "本机即时检索命中：标题/摘要含凡纳滨对虾（Litopenaeus vannamei）养殖相关主题，符合数据库收录范围；具体命中工作表需打开原文后人工确认。", "keywords": ["凡纳滨对虾"], "data_points": [], "status": "pending", "note": "经本机即时检索（OpenAlex）加入待确认，人工并入前请核对原文与出处。"}];
+const NL_META = {"description": "新增文献暂存库：每周三 08:00 自动检索写入（每轮最多 5 篇），只记录、不并入主库；经用户人工确认后由助理并入 xlsx 主库并置 status=merged", "created_at": "2026-09-08T15:36:00+08:00", "round": "2026-W37", "last_run": "2026-09-09T09:03:32", "note": "手动删除 1 篇待确认（2026-09-09 09:03:32）", "source_platforms": ["Google Scholar", "知网 CNKI", "万方", "维普 VIP", "Web of Science", "Scopus", "ScienceDirect", "PubMed", "期刊官网", "其他"], "farm_platforms": ["工厂化循环水", "工厂化生物絮团", "工厂化换水", "高位池", "小棚养殖", "池塘精养", "土塘", "粗放或半精养", "多营养级综合养殖(IMTA)", "其他", "未说明"], "target_sheets": ["水质参数数据", "生长参数", "产污与污染当量", "基础设施与饲养", "环境影响", "生物絮团养殖", "经济效益分析", "成本构成明细", "环境成本及效率", "东营工厂化数据库", "水质参数与生长参数对应数据", "调研与养殖试验数据"]};
+function applyFilter(){
+  const kw=(document.getElementById('kw')?.value||'').trim().toLowerCase();
+  const src=document.getElementById('fSource')?.value||'';
+  const farm=document.getElementById('fFarm')?.value||'';
+  const st=document.getElementById('fStatus')?.value||'';
+  let vis=0;
+  document.querySelectorAll('.nl-card').forEach(c=>{
+    const txt=(c.innerText||'').toLowerCase();
+    const okKw=!kw||txt.indexOf(kw)>=0;
+    const okSrc=!src||c.dataset.src===src;
+    const okFarm=!farm||c.dataset.farm===farm;
+    const okSt=!st||c.dataset.status===st;
+    const show=okKw&&okSrc&&okFarm&&okSt;
+    c.style.display=show?'':'none';
+    if(show)vis++;
+  });
+  const el=document.getElementById('nlCount');if(el)el.innerText=vis+' 篇';
+}
+function _fallbackCopy(t,done){
+  const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}catch(e){done();}
+  document.body.removeChild(ta);
+}
+function copyText(t,done){
+  const ok=()=>{try{if(done)done();}catch(e){}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok).catch(()=>_fallbackCopy(t,ok));}else{_fallbackCopy(t,ok);}
+}
+/* ===== 一键即时检索（本机实时服务） ===== */
+function $id(i){return document.getElementById(i);}
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function srState(msg,kind){
+  const el=$id('srState'); if(!el)return;
+  el.classList.add('show'); el.className='nl-hint show'+(kind==='success'?'':'');
+  el.style.background=kind==='success'?'#ecfdf5':'';
+  el.style.color=kind==='success'?'#065f46':'';
+  el.innerText=msg;
+}
+function isInStore(title){
+  const nt=String(title||'').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g,'');
+  if(!nt)return null;
+  for(let i=0;i<NL_ITEMS.length;i++){
+    const it=NL_ITEMS[i]||{};
+    const ne=String(it.title||'').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g,'');
+    if(ne&&(ne===nt||(nt.length>=15&&(nt.indexOf(ne)>=0||ne.indexOf(nt)>=0))))return it;
+  }
+  return null;
+}
+function doInstantSearch(){
+  const kw=($id('kw')?$id('kw').value:'').trim();
+  const src=$id('fSource')?$id('fSource').value:'';
+  const farm=$id('fFarm')?$id('fFarm').value:'';
+  const w=$id('srWin')?$id('srWin').value:'90';
+  const winTxt={7:'近1周',30:'近1个月',90:'近3个月',365:'近1年'}[w]||('近'+w+'天');
+  const b=$id('btnSearchNow');
+  const box=$id('srResults');
+  if(box){box.innerHTML='<div style="padding:16px;text-align:center;color:#0a6f6f">🔎 正在检索开放学术库（OpenAlex / Crossref，关键词已自动中英互译）… 约需 3-12 秒</div>';}
+  srState('已按当前条件发起检索：关键词「'+(kw||'不限')+'」 · 来源平台「'+(src||'不限')+'」 · 养殖平台「'+(farm||'不限')+'」 · '+winTxt);
+  if(b){b.disabled=true;b.innerText='检索中…';}
+  const params=new URLSearchParams({q:kw,src:src,farm:farm,w:w});
+  fetch('/api/search?'+params.toString())
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(d){
+      if(!d.ok)throw new Error(d.error||'未知错误');
+      if(d.warn){srState('⚠️ 部分来源不可用：'+d.warn);}
+      if(!d.count){
+        if(box){box.innerHTML='<div style="padding:16px;text-align:center;color:var(--c-muted)">😕 该条件下未检索到符合范围（凡纳滨对虾养殖）的最新文献。建议放宽时间窗到「近 1 年」或去掉关键词/养殖平台筛选后重试。<br><span style="font-size:11px">'+(d.warn?escHtml(d.warn):'')+'</span></div>';}
+        return;
+      }
+      renderSrCards(d.results);
+    })
+    .catch(function(e){
+      if(box){box.innerHTML='<div style="padding:16px;text-align:center;color:#b45309">⚠️ 无法连接本机检索服务（'+(e&&e.message?escHtml(e.message):'连接失败')+'）。<br><b>当前页面可能不是由实时服务提供</b>（例如直接打开了线上只读链接）。请回到 WorkBuddy 会话内的<b>实时预览窗口（http://127.0.0.1:8787）</b>使用一键即时检索。</div>';}
+      srState('检索失败：请使用本机实时工作台入口（http://127.0.0.1:8787）');
+    })
+    .then(function(){if(b){b.disabled=false;b.innerText='🚀 立即搜索最新文献';}});
+}
+function renderSrCards(list){
+  window._lastSrList=list||[];
+  const box=$id('srResults'); if(!box)return;
+  const sp=(NL_META&&NL_META.source_platforms)||[];
+  const fp=(NL_META&&NL_META.farm_platforms)||[];
+  const srcOpts=sp.map(function(v){return '<option'+(v==='其他'?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
+  const farmOpts=fp.map(function(v){return '<option'+(v==='未说明'?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
+  const cards=list.map(function(it,idx){
+    const ex=isInStore(it.title);
+    const links=[];
+    if(it.pdf_url){links.push('<a class="btn btn-ghost btn-sm" href="'+escHtml(it.pdf_url)+'" target="_blank" rel="noopener">📄 OA PDF 下载</a>');}
+    if(it.doi){links.push('<a class="btn btn-ghost btn-sm" href="https://doi.org/'+escHtml(it.doi)+'" target="_blank" rel="noopener">🔗 DOI 原文</a>');}
+    if(it.link&&it.link.indexOf('doi.org')<0){links.push('<a class="btn btn-ghost btn-sm" href="'+escHtml(it.link)+'" target="_blank" rel="noopener">🏛 期刊官网</a>');}
+    const meta=[it.authors,it.year?it.year+' 年':'',it.journal,it.type].filter(Boolean).join(' · ');
+    const absTxt=it.abstract?escHtml(it.abstract):'<span style="color:#9ca3af">（该库未提供开放摘要，请打开原文查看论文情况）</span>';
+    const joinBtn=ex
+      ? '<button class="btn btn-sm" disabled title="标题已存在于暂存库 '+escHtml(ex.id)+'">已在暂存库</button>'
+      : '<button class="btn btn-primary btn-sm sr-join" data-i="'+idx+'">➕ 加入待确认</button>';
+    const selBox='<input type="checkbox" class="sr-pick" data-i="'+idx+'"'+(ex?' disabled title="已在暂存库"':'')+' style="margin-right:8px;transform:scale(1.15);cursor:pointer">';
+    return '<div class="sr-card" data-i="'+idx+'">'
+      +'<div style="display:flex;align-items:flex-start;gap:0">'
+      +'<div style="padding-top:2px">'+selBox+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<h4 style="margin:0 0 6px;font-size:14px;font-weight:600;line-height:1.45">'+escHtml(it.title)+'</h4>'
+      +'<div style="font-size:12.5px;color:var(--c-muted);margin-bottom:6px">'+escHtml(meta)+'</div>'
+      +'<div style="font-size:12.5px;color:#374151;background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:8px 10px;margin-bottom:8px;max-height:118px;overflow:auto">'+absTxt+'</div>'
+      +'<div class="sr-foot">'
+      +'<div class="sr-opts">来源平台 <select class="sr-src" data-i="'+idx+'">'+srcOpts+'</select>　养殖平台/模式 <select class="sr-farm" data-i="'+idx+'">'+farmOpts+'</select></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+links.join('')+joinBtn+'</div>'
+      +'</div>'
+      +'<div class="sr-note">来源：'+escHtml(it.source_note||'开放学术库')+(it.doi?' · DOI: '+escHtml(it.doi):'')+' · 加入时默认「拟入主表=待定」，确认并入前再定表</div>'
+      +'</div></div></div>';
+  }).join('');
+  box.innerHTML='<div style="font-size:12.5px;color:#065f46;margin-bottom:8px">✅ 检索到 <b>'+list.length+'</b> 篇候选（按发表时间最新优先）。可点卡片前的 ☑ 多选，再点上方「📥 一键加入已选」批量写入；逐条加入仍可点「➕ 加入待确认」。</div>'+cards;
+  srState('✅ 检索完成，共 '+list.length+' 篇候选。可在每条卡片前打勾多选，或逐条点「➕ 加入待确认」。','success');
+  $id('srToolbar').style.display='flex';
+  $id('srSelAll').checked=false;
+  $id('srSelCount').innerText='0';
+  // 绑定 checkbox 事件
+  box.querySelectorAll('.sr-pick').forEach(function(cb){
+    cb.addEventListener('change',srUpdateCount);
+  });
+}
+function srUpdateCount(){
+  const box=$id('srResults'); if(!box)return;
+  const cbs=box.querySelectorAll('.sr-pick:not(:disabled):checked');
+  $id('srSelCount').innerText=String(cbs.length);
+}
+function srToggleAll(on){
+  const box=$id('srResults'); if(!box)return;
+  box.querySelectorAll('.sr-pick:not(:disabled)').forEach(function(cb){cb.checked=on;});
+  srUpdateCount();
+}
+function srClearSel(){
+  $id('srSelAll').checked=false;
+  const box=$id('srResults'); if(box){
+    box.querySelectorAll('.sr-pick:not(:disabled)').forEach(function(cb){cb.checked=false;});
+  }
+  srUpdateCount();
+}
+function srBatchJoin(){
+  const box=$id('srResults'); if(!box)return;
+  const picks=Array.from(box.querySelectorAll('.sr-pick:not(:disabled):checked'));
+  if(!picks.length){srState('⚠️ 请先勾选要加入的候选（卡片前 ☑）');return;}
+  const list=(window._lastSrList||[]);
+  const queue=picks.map(function(cb){
+    const i=Number(cb.dataset.i); return {idx:i,it:list[i]};
+  }).filter(function(o){return o.it&&!isInStore(o.it.title);});
+  if(!queue.length){srState('⚠️ 候选已被加入过（已在暂存库）');return;}
+  const btn=$id('srBatchJoin'); btn.disabled=true; btn.innerText='写入中 0/'+queue.length;
+  let done=0, ok=0, dup=0, fail=0, addedIds=[];
+  function next(){
+    if(!queue.length){
+      btn.disabled=false; btn.innerText='📥 一键加入已选';
+      const parts=[];
+      if(ok) parts.push('✅ 成功 '+ok+' 篇 '+addedIds.join(' '));
+      if(dup) parts.push('⚠️ 重复 '+dup);
+      if(fail) parts.push('❌ 失败 '+fail);
+      srState(parts.join(' · ')+'。正在刷新页面…','success');
+      setTimeout(function(){location.reload();},900);
+      return;
+    }
+    const o=queue.shift();
+    const card=document.querySelector('.sr-card[data-i="'+o.idx+'"]'); if(!card){next();return;}
+    const srcSel=card.querySelector('.sr-src');
+    const farmSel=card.querySelector('.sr-farm');
+    const src=srcSel?srcSel.value:'其他';
+    const farm=farmSel?farmSel.value:'未说明';
+    const it=o.it;
+    fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      title:it.title,authors:it.authors,year:it.year,journal:it.journal,doi:it.doi,
+      link:it.link,pdf_url:it.pdf_url,abstract:it.abstract,source_note:it.source_note,
+      source_platform:src,farm_platform:farm,
+      q:($id('kw')?$id('kw').value:'').trim()
+    })})
+    .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+    .then(function(res){
+      const d=res.d||{};
+      if(res.ok&&d.ok){
+        ok++; addedIds.push(d.id);
+        // 卡片就地标记为已加入
+        const jb=card.querySelector('.sr-join'); if(jb){jb.disabled=true;jb.classList.remove('btn-primary');jb.classList.add('btn-success');jb.innerText='✓ 已加入 '+(d.id||'');}
+        const cb=card.querySelector('.sr-pick'); if(cb){cb.disabled=true;cb.checked=false;}
+        card.style.background='#f0fdf4';card.style.borderColor='#86efac';
+      }else if(d&&d.dup){dup++;}
+      else{fail++; srState('❌ 加入失败：'+(d&&d.error||'未知错误'));}
+    })
+    .catch(function(err){fail++;})
+    .then(function(){done++;btn.innerText='写入中 '+done+'/'+queue.length;next();});
+  }
+  next();
+}
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.sr-join'); if(!btn)return;
+  const i=Number(btn.dataset.i);
+  const card=document.querySelector('.sr-card[data-i="'+i+'"]'); if(!card)return;
+  const it=(window._lastSrList||[])[i]; if(!it)return;
+  const srcSel=card.querySelector('.sr-src');
+  const farmSel=card.querySelector('.sr-farm');
+  const src=srcSel?srcSel.value:'其他';
+  const farm=farmSel?farmSel.value:'未说明';
+  btn.disabled=true; btn.innerText='写入暂存库中…';
+  fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    title:it.title,authors:it.authors,year:it.year,journal:it.journal,doi:it.doi,
+    link:it.link,pdf_url:it.pdf_url,abstract:it.abstract,source_note:it.source_note,
+    source_platform:src,farm_platform:farm,
+    q:($id('kw')?$id('kw').value:'').trim()
+  })})
+  .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+  .then(function(res){
+    const d=res.d;
+    if(d&&d.ok){
+      btn.classList.remove('btn-primary');btn.classList.add('btn-success');btn.innerText='✓ 已加入 '+d.id;
+      // 卡片就地标绿，并把该行的 checkbox 禁用（避免重复选择）
+      card.style.background='#f0fdf4';card.style.borderColor='#86efac';
+      const cb=card.querySelector('.sr-pick'); if(cb){cb.disabled=true;cb.checked=false;}
+      srUpdateCount();
+      srState('✅ 已写入待确认区：'+d.id+'。可继续选其它候选，全部加完后点「一键加入已选」一次性刷新；或点这里下方「🔃 刷新页面」立即查看。','success');
+    }else if(d&&d.dup){
+      btn.disabled=false;btn.innerText='➕ 加入待确认';
+      srState('⚠️ 与暂存库已有记录重复：'+d.dup_id+'《'+(d.dup_title||'')+'》，无需重复加入。');
+    }else{
+      btn.disabled=false;btn.innerText='➕ 加入待确认';
+      srState('❌ 加入失败：'+(d&&d.error||'未知错误'));
+    }
+  })
+  .catch(function(err){btn.disabled=false;btn.innerText='➕ 加入待确认';srState('❌ 加入失败：'+err.message);});
+});
+document.addEventListener('click',function(e){
+  const c=e.target.closest('.js-confirm');
+  const s=e.target.closest('.js-skip');
+  const d=e.target.closest('.js-del');
+  if(d){
+    const id=d.dataset.id;
+    if(!id)return;
+    if(!confirm('确认从待确认区彻底删除 '+id+' 吗？\n\n注意：删除后不可恢复（这是真删除，会从暂存库移除并重新生成页面）。'))return;
+    d.disabled=true;d.innerText='删除中…';
+    fetch('/api/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:[id]})})
+      .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+      .then(function(res){
+        const x=res.d||{};
+        if(res.ok&&x.ok){
+          const card=document.querySelector('.nl-card[data-id="'+id+'"]');
+          if(card){card.style.transition='opacity .25s';card.style.opacity='.0';setTimeout(function(){card.remove();nlUpdateCount();},260);}
+          srState?.('✅ 已删除 '+id+'（共 '+x.removed.length+' 条），等待刷新…');
+          if(typeof srState!=='function'){alert('已删除 '+id);}
+          setTimeout(function(){location.reload();},700);
+        }else{
+          d.disabled=false;d.innerText='🗑 删除';
+          alert('删除失败：'+(x&&x.error||'未知错误'));
+        }
+      })
+      .catch(function(err){d.disabled=false;d.innerText='🗑 删除';alert('删除失败：'+err.message);});
+  }
+  if(c){
+    const id=c.dataset.id;
+    try{localStorage.setItem('nlok_'+id,'1');}catch(err){}
+    c.disabled=true;c.classList.remove('btn-primary');c.classList.add('btn-success');c.innerText='已标记确认 · 待并入';
+    const h=document.querySelector('.nl-hint[data-id="'+id+'"]');
+    const msg='确认并入新增文献 '+id;
+    if(h){h.classList.add('show');h.innerText='✅ 已复制确认指令，请到 WorkBuddy 对话中发送：「'+msg+'」';}
+    const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='已确认 · 待并入';p.className='tag primary nl-status';}
+    copyText(msg,null);
+  }
+  if(s){
+    const id=s.dataset.id;
+    try{localStorage.setItem('nlskip_'+id,'1');}catch(err){}
+    s.disabled=true;s.innerText='已忽略(本地)';
+    const card=document.querySelector('.nl-card[data-id="'+id+'"]');if(card)card.style.opacity=.55;
+    const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='已忽略(本地标记)';p.className='tag nl-status';}
+    const h=document.querySelector('.nl-hint[data-id="'+id+'"]');if(h){h.innerText='如需彻底归档，请在 WorkBuddy 对话中发送：忽略新增文献 '+id;h.classList.add('show');}
+  }
+});
+function exportNLCSV(){
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const heads=['id','found_at','round','title','authors','institution','year','journal','pub_type','source_platform','farm_platform','target_sheet','doi','link','summary','relevance_reason','keywords','status','note'];
+  const rows=[heads];
+  NL_ITEMS.forEach(it=>rows.push(heads.map(h=>Array.isArray(it[h])?esc(it[h].join(';')):esc(it[h]))));
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='新增文献待确认_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+function nlSelectedIds(){
+  return Array.from(document.querySelectorAll('.nl-pick:checked')).map(function(cb){return cb.dataset.id;}).filter(Boolean);
+}
+function nlToggleAll(on){
+  document.querySelectorAll('.nl-pick').forEach(function(cb){cb.checked=on;});
+}
+function nlUpdateCount(){
+  const n=nlSelectedIds().length;
+  const btn=document.getElementById('nlBatchDel');
+  if(btn){btn.innerText='🗑 删除已选 ('+n+')';btn.disabled=(n===0);}
+}
+function nlBatchDel(){
+  const ids=nlSelectedIds();
+  if(!ids.length){alert('请先勾选要删除的条目（仅待确认条目可选）');return;}
+  if(!confirm('确认批量删除 '+ids.length+' 条待确认文献吗？\n\n'+ids.join('\n')+'\n\n删除后不可恢复，将重新生成页面。'))return;
+  const btn=document.getElementById('nlBatchDel'); btn.disabled=true; btn.innerText='删除中…';
+  fetch('/api/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:ids})})
+    .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+    .then(function(res){
+      const x=res.d||{};
+      if(res.ok&&x.ok){
+        ids.forEach(function(id){
+          const card=document.querySelector('.nl-card[data-id="'+id+'"]');
+          if(card){card.style.transition='opacity .25s';card.style.opacity='.0';setTimeout(function(){card.remove();},260);}
+        });
+        alert('✅ 已删除 '+x.removed.length+' 条'+(x.unknown&&x.unknown.length?'（未找到 '+x.unknown.length+' 条）':'')+'。');
+        setTimeout(function(){location.reload();},700);
+      }else{
+        btn.disabled=false; btn.innerText='🗑 删除已选';
+        alert('删除失败：'+(x&&x.error||'未知错误'));
+      }
+    })
+    .catch(function(err){btn.disabled=false; btn.innerText='🗑 删除已选';alert('删除失败：'+err.message);});
+}
+['kw','fSource','fFarm','fStatus'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener(id==='kw'?'input':'change',applyFilter);});
+document.addEventListener('DOMContentLoaded',function(){
+  NL_ITEMS.forEach(function(it){
+    if(!it||!it.id)return;
+    const id=it.id;
+    try{
+      if(localStorage.getItem('nlok_'+id)==='1'&&it.status==='pending'){
+        const b=document.querySelector('.js-confirm[data-id="'+id+'"]');if(b){b.disabled=true;b.classList.remove('btn-primary');b.classList.add('btn-success');b.innerText='已标记确认 · 待并入';}
+        const h=document.querySelector('.nl-hint[data-id="'+id+'"]');if(h){h.classList.add('show');h.innerText='在 WorkBuddy 对话中发送：确认并入新增文献 '+id;}
+        const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='已确认 · 待并入';p.className='tag primary nl-status';}
+      }
+      if(localStorage.getItem('nlskip_'+id)==='1'&&it.status==='pending'){
+        const s=document.querySelector('.js-skip[data-id="'+id+'"]');if(s){s.disabled=true;s.innerText='已忽略(本地)';}
+        const card=document.querySelector('.nl-card[data-id="'+id+'"]');if(card)card.style.opacity=.55;
+        const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='已忽略(本地标记)';p.className='tag nl-status';}
+      }
+    }catch(err){}
+  });
+  applyFilter();
+  nlUpdateCount();
+  document.querySelectorAll('.nl-pick').forEach(function(cb){cb.addEventListener('change',nlUpdateCount);});
+});
+</script>
+<div class="footer">
+对虾养殖产业数据库工作台 · 数据源：<code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 累计 1,585 条有效记录 · 新增文献待确认 17 篇（每周三 08:00 自动检索，人工确认后并入主库）<br>
+<a href="index.html">返回主页</a> · <a href="newlit.html">新增文献</a> · <a href="database.html">浏览主库</a> · <a href="schema.html">Schema 字典</a>
+</div>
+</div>
+</body>
+</html>

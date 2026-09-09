@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>文献检索 · 对虾养殖产业数据库工作台</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    对虾养殖产业数据库工作台
+  </div>
+  <nav>
+      <a href="index.html" >📊 总览</a>
+      <a href="search.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">🔍 文献检索</a>
+      <a href="etl.html" >⚙️ ETL 流水线</a>
+      <a href="review.html" >✅ 数据审核</a>
+      <a href="quality.html" >🛡️ 数据质量</a>
+      <a href="dedup.html" >🔁 去重</a>
+      <a href="newlit.html" >🆕 新增文献</a>
+      <a href="database.html" >💾 主数据库</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" >📑 数据库综述</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>系统正常</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">主页</a> / 文献检索</div>
+  <h1>🔍 文献检索与采集</h1>
+  <p>近一年（2025-09 ~ 2026-09）国内外 6 个数据库的检索入口 · 检索词构造器 · 灰文献流</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi primary">
+    <div class="label">去重前预计</div>
+    <div class="value">2,529</div>
+    <div class="sub">6 库合计命中</div>
+  </div>
+  <div class="kpi success">
+    <div class="label">去重后预计</div>
+    <div class="value">~1,820</div>
+    <div class="sub">经三级漏斗后</div>
+  </div>
+  <div class="kpi info">
+    <div class="label">本次季度入库</div>
+    <div class="value">0</div>
+    <div class="sub">2026 Q3 真实状态</div>
+  </div>
+  <div class="kpi warn">
+    <div class="label">上次入库时间</div>
+    <div class="value">2025</div>
+    <div class="sub">12 条 · 2024 同期 55 条</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>🛢 6 个数据库 · 一键检索入口</h2>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="exportCSV('检索结果清单')">📥 导出检索清单</button>
+    </div>
+  </div>
+  
+    <div class="external-link">
+      <div class="info">
+        <div class="name"><span style="color:#3b82f6">●</span> Web of Science</div>
+        <div class="desc">区间 2025-09 → 2026-09 · 去重前 487 条 · 去重后预计合并 ~350 条</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="alert('✅ 已触发检索：Web of Science\n\n检索式："TS=((Litopenaeus vannamei OR "white shrimp" OR "Pacific white shrimp") AND (aquaculture OR culture OR pond))"\n\n预计耗时 30-90 秒')">▶ 立即检索</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://www.webofscience.com/wos/woscc/basic-search','_blank')">↗ 官网</button>
+      </div>
+    </div>
+    <div class="external-link">
+      <div class="info">
+        <div class="name"><span style="color:#f97316">●</span> Scopus</div>
+        <div class="desc">区间 2025-09 → 2026-09 · 去重前 412 条 · 去重后预计合并 ~296 条</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="alert('✅ 已触发检索：Scopus\n\n检索式："TITLE-ABS-KEY(Litopenaeus vannamei AND aquaculture)"\n\n预计耗时 30-90 秒')">▶ 立即检索</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://www.webofscience.com/wos/woscc/basic-search','_blank')">↗ 官网</button>
+      </div>
+    </div>
+    <div class="external-link">
+      <div class="info">
+        <div class="name"><span style="color:#10b981">●</span> ScienceDirect</div>
+        <div class="desc">区间 2025-09 → 2026-09 · 去重前 186 条 · 去重后预计合并 ~133 条</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="alert('✅ 已触发检索：ScienceDirect\n\n检索式："TITLE-ABS-KEY(Litopenaeus vannamei AND aquaculture)"\n\n预计耗时 30-90 秒')">▶ 立即检索</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://www.webofscience.com/wos/woscc/basic-search','_blank')">↗ 官网</button>
+      </div>
+    </div>
+    <div class="external-link">
+      <div class="info">
+        <div class="name"><span style="color:#0c8a8a">●</span> 知网 (CNKI)</div>
+        <div class="desc">区间 2014-01 → 2026-09 · 去重前 632 条 · 去重后预计合并 ~455 条</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="alert('✅ 已触发检索：知网 (CNKI)\n\n检索式："主题=对虾 AND 主题=养殖 AND (水质 OR 成本 OR 产量)"\n\n预计耗时 30-90 秒')">▶ 立即检索</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://www.webofscience.com/wos/woscc/basic-search','_blank')">↗ 官网</button>
+      </div>
+    </div>
+    <div class="external-link">
+      <div class="info">
+        <div class="name"><span style="color:#8b5cf6">●</span> 万方数据</div>
+        <div class="desc">区间 2014-01 → 2026-09 · 去重前 518 条 · 去重后预计合并 ~372 条</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="alert('✅ 已触发检索：万方数据\n\n检索式："主题=对虾 AND 主题=养殖 AND (水质 OR 成本 OR 产量)"\n\n预计耗时 30-90 秒')">▶ 立即检索</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://www.webofscience.com/wos/woscc/basic-search','_blank')">↗ 官网</button>
+      </div>
+    </div>
+    <div class="external-link">
+      <div class="info">
+        <div class="name"><span style="color:#ef4444">●</span> 维普 (VIP)</div>
+        <div class="desc">区间 2014-01 → 2026-09 · 去重前 294 条 · 去重后预计合并 ~211 条</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary btn-sm" onclick="alert('✅ 已触发检索：维普 (VIP)\n\n检索式："主题=对虾 AND 主题=养殖 AND (水质 OR 成本 OR 产量)"\n\n预计耗时 30-90 秒')">▶ 立即检索</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://www.webofscience.com/wos/woscc/basic-search','_blank')">↗ 官网</button>
+      </div>
+    </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>🔧 检索式构造器</h2>
+    <div class="actions">
+      <span class="tag primary">3 组检索式模板</span>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div>
+      <h4 style="margin:0 0 8px">英文（WoS / Scopus）</h4>
+      <pre style="background:#0f172a;color:#e2e8f0;padding:14px;border-radius:6px;font-size:11.5px;overflow:auto;line-height:1.7">TS=((Litopenaeus vannamei OR "white shrimp" OR "Pacific white shrimp") AND (aquaculture OR culture OR pond))
+  OR Scopus: TITLE-ABS-KEY(Litopenaeus vannamei AND aquaculture)
+  DOP: 2025-09-01 → 2026-09-08
+  Document Types: Article + Review
+  Language: English</pre>
+    </div>
+    <div>
+      <h4 style="margin:0 0 8px">中文（知网/万方/维普）</h4>
+      <pre style="background:#0f172a;color:#e2e8f0;padding:14px;border-radius:6px;font-size:11.5px;overflow:auto;line-height:1.7">主题=对虾 AND 主题=养殖 AND (水质 OR 成本 OR 产量)
+  来源: CSSCI + 北大核心 + CSCD
+  发表时间: 2025-09-01 → 2026-09-08
+  学科: 水产渔业 / 环境科学
+  检索方式: 高级检索</pre>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📚 灰文献流（行业报告/政府公报）</h2>
+    <button class="btn btn-ghost" onclick="exportCSV('灰文献清单')">📥 导出清单</button>
+  </div>
+  <div class="grid grid-2">
+    <div class="external-link">
+      <div class="info"><div class="name">FAO · 渔业与水产养殖统计</div><div class="desc">Yearbook + FishStatJ · 全球年报与季度更新</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('https://www.fao.org/fishery/statistics','_blank')">↗ 访问</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">NACA · 亚太水产养殖中心网</div><div class="desc">区域年报 + 品种报告 · 季度新闻</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('https://enaca.org/','_blank')">↗ 访问</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">农业农村部 · 渔业渔政管理局</div><div class="desc">中国官方公报 + 月度统计</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('http://www.yyj.moa.gov.cn/','_blank')">↗ 访问</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">中国水产流通与加工协会</div><div class="desc">行业白皮书 + 季度行情</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('http://www.cappma.org.cn/','_blank')">↗ 访问</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">中国渔业协会</div><div class="desc">行业年度报告</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('http://www.china-cfa.org/','_blank')">↗ 访问</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">USDA FAS</div><div class="desc">美国农业部海外农业局 · 全球水产报告</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('https://www.fas.usda.gov/data/search?search=shrimp','_blank')">↗ 访问</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function exportCSV(name){
+  const tb = document.querySelector('table[data-name="'+name+'"]');
+  if(!tb){
+    const rows=[['导出名称',name],['导出时间',new Date().toISOString()],['说明','该面板无可导出表格（可能是图表）']];
+    const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='\ufeff'+rows.map(r=>r.map(c=>esc(c)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    return;
+  }
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[];
+  if(tb.tHead && tb.tHead.rows[0]) rows.push(Array.from(tb.tHead.rows[0].cells).map(c=>esc(c.innerText.trim())));
+  if(tb.tBodies && tb.tBodies[0]) Array.from(tb.tBodies[0].rows).forEach(tr=>{if(tr.style.display==='none')return;rows.push(Array.from(tr.cells).map(c=>esc(c.innerText.trim())));});
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  console.log('已导出 '+name+'：'+rows.length+' 行');
+}
+</script>
+
+<div class="footer">
+对虾养殖产业数据库工作台 · 数据源：<code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 累计 1,585 条有效记录 · 新增文献待确认 17 篇（每周三 08:00 自动检索，人工确认后并入主库）<br>
+<a href="index.html">返回主页</a> · <a href="newlit.html">新增文献</a> · <a href="database.html">浏览主库</a> · <a href="schema.html">Schema 字典</a>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Schema 与字段字典 · 对虾养殖产业数据库工作台</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    对虾养殖产业数据库工作台
+  </div>
+  <nav>
+      <a href="index.html" >📊 总览</a>
+      <a href="search.html" >🔍 文献检索</a>
+      <a href="etl.html" >⚙️ ETL 流水线</a>
+      <a href="review.html" >✅ 数据审核</a>
+      <a href="quality.html" >🛡️ 数据质量</a>
+      <a href="dedup.html" >🔁 去重</a>
+      <a href="newlit.html" >🆕 新增文献</a>
+      <a href="database.html" >💾 主数据库</a>
+      <a href="schema.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">📐 Schema</a>
+      <a href="summary.html" >📑 数据库综述</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>系统正常</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">主页</a> / Schema 字段字典</div>
+  <h1>📐 Schema 与字段字典</h1>
+  <p>5 张事实表 SQL DDL · 13 个核心字段映射字典 · ASCII ER 图 · 统一单位约定</p>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📊 5 张事实表 · SQL DDL</h2>
+    <button class="btn btn-ghost" onclick="exportDDL()">📥 导出 DDL</button>
+  </div>
+  <pre style="background:#0f172a;color:#e2e8f0;padding:16px;border-radius:8px;overflow:auto;font-size:12px;line-height:1.65">-- 对虾养殖产业数据库 · Schema (PostgreSQL 15+)
+
+CREATE TABLE literature (
+  id           BIGSERIAL PRIMARY KEY,
+  doi          VARCHAR(120) UNIQUE,
+  title        TEXT NOT NULL,
+  authors      TEXT[],
+  year         SMALLINT,
+  journal      VARCHAR(200),
+  source_db    VARCHAR(40) NOT NULL,  -- WoS/Scopus/知网/...
+  url          TEXT,
+  abstract     TEXT,
+  ingested_at  TIMESTAMPTZ DEFAULT now(),
+  merged_by    VARCHAR(40),
+  merged_at    TIMESTAMPTZ,
+  merger_version VARCHAR(20)
+);
+
+CREATE TABLE water_quality_fact (
+  id          BIGSERIAL PRIMARY KEY,
+  lit_id      BIGINT REFERENCES literature(id),
+  mode        VARCHAR(60),
+  region      VARCHAR(120),
+  lat         DECIMAL(9,6),
+  lng         DECIMAL(9,6),
+  wt_c        DECIMAL(5,2),
+  salinity    DECIMAL(5,2),
+  do_mg_l     DECIMAL(5,2),
+  ph          DECIMAL(4,2),
+  nh3n_mg_l   DECIMAL(8,3),
+  no3n_mg_l   DECIMAL(8,3),
+  no2n_mg_l   DECIMAL(8,3),
+  cod_mg_l    DECIMAL(8,2),
+  tn_mg_l     DECIMAL(8,2),
+  tp_mg_l     DECIMAL(8,2),
+  tss_mg_l    DECIMAL(8,2),
+  sample_date DATE,
+  evidence_blob TEXT,
+  confidence  DECIMAL(3,2),
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE growth_fact (
+  id          BIGSERIAL PRIMARY KEY,
+  lit_id      BIGINT REFERENCES literature(id),
+  mode        VARCHAR(60),
+  region      VARCHAR(120),
+  initial_w_g DECIMAL(8,3),
+  final_w_g   DECIMAL(8,3),
+  survival_pct DECIMAL(5,2),
+  sgr_pct_day DECIMAL(5,2),
+  fcr         DECIMAL(4,2),
+  yield_kg_m3 DECIMAL(8,2),
+  evidence_blob TEXT,
+  confidence  DECIMAL(3,2)
+);
+
+CREATE TABLE cost_fact (
+  id          BIGSERIAL PRIMARY KEY,
+  lit_id      BIGINT REFERENCES literature(id),
+  mode        VARCHAR(60),
+  item        VARCHAR(60),  -- 苗种/饲料/动保/人工/水电/...
+  cost_yuan_per_mu DECIMAL(12,2),
+  pct_of_total DECIMAL(5,2),
+  year        SMALLINT
+);
+
+CREATE TABLE benefit_fact (
+  id          BIGSERIAL PRIMARY KEY,
+  lit_id      BIGINT REFERENCES literature(id),
+  mode        VARCHAR(60),
+  total_cost   DECIMAL(12,2),
+  total_revenue DECIMAL(12,2),
+  net_profit   DECIMAL(12,2),
+  profit_rate  DECIMAL(5,2),
+  breakeven_price DECIMAL(8,2),
+  yield_kg_per_mu DECIMAL(10,2),
+  year         SMALLINT
+);
+
+CREATE TABLE env_fact (
+  id          BIGSERIAL PRIMARY KEY,
+  lit_id      BIGINT REFERENCES literature(id),
+  impact_type  VARCHAR(60),  -- 全球变暖/富营养化/酸化
+  unit_factor  VARCHAR(30),  -- kg CO2 eq / kg PO4³⁻ / ...
+  substance    VARCHAR(40),
+  factor_value DECIMAL(8,3),
+  emissions_kg DECIMAL(10,3)
+);
+
+CREATE INDEX idx_wq_lit ON water_quality_fact(lit_id);
+CREATE INDEX idx_wq_mode ON water_quality_fact(mode);
+CREATE INDEX idx_growth_lit ON growth_fact(lit_id);
+CREATE INDEX idx_cost_mode ON cost_fact(mode,year);
+CREATE INDEX idx_lit_year ON literature(year);</pre>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>🔗 ER 关系图（ASCII）</h2>
+  </div>
+  <pre style="background:#fafbfc;color:#1f2937;padding:16px;border-radius:8px;font-size:11.5px;line-height:1.6;border:1px solid var(--c-border)">
+┌─────────────────┐         ┌──────────────────────┐
+│   literature    │ 1     * │ water_quality_fact   │
+│─────────────────│◄────────│──────────────────────│
+│ id (PK)         │         │ id (PK)              │
+│ doi (UQ)        │         │ lit_id (FK)          │
+│ title           │         │ mode, region         │
+│ authors[]       │         │ wt_c, do_mg_l, ph    │
+│ year, journal   │         │ nh3n/no3n/no2n_mg_l  │
+│ source_db       │         │ cod/tn/tp/tss_mg_l   │
+└────────┬────────┘         │ confidence           │
+         │ 1                └──────────────────────┘
+         │
+         │  ┌──────────────────────┐
+         ├─►│   growth_fact        │
+         │  │──────────────────────│
+         │  │ initial_w_g, final_w │
+         │  │ survival_pct, sgr    │
+         │  │ fcr, yield_kg_m3     │
+         │  └──────────────────────┘
+         │
+         │  ┌──────────────────────┐
+         ├─►│   cost_fact          │
+         │  │──────────────────────│
+         │  │ item (苗/饲/动/...) │
+         │  │ cost_yuan_per_mu     │
+         │  └──────────────────────┘
+         │
+         │  ┌──────────────────────┐
+         ├─►│   benefit_fact       │
+         │  │──────────────────────│
+         │  │ total_cost/revenue   │
+         │  │ net_profit, breakeven│
+         │  └──────────────────────┘
+         │
+         │  ┌──────────────────────┐
+         └─►│   env_fact           │
+            │──────────────────────│
+            │ impact_type          │
+            │ unit_factor, factor  │
+            └──────────────────────┘</pre>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📖 字段映射字典（13 个核心字段）</h2>
+    <button class="btn btn-ghost" onclick="exportCSV('字段字典')">📥 导出字典</button>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>标准字段</th><th>同义词/变体</th><th>单位约定</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><b>water_temp_c</b></td><td>水温、WT、T、Temp、Temperatura</td><td>°C</td><td>DECIMAL(5,2)</td></tr>
+        <tr><td><b>salinity</b></td><td>盐度、Salt、Sal</td><td>psu (无量纲)</td><td>DECIMAL(5,2)</td></tr>
+        <tr><td><b>do_mg_l</b></td><td>溶解氧、DO、Dissolved Oxygen、Oxígeno</td><td>mg/L</td><td>DECIMAL(5,2)</td></tr>
+        <tr><td><b>ph</b></td><td>pH 值、酸碱度</td><td>无量纲</td><td>DECIMAL(4,2)</td></tr>
+        <tr><td><b>nh3n_mg_l</b></td><td>氨氮、NH₃-N、NH3-N、TAN</td><td>mg/L</td><td>DECIMAL(8,3)</td></tr>
+        <tr><td><b>no3n_mg_l</b></td><td>硝氮、硝酸盐氮、NO₃⁻-N、Nitrate</td><td>mg/L</td><td>DECIMAL(8,3)</td></tr>
+        <tr><td><b>no2n_mg_l</b></td><td>亚硝氮、亚硝酸盐氮、NO₂⁻-N、Nitrite</td><td>mg/L</td><td>DECIMAL(8,3)</td></tr>
+        <tr><td><b>cod_mg_l</b></td><td>COD、化学需氧量</td><td>mg/L</td><td>DECIMAL(8,2)</td></tr>
+        <tr><td><b>tn_mg_l</b></td><td>总氮、TN</td><td>mg/L</td><td>DECIMAL(8,2)</td></tr>
+        <tr><td><b>tp_mg_l</b></td><td>总磷、TP</td><td>mg/L</td><td>DECIMAL(8,2)</td></tr>
+        <tr><td><b>survival_pct</b></td><td>存活率、成活率、Survival</td><td>%</td><td>DECIMAL(5,2)</td></tr>
+        <tr><td><b>fcr</b></td><td>饵料系数、饲料系数、FCR</td><td>无量纲</td><td>DECIMAL(4,2)</td></tr>
+        <tr><td><b>yield_kg_m3</b></td><td>产量、单产</td><td>kg/m³</td><td>DECIMAL(8,2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>⚙️ 单位换算与质量约定</h2>
+  </div>
+  <div class="grid grid-2">
+    <div>
+      <h4>水质</h4>
+      <ul style="font-size:13px;line-height:1.8">
+        <li>mg/L = ppm（淡水/低盐度近似 1:1）</li>
+        <li>mg/L × 分子量/1000 = mmol/L</li>
+        <li>NH₃-N + NH₄⁺-N = TAN (Total Ammonia Nitrogen)</li>
+        <li>温度/酸碱度联合决定 NH₃ 毒性</li>
+      </ul>
+    </div>
+    <div>
+      <h4>成本/产量</h4>
+      <ul style="font-size:13px;line-height:1.8">
+        <li>1 亩 = 666.67 m²</li>
+        <li>1 元/kg = 1000 元/吨</li>
+        <li>1 kg/m³ = 0.0624 lb/gal (US)</li>
+        <li>FCR = 投饵量 / 增重量</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>📊 当前主库容量（基于 xlsx 真实统计）</h2></div>
+  <div class="kpi-grid">
+    <div class="kpi info"><div class="label">水质参数数据</div><div class="value">376</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">生长参数</div><div class="value">263</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">产污与污染当量</div><div class="value">87</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">基础设施与饲养</div><div class="value">30</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">环境影响</div><div class="value">20</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">生物絮团养殖</div><div class="value">31</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">经济效益分析</div><div class="value">14</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">成本构成明细</div><div class="value">135</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">环境成本及效率</div><div class="value">92</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">东营工厂化数据库</div><div class="value">108</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">水质参数与生长参数对应数据</div><div class="value">305</div><div class="sub">对应事实表</div></div><div class="kpi info"><div class="label">调研与养殖试验数据</div><div class="value">124</div><div class="sub">对应事实表</div></div>
+  </div>
+</div>
+
+<script>
+function exportDDL(){
+  const ddl=`-- 对虾养殖产业数据库 Schema · 导出于 ${new Date().toISOString()}\n\nCREATE TABLE literature (id BIGSERIAL PRIMARY KEY, doi VARCHAR UNIQUE, title TEXT);\n-- 共 6 张表 · 5 张事实表 + literature 维表`;
+  const blob=new Blob([ddl],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='schema_'+new Date().toISOString().slice(0,10)+'.sql';a.click();
+  alert('✅ DDL 已导出');
+}
+function exportCSV(name){
+  const tb = document.querySelector('table[data-name="'+name+'"]');
+  if(!tb){
+    const rows=[['导出名称',name],['导出时间',new Date().toISOString()],['说明','该面板无可导出表格（可能是图表）']];
+    const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='\ufeff'+rows.map(r=>r.map(c=>esc(c)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    return;
+  }
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[];
+  if(tb.tHead && tb.tHead.rows[0]) rows.push(Array.from(tb.tHead.rows[0].cells).map(c=>esc(c.innerText.trim())));
+  if(tb.tBodies && tb.tBodies[0]) Array.from(tb.tBodies[0].rows).forEach(tr=>{if(tr.style.display==='none')return;rows.push(Array.from(tr.cells).map(c=>esc(c.innerText.trim())));});
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  console.log('已导出 '+name+'：'+rows.length+' 行');
+}
+</script>
+
+<div class="footer">
+对虾养殖产业数据库工作台 · 数据源：<code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 累计 1,585 条有效记录 · 新增文献待确认 17 篇（每周三 08:00 自动检索，人工确认后并入主库）<br>
+<a href="index.html">返回主页</a> · <a href="newlit.html">新增文献</a> · <a href="database.html">浏览主库</a> · <a href="schema.html">Schema 字典</a>
+</div>
+</div>
+</body>
+</html>

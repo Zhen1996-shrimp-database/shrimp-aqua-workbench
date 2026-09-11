@@ -269,7 +269,7 @@ tbody tr:hover{background:#fafbfc}
 </div>
 
 <div class="alert">
-  <b>指标口径</b>　<b>经济</b> = 利润 Profit（USD/m²，越高越好）｜<b>生态</b> = 排放强度 Emission（g/kg，越低越好）｜<b>社会</b> = 社会效益价值 Social Benefit（USD/m²＝蛋白产出 + 社会补贴 + 碳汇）｜<b>综合</b> = 三目标归一化得分 <code>profit<sub>n</sub> + social<sub>n</sub> − emission<sub>n</sub></code>（归一化区间 50–150 天）。
+  <b>指标口径</b>　<b>经济</b> = 利润 Profit（USD/m²，越高越好）｜<b>生态</b> = 排放强度 Emission（g/kg，越低越好）｜<b>社会</b> = 社会效益价值 Social Benefit（USD/m² ＝ <code>V<sub>protein</sub> + V<sub>subsidy</sub> + V<sub>carbon</sub> + V<sub>women</sub></code>，即蛋白产出 + 社会岗位收入 + 碳汇价值 + 女性占比收入价值）｜<b>综合</b> = 三目标归一化得分 <code>profit<sub>n</sub> + social<sub>n</sub> − emission<sub>n</sub></code>（归一化区间 50–150 天）。
 </div>
 
 <div class="panel">
@@ -373,7 +373,7 @@ tbody tr:hover{background:#fafbfc}
       <div class="chips" id="indScenSocial" data-target="social"></div>
     </div>
   </div>
-  <p class="legend-note">社会效益价值 = 蛋白产出 + 社会补贴 + 碳汇。把所有已选模式叠在同一张图上对比「谁社会贡献更大」。曲线颜色 = 模式。</p>
+  <p class="legend-note">社会效益价值 <code>S<sub>t</sub> = V<sub>protein</sub> + V<sub>subsidy</sub> + V<sub>carbon</sub> + V<sub>women</sub></code>＝ 蛋白产出 + 社会岗位收入 + 碳汇价值 + <b>女性占比收入价值</b>。把所有已选模式叠在同一张图上对比「谁社会贡献更大」。曲线颜色 = 模式。</p>
   <div id="indChartSocial" class="chart chart-lg"></div>
 </div>
 
@@ -391,7 +391,7 @@ tbody tr:hover{background:#fafbfc}
   </div>
   <p class="legend-note">直接编辑任意数值单元格：编辑只进入<b>暂存队列</b>（橙色描边），<b>不会立即重算</b>；元信息（名称 / 类型 / 体系）实时生效。点右上角 <b>「✓ 一键应用修改」</b> 才统一提交并刷新全部图表，<b>「↺ 撤销修改」</b> 可丢弃暂存。<b>＋ 新增模式</b>会复制当前选中模式的参数作为新列，可一并勾选要删除的旧模式。灰底行为<b>派生存</b>。所有提交过的修改自动保存在本浏览器，点页面右上角「↺ 恢复 R 代码默认」可一键还原。</p>
   <div class="ptable-wrap"><table class="ptable editable" id="paramTable"></table></div>
-  <div class="hint">※ 内置 12 组参数与 R 代码一一对应；案例 PMC / PIMTA / PMC_S 三组在本页的计算结果与 R 输出完全一致（蛋白比例 0.25 × 蛋白价格 20、补贴 0.03，与 R 默认值相同）。「性别平等」为记录项，R 口径未纳入公式。</div>
+  <div class="hint">※ 内置 12 组参数与 R 代码一一对应；案例 PMC / PIMTA / PMC_S 三组在本页的计算结果与 R 输出完全一致（蛋白比例 0.25 × 蛋白价格 20、补贴 0.03，与 R 默认值相同）。<b>「女性占比收入价值 γ」已按 V<sub>women</sub> = γ × t 纳入社会效益公式</b>（本页扩展口径；如需与 R 原输出严格对齐，把 γ 设为 0 即可）。</div>
 </div>
 
 <script>
@@ -449,7 +449,8 @@ var Fr={},Gr={};var Wr,Hr=function(){function t(t,e,n){var i=this;this._sleepAft
      price     = -40.7 / base + 9.2467                  (USD/kg)
      profit    = yield * price - cost * t               (USD/m²)
      emission  = ((poll+co2)*t + build_CO2) / yield     (g/kg)
-     social    = yield*protein*price + subsidy*t + yield*carbon
+     social    = yield*protein*price + subsidy*t + yield*carbon + gender*t
+               = V_protein + V_subsidy + V_carbon + V_women
      score     = profit_n + social_n - emission_n       (归一化区间 50–150 天)
    ===================================================================== */
 const T_MAX = 150, DT = 0.1;
@@ -472,10 +473,11 @@ const DEFAULT_MODELS = [
  {id:'tot_isirc', name:'Total_ISIRC', type:'Total', sys:'ISIC', pair:'ISIC_2', color:'#db2777', n0:500, z:-0.00225, cost:0.228273004, rLow:0.9926, rMid:0.983, rHigh:0.974, base:19.9, poll:0.9518, co2:69.58, build:40.3, harvest:120, carbon:-0.03, protein:0.25, price:20, subsidy:0.043, gender:0.0215},
  {id:'tot_isbic', name:'Total_ISBIC', type:'Total', sys:'ISIC', pair:'ISIRC', color:'#b45309', n0:800, z:-0.00553, cost:0.121358958, rLow:0.986276, rMid:0.981, rHigh:0.97555, base:19.9, poll:5.7122, co2:80.64, build:40.3, harvest:120, carbon:-0.04, protein:0.25, price:20, subsidy:0.038, gender:0.019}
 ];
-DEFAULT_MODELS.forEach(m => { if (m.protein == null) m.protein = 0.25; if (m.price == null) m.price = 20; });
+DEFAULT_MODELS.forEach(m => { if (m.protein == null) m.protein = 0.25; if (m.price == null) m.price = 20;
+  if (m.gender == null) m.gender = 0; if (m.subsidy == null) m.subsidy = 0; });
 
 /* 参数表数据版本：改参数表时必须同步 +1，用于作废旧 localStorage 缓存 */
-const DATA_VERSION = 'v4.2026-09-11-rcode';
+const DATA_VERSION = 'v5.2026-09-11-gender';
 
 /* 用户新增案例时轮换使用的配色 */
 const USER_PALETTE = ['#2563eb','#0d9488','#d946ef','#65a30d','#e11d48','#0284c7','#9333ea','#ea580c','#059669','#b45309'];
@@ -513,7 +515,7 @@ const PARAM_DEFS = [
   {k:'protein', label:'蛋白比例 protein_ratio',             unit:'无量纲',      step:0.05,     dec:2,  grp:'社会'},
   {k:'price',   label:'蛋白价格 protein_price',             unit:'USD/kg',      step:1,        dec:2,  grp:'社会'},
   {k:'subsidy', label:'每日社会收入价值 subsidy_daily',      unit:'USD/(m²·d)',  step:0.005,    dec:4,  grp:'社会'},
-  {k:'gender',  label:'性别平等（女性社会收入价值）',         unit:'USD/(m²·d)',  step:0.005,    dec:4,  grp:'社会', info:'R 口径未纳入公式，仅作记录'}
+  {k:'gender',  label:'女性占比收入价值 γ gender（V_women）',  unit:'USD/(m²·d)',  step:0.005,    dec:4,  grp:'社会', info:'V_women = γ × t，已纳入社会效益公式 S_t（本页扩展项，R 原公式未含）'}
 ];
 /* 派生行（只读，由参数实时换算） */
 const DERIVED_ROWS = [
@@ -544,8 +546,13 @@ function profitAt(m, r){ const b = baseAt(m,r), y = yieldAt(m,r), p = priceAt(b)
   return T.map((t,i) => y[i]*p[i] - m.cost*t); }
 function emitAt(m, r){ const y = yieldAt(m,r);
   return T.map((t,i) => ((m.poll + m.co2)*t + m.build) / y[i]); }
+/* 社会效益 S_t = V_protein + V_subsidy + V_carbon + V_women
+     V_protein = Y_t × α × ρ   蛋白产出（Y=单位面积产量, α=蛋白比例, ρ=蛋白价格）
+     V_subsidy = δ × t         社会岗位收入（δ=每日社会收入价值）
+     V_carbon  = Y_t × β       碳汇价值（β=碳系数，正=碳汇 / 负=碳源）
+     V_women   = γ × t         女性占比收入价值（γ=gender 女性社会收入价值） */
 function socialAt(m, r){ const y = yieldAt(m,r);
-  return T.map((t,i) => y[i]*(m.protein || 0.25)*(m.price || 20) + m.subsidy*t + y[i]*m.carbon); }
+  return T.map((t,i) => y[i]*(m.protein || 0.25)*(m.price || 20) + m.subsidy*t + y[i]*m.carbon + (m.gender || 0)*t); }
 function scoreAt(m, r){
   const p = profitAt(m,r), s = socialAt(m,r), e = emitAt(m,r);
   const nrm = a => { const sl = a.slice(IDX50); const mn = Math.min.apply(null, sl), mx = Math.max.apply(null, sl);
@@ -830,7 +837,8 @@ function renderDualGrid(){
     const box = document.createElement('div');
     box.innerHTML = '<h3 style="margin:0 0 8px;font-size:13px">' + m.name +
       ' <span class="badge ' + (m.type === '案例' ? 'case' : 'total') + '">' + m.type +
-      '</span> <span style="font-size:11px;color:#6b7280">碳汇系数 ' + m.carbon + '</span></h3>';
+      '</span> <span style="font-size:11px;color:#6b7280">碳汇系数 ' + m.carbon +
+      '　女性收入 γ ' + (m.gender || 0) + '</span></h3>';
     const div = document.createElement('div'); div.className = 'chart sm';
     box.appendChild(div); document.getElementById('dualGrid').appendChild(box);
     const id = 'du_' + m.id; div.id = id;
@@ -1412,6 +1420,9 @@ function importJson(text){
     if (!m.type) m.type = '案例';
     if (m.protein == null) m.protein = 0.25;
     if (m.price   == null) m.price   = 20;
+    if (m.gender  == null) m.gender  = 0;
+    if (m.subsidy == null) m.subsidy = 0;
+    if (m.carbon  == null) m.carbon  = 0;
   });
   rebuildIndex();
   state.models = new Set(MODELS.slice(0, 3).map(m => m.id));

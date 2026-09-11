@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>效益评估 · 对虾养殖产业数据库工作台</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    对虾养殖产业数据库工作台
+  </div>
+  <nav>
+      <a href="index.html" >📊 总览</a>
+      <a href="search.html" >🔍 文献检索</a>
+      <a href="etl.html" >⚙️ ETL 流水线</a>
+      <a href="review.html" >✅ 数据审核</a>
+      <a href="quality.html" >🛡️ 数据质量</a>
+      <a href="dedup.html" >🔁 去重</a>
+      <a href="newlit.html" >🆕 新增文献</a>
+      <a href="benefit.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">📈 效益评估</a>
+      <a href="database.html" >💾 主数据库</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" >📑 数据库综述</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>系统正常</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<style>
+.ben-grid{display:grid;gap:16px}
+.ben-grid.g2{grid-template-columns:repeat(auto-fit,minmax(430px,1fr))}
+.chart{width:100%;height:390px}
+.chart.sm{height:330px}
+.ctrl-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px dashed var(--c-border)}
+.ctrl-row:last-child{border-bottom:none}
+.ctrl-label{flex:0 0 84px;font-size:12px;color:var(--c-muted);font-weight:600;padding-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--c-border);border-radius:999px;font-size:12px;background:#fff;cursor:pointer;user-select:none;transition:.15s}
+.chip:hover{border-color:var(--c-primary)}
+.chip.on{background:var(--c-primary-l);border-color:var(--c-primary);color:var(--c-primary-d);font-weight:600}
+.chip .sw{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto}
+.chip.grp{background:#f3f4f6;color:var(--c-muted);cursor:default;font-weight:600;border-style:dashed;pointer-events:none}
+.ctrl-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;padding-top:2px}
+.legend-note{font-size:12px;color:var(--c-muted);margin:0 0 12px;line-height:1.7}
+.legend-note code{background:#f3f4f6;padding:1px 5px;border-radius:4px;color:#374151}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;background:#f3f4f6;color:#374151}
+.badge.case{background:#e8f4f4;color:#0a6f6f}
+.badge.total{background:#fef3c7;color:#92400e}
+.ptable-wrap{overflow:auto;max-height:580px;border:1px solid var(--c-border);border-radius:8px}
+.ptable{width:100%;border-collapse:collapse;font-size:12px;min-width:1180px}
+.ptable th,.ptable td{padding:7px 10px;border-bottom:1px solid var(--c-border);text-align:right;white-space:nowrap}
+.ptable th:first-child,.ptable td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:2;box-shadow:1px 0 0 var(--c-border)}
+.ptable thead th{background:#fafbfc;position:sticky;top:0;z-index:3}
+.ptable thead th:first-child{z-index:4}
+.ptable tbody tr:hover td{background:#fafbfc}
+.ptable tbody tr:hover td:first-child{background:#f5f7f9}
+.hint{font-size:12px;color:var(--c-muted);margin-top:8px}
+/* 可编辑表格 */
+.ptable.editable{min-width:1320px}
+.ptable.editable th:first-child,.ptable.editable td:first-child{width:286px;min-width:286px;max-width:286px;white-space:normal;line-height:1.5;vertical-align:middle}
+.ptable.editable thead th{vertical-align:middle}
+.ptable.editable thead th:first-child{font-weight:700}
+.ptable>thead>tr>th{padding:8px 10px}
+.phead{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:150px}
+.pdot{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.ptable input.pin{width:98px;padding:4px 6px;border:1px solid var(--c-border);border-radius:5px;
+  font-size:12px;text-align:right;background:#fff;font-variant-numeric:tabular-nums}
+.ptable input.pin:hover{border-color:#c9cfd6}
+.ptable input.pin:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.ptable input.ptxt{width:104px;padding:3px 5px;border:1px solid var(--c-border);border-radius:5px;
+  font-size:12px;font-weight:600;background:#fff;color:#111827}
+.ptable input.ptxt:focus{outline:none;border-color:var(--c-primary)}
+.ptable input.psel-sys{width:62px;font-weight:500}
+.ptable input.psel-pair{width:74px;font-weight:500}
+.ptable select.psel{padding:3px 4px;border:1px solid var(--c-border);border-radius:5px;font-size:11px;background:#fff}
+.ptable .pdel{border:none;background:#fee2e2;color:#b91c1c;border-radius:5px;width:20px;height:20px;
+  line-height:1;cursor:pointer;font-size:14px;font-weight:700;padding:0}
+.ptable .pdel:hover{background:#fecaca}
+.pu{color:var(--c-muted);font-weight:400;font-size:11px}
+.pinfo{display:inline-block;margin-left:4px;width:13px;height:13px;line-height:13px;text-align:center;
+  border-radius:50%;background:#e5e7eb;color:#4b5563;font-size:9px;cursor:help;vertical-align:middle}
+.ptable tr.pderived td{background:#f7f8fa;color:#6b7280;font-size:11px;font-variant-numeric:tabular-nums}
+.ptable tr.pderived td:first-child{background:#f2f4f6}
+.ptable tr.pderived:hover td{background:#f2f4f6}
+</style>
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">总览</a> / 效益评估</div>
+  <h1>📈 效益评估 · 多模式综合分析</h1>
+  <p>基于 12 组内置模式参数（案例 / Total × PMC / PIMTA / PMC_S / ISIC），支持<b>在线修改参数、新增自定义案例</b>，并从单指标、任意组合、案例 vs Total 对照、三目标综合效益（Max / Mean / Min 三种生长率情境）多角度对比分析。</p>
+</div>
+
+<div class="alert">
+  <b>指标口径</b>　<b>经济</b> = 利润 Profit（USD/m²，越高越好）｜<b>生态</b> = 排放强度 Emission（g/kg，越低越好）｜<b>社会</b> = 社会效益价值 Social Benefit（USD/m²＝蛋白产出 + 社会补贴 + 碳汇）｜<b>综合</b> = 三目标归一化得分 <code>profit<sub>n</sub> + social<sub>n</sub> − emission<sub>n</sub></code>（归一化区间 50–150 天）。
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>控制面板</h2>
+    <div class="actions"><span class="badge" id="selInfo"></span>
+      <button class="btn btn-ghost btn-sm" id="btnReset">↺ 恢复 R 代码默认</button></div>
+  </div>
+  <div class="ctrl-row"><div class="ctrl-label">模式选择</div><div class="chips" id="modelChips"></div></div>
+  <div class="ctrl-row"><div class="ctrl-label">温度情境</div><div class="chips" id="scenChips"></div>
+    <div class="ctrl-actions">
+      <button class="btn btn-ghost btn-sm" data-preset="case">仅案例</button>
+      <button class="btn btn-ghost btn-sm" data-preset="total">仅 Total</button>
+      <button class="btn btn-ghost btn-sm" data-preset="pmc">PMC 系</button>
+      <button class="btn btn-ghost btn-sm" data-preset="isic">ISIC 系</button>
+      <button class="btn btn-ghost btn-sm" data-preset="all">全选</button>
+      <button class="btn btn-ghost btn-sm" data-preset="clear">清空</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>① 单指标分析</h2>
+    <div class="actions">
+      <label style="font-size:12px;color:var(--c-muted);display:flex;align-items:center;gap:5px">
+        <input type="checkbox" id="invEco"> 生态轴反转（越低越好）</label>
+    </div>
+  </div>
+  <p class="legend-note">同一指标下叠加显示「所有已选模式 × 已选情境」的曲线：颜色区分模式，线型区分情境（Max 虚线 / Mean 实线 / Min 点线）。</p>
+  <div class="tabs" id="indTabs">
+    <div class="tab active" data-ind="profit">经济 · 利润</div>
+    <div class="tab" data-ind="emission">生态 · 排放</div>
+    <div class="tab" data-ind="social">社会 · 社会效益</div>
+    <div class="tab" data-ind="score">综合 · 综合效益</div>
+  </div>
+  <div id="indChart" class="chart"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>② 案例 vs Total 对比</h2>
+    <div class="actions">
+      <span style="font-size:12px;color:var(--c-muted);align-self:center">指标</span>
+      <select id="pairMetric" class="btn btn-ghost btn-sm" style="padding:6px 10px">
+        <option value="peak">利润峰值</option>
+        <option value="harvestProfit">收获期利润</option>
+        <option value="harvestEmit">收获期排放强度</option>
+        <option value="best">综合效益最佳值</option>
+        <option value="socialEnd">社会效益终值</option>
+      </select>
+    </div>
+  </div>
+  <p class="legend-note">同一养殖体系下，<b>案例</b>（实测/单案例）与 <b>Total</b>（汇总）的口径对照；以当前已选情境中的第一个情境计算。</p>
+  <div id="pairChart" class="chart"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>③ 综合效益曲线（Max / Mean / Min）</h2></div>
+  <p class="legend-note">复刻 R 代码图 2：每个已选模式一张子图，三条曲线为高/中/低生长率情境，并标注各自的最佳点（<code>argmax(profit<sub>n</sub>+social<sub>n</sub>−emission<sub>n</sub>)</code>）。</p>
+  <div class="ben-grid g2" id="scoreGrid"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>④ 双轴总览（利润 + 社会效益 vs 排放强度）</h2></div>
+  <p class="legend-note">复刻 R 代码图 1：左轴＝利润（实线，Min/Mean/Max）与社会效益（实线），右轴＝排放强度（虚线，g/kg）；◆ 为利润峰值，▲ 为收获点，★ 为三目标最佳点。</p>
+  <div class="ben-grid g2" id="dualGrid"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>⑤ 参数编辑（可改参数 · 可增案例）</h2>
+    <div class="actions">
+      <button class="btn btn-sm" id="btnAddModel">＋ 新增模式</button>
+      <button class="btn btn-ghost btn-sm" id="btnExportJson">导出 JSON</button>
+      <button class="btn btn-ghost btn-sm" id="btnExportCsv">导出 CSV</button>
+      <button class="btn btn-ghost btn-sm" id="btnImportJson">导入 JSON</button>
+      <input type="file" id="fileImport" accept=".json,application/json" hidden>
+    </div>
+  </div>
+  <p class="legend-note">直接编辑任意数值单元格，上方所有图表<b>实时重算</b>；表头可改<b>名称 / 类型 / 体系 / 配对键</b>，<b>×</b> 删除该模式，<b>＋ 新增模式</b>会复制当前选中模式的参数作为新列。灰底行为<b>派生存</b>（由 z、r 自动换算 DO 与温度）。所有修改自动保存在本浏览器，点右上角「↺ 恢复 R 代码默认」可一键还原。</p>
+  <div class="ptable-wrap"><table class="ptable editable" id="paramTable"></table></div>
+  <div class="hint">※ 内置 12 组参数与 R 代码一一对应；案例 PMC / PIMTA / PMC_S 三组在本页的计算结果与 R 输出完全一致（蛋白比例 0.25 × 蛋白价格 20、补贴 0.03，与 R 默认值相同）。「性别平等」为记录项，R 口径未纳入公式。</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>
+/* =====================================================================
+   效益评估 · 前端实现
+   数学口径与用户 R 代码保持一致：
+     base(r,t) = 0.1 + B * ((1 - r^t)/(1 - r^150))^3
+     yield     = n0 * exp(z*t) * base / 1000            (kg/m²)
+     price     = -40.7 / base + 9.2467                  (USD/kg)
+     profit    = yield * price - cost * t               (USD/m²)
+     emission  = ((poll+co2)*t + build_CO2) / yield     (g/kg)
+     social    = yield*protein*price + subsidy*t + yield*carbon
+     score     = profit_n + social_n - emission_n       (归一化区间 50–150 天)
+   ===================================================================== */
+const T_MAX = 150, DT = 0.1;
+const T = [];
+for (let x = 0; x <= T_MAX + 1e-9; x += DT) T.push(+x.toFixed(2));
+const IDX50 = T.findIndex(v => v >= 50 - 1e-9);
+
+/* 12 组内置参数（与 R 代码 / 参数表一一对应）；colour 用于曲线配色，pair 用于「案例 vs Total」配对 */
+const DEFAULT_MODELS = [
+ {id:'case_pmc',  name:'案例 PMC',   type:'案例', sys:'PMC',  pair:'PMC',    color:'#0c8a8a', n0:230, z:-0.00616,     cost:0.048,       rLow:0.984447, rMid:0.9777696, rHigh:0.96966,  base:18,  poll:0.199416667, co2:5.65,  build:50,   harvest:120, carbon:-0.02, subsidy:0.03,  gender:0.01},
+ {id:'case_pimta',name:'案例 PIMTA', type:'案例', sys:'PMC',  pair:'PIMTA',  color:'#f97316', n0:60,  z:-0.001918368, cost:0.0109,      rLow:0.991267, rMid:0.98465625,rHigh:0.9771,   base:23,  poll:0.021333333, co2:0.32,  build:50,   harvest:121, carbon:0.08,   subsidy:0.03,  gender:0.01},
+ {id:'case_pmcs', name:'案例 PMC_S', type:'案例', sys:'PMC',  pair:'PMC_S',  color:'#7c3aed', n0:80,  z:-0.007,       cost:0.01664,     rLow:0.9988,   rMid:0.9880533, rHigh:0.977224, base:25,  poll:0.111,       co2:2.97,  build:50,   harvest:120, carbon:-0.01,  subsidy:0.03,  gender:0.01},
+ {id:'tot_pmc',   name:'Total PMC',  type:'Total',sys:'PMC',  pair:'PMC',    color:'#0891b2', n0:100, z:-0.00616,     cost:0.015311,    rLow:0.984447, rMid:0.9777696, rHigh:0.96966,  base:21,  poll:0.431,       co2:5.65,  build:50,   harvest:120, carbon:-0.01,  subsidy:0.03,  gender:0.015},
+ {id:'tot_pimta', name:'Total PIMTA',type:'Total',sys:'PMC',  pair:'PIMTA',  color:'#ea580c', n0:100, z:-0.00163,     cost:0.015311,    rLow:0.991267, rMid:0.98465625,rHigh:0.9771,   base:19,  poll:0.418583333, co2:0.32,  build:50,   harvest:120, carbon:0.06,   subsidy:0.03,  gender:0.015},
+ {id:'tot_pmcs',  name:'Total PMC_S',type:'Total',sys:'PMC',  pair:'PMC_S',  color:'#a855f7', n0:80,  z:-0.007,       cost:0.01524,     rLow:0.9988,   rMid:0.9880533, rHigh:0.977224, base:25,  poll:0.3525,      co2:2.97,  build:50,   harvest:120, carbon:0.00,   subsidy:0.03,  gender:0.015},
+ {id:'case_isic1',name:'案例 ISIC_1',type:'案例', sys:'ISIC', pair:'ISIC_1', color:'#16a34a', n0:800, z:-0.0009723,   cost:0.488262911, rLow:0.982,    rMid:0.9802,    rHigh:0.97865,  base:21,  poll:8.0393,      co2:106.43,build:40.3, harvest:120, carbon:-0.03,  subsidy:0.14,  gender:0.07},
+ {id:'case_isic2',name:'案例 ISIC_2',type:'案例', sys:'ISIC', pair:'ISIC_2', color:'#84cc16', n0:700, z:-0.00058,     cost:0.488262911, rLow:0.982,    rMid:0.9802,    rHigh:0.97865,  base:19,  poll:0.9518,      co2:69.58, build:40.3, harvest:120, carbon:-0.03,  subsidy:0.14,  gender:0.07},
+ {id:'case_isirc',name:'案例 ISIRC', type:'案例', sys:'ISIC', pair:'ISIRC',  color:'#ca8a04', n0:600, z:0.000866564,  cost:0.824232971, rLow:0.9864,   rMid:0.98175,   rHigh:0.9771,   base:30,  poll:5.7122,      co2:80.64, build:40.3, harvest:120, carbon:-0.04,  subsidy:0.54,  gender:0.27},
+ {id:'tot_isic',  name:'Total ISIC', type:'Total',sys:'ISIC', pair:'ISIC_1', color:'#dc2626', n0:800, z:-0.00217,     cost:0.359460552, rLow:0.985656, rMid:0.977,     rHigh:0.968792, base:19.9,poll:8.0393,      co2:106.43,build:40.3, harvest:120, carbon:-0.03,  subsidy:0.024, gender:0.012},
+ {id:'tot_isirc', name:'Total ISIRC',type:'Total',sys:'ISIC', pair:'ISIC_2', color:'#db2777', n0:500, z:-0.00225,     cost:0.228273004, rLow:0.9926,   rMid:0.983,     rHigh:0.974,    base:19.9,poll:0.9518,      co2:69.58, build:40.3, harvest:120, carbon:-0.03,  subsidy:0.043, gender:0.0215},
+ {id:'tot_isbic', name:'Total ISBIC',type:'Total',sys:'ISIC', pair:'ISIRC',  color:'#b45309', n0:800, z:-0.00553,     cost:0.121358958, rLow:0.986276, rMid:0.981,     rHigh:0.97555,  base:19.9,poll:5.7122,      co2:80.64, build:40.3, harvest:120, carbon:-0.04,  subsidy:0.038, gender:0.019}
+];
+DEFAULT_MODELS.forEach(m => { m.protein = 0.25; m.price = 20; });
+
+/* 用户新增案例时轮换使用的配色 */
+const USER_PALETTE = ['#2563eb','#0d9488','#d946ef','#65a30d','#e11d48','#0284c7','#9333ea','#ea580c','#059669','#b45309'];
+
+const cloneModels = a => a.map(m => Object.assign({}, m));
+let MODELS = cloneModels(DEFAULT_MODELS);
+let MMAP = {};
+function rebuildIndex(){ MMAP = {}; MODELS.forEach(m => MMAP[m.id] = m); }
+rebuildIndex();
+
+const SCENS = [
+  {key:'Max',  field:'rHigh', eq:'高生长率', line:'dashed',  color:'#B85C4A'},
+  {key:'Mean', field:'rMid',  eq:'中生长率', line:'solid',   color:'#D98F5C'},
+  {key:'Min',  field:'rLow',  eq:'低生长率', line:'dotted',  color:'#F0C8A0'}
+];
+
+const CLR = {profitMax:'#B87B4E', profitMean:'#D6A37A', profitMin:'#E9CAB2',
+             pollMax:'#4C7A5E', pollMean:'#7BA38A', pollMin:'#B0CDBC', social:'#5B8B7A',
+             bestMax:'#7A4B6B', bestMean:'#A57A9A', bestMin:'#C9AFC0', peak:'#8B4A3A'};
+
+/* ---------------- 可编辑参数定义 ---------------- */
+const PARAM_DEFS = [
+  {k:'n0',      label:'初始数量 n0',                      unit:'ind/m²',      step:1,        dec:0,  grp:'生长'},
+  {k:'z',       label:'存活/衰减系数 z（=0.017−0.0030×DO）', unit:'d⁻¹',        step:0.000001, dec:9,  grp:'生长'},
+  {k:'cost',    label:'每日成本 cost',                     unit:'USD/(m²·d)',  step:0.0001,   dec:6,  grp:'生长'},
+  {k:'rLow',    label:'低生长率 r（k=1.067−0.0031×T）',     unit:'无量纲',      step:0.0001,   dec:6,  grp:'生长'},
+  {k:'rMid',    label:'中生长率 r（k=1.067−0.0031×T）',     unit:'无量纲',      step:0.0001,   dec:6,  grp:'生长'},
+  {k:'rHigh',   label:'高生长率 r（k=1.067−0.0031×T）',     unit:'无量纲',      step:0.0001,   dec:6,  grp:'生长'},
+  {k:'base',    label:'生长曲线常数 base（最终平均体重）',    unit:'g',           step:0.1,      dec:2,  grp:'生长'},
+  {k:'poll',    label:'每日污染排放 poll_daily',            unit:'g/(m²·d)',    step:0.001,    dec:6,  grp:'排放'},
+  {k:'co2',     label:'每日 CO₂ 排放 co2_daily',            unit:'g/(m²·d)',    step:0.01,     dec:2,  grp:'排放'},
+  {k:'build',   label:'建造期 CO₂ 排放 build_CO2',          unit:'g/m²',        step:0.1,      dec:2,  grp:'排放'},
+  {k:'harvest', label:'收获时间 harvest_t',                 unit:'天',          step:1,        dec:1,  grp:'排放'},
+  {k:'carbon',  label:'碳系数 carbon_coef（碳汇价值）',      unit:'USD/(m²·d)',  step:0.01,     dec:3,  grp:'社会'},
+  {k:'protein', label:'蛋白比例 protein_ratio',             unit:'无量纲',      step:0.05,     dec:2,  grp:'社会'},
+  {k:'price',   label:'蛋白价格 protein_price',             unit:'USD/kg',      step:1,        dec:2,  grp:'社会'},
+  {k:'subsidy', label:'每日社会收入价值 subsidy_daily',      unit:'USD/(m²·d)',  step:0.005,    dec:4,  grp:'社会'},
+  {k:'gender',  label:'性别平等（女性社会收入价值）',         unit:'USD/(m²·d)',  step:0.005,    dec:4,  grp:'社会', info:'R 口径未纳入公式，仅作记录'}
+];
+/* 派生行（只读，由参数实时换算） */
+const DERIVED_ROWS = [
+  {label:'z 对应 DO', unit:'mg/L', get:m => (0.017 - m.z) / 0.0030, dec:3},
+  {label:'低 r 对应温度', unit:'℃', get:m => (1.067 - m.rLow) / 0.0031, dec:2},
+  {label:'中 r 对应温度', unit:'℃', get:m => (1.067 - m.rMid) / 0.0031, dec:2},
+  {label:'高 r 对应温度', unit:'℃', get:m => (1.067 - m.rHigh) / 0.0031, dec:2}
+];
+
+/* ---------------- 计算 ---------------- */
+function baseAt(m, r){ return T.map(t => 0.1 + m.base * Math.pow((1 - Math.pow(r,t)) / (1 - Math.pow(r,T_MAX)), 3)); }
+function yieldAt(m, r){ const b = baseAt(m,r); return T.map((t,i) => m.n0 * Math.exp(m.z*t) * b[i] / 1000); }
+function priceAt(b){ return b.map(x => -40.7 / x + 9.2467); }
+function profitAt(m, r){ const b = baseAt(m,r), y = yieldAt(m,r), p = priceAt(b);
+  return T.map((t,i) => y[i]*p[i] - m.cost*t); }
+function emitAt(m, r){ const y = yieldAt(m,r);
+  return T.map((t,i) => ((m.poll + m.co2)*t + m.build) / y[i]); }
+function socialAt(m, r){ const y = yieldAt(m,r);
+  return T.map((t,i) => y[i]*(m.protein || 0.25)*(m.price || 20) + m.subsidy*t + y[i]*m.carbon); }
+function scoreAt(m, r){
+  const p = profitAt(m,r), s = socialAt(m,r), e = emitAt(m,r);
+  const nrm = a => { const sl = a.slice(IDX50); const mn = Math.min.apply(null, sl), mx = Math.max.apply(null, sl);
+    return a.map(v => (v - mn) / ((mx - mn) || 1)); };
+  const pn = nrm(p), sn = nrm(s), en = nrm(e);
+  const full = new Array(T.length).fill(null);
+  let bt = 0, bs = -Infinity;
+  for (let i = IDX50; i < T.length; i++){ const v = pn[i] + sn[i] - en[i]; full[i] = v;
+    if (v > bs){ bs = v; bt = T[i]; } }
+  return {score: full, best_t: bt, best_score: bs};
+}
+function metric(m, scenKey, ind){
+  const r = m[SCENS.find(s => s.key === scenKey).field];
+  if (ind === 'profit')   return profitAt(m, r);
+  if (ind === 'emission') return emitAt(m, r);
+  if (ind === 'social')   return socialAt(m, r);
+  return scoreAt(m, r).score;
+}
+function niceMax(vals){
+  let mx = 0; vals.forEach(a => { for (let i = IDX50; i < a.length; i++){ const v = a[i]; if (isFinite(v) && v > mx) mx = v; } });
+  if (!isFinite(mx) || mx <= 0) return 1;
+  // 取「半量级」为步长再向上取整，确保返回的是干净刻度值（消除 22.400000000000002 这类浮点尾巴）
+  const p = Math.pow(10, Math.floor(Math.log10(mx)));
+  const step = p / 2;
+  return Math.ceil((mx * 1.06) / step) * step;
+}
+
+/* ---------------- 状态与持久化 ---------------- */
+const LS_KEY = 'shrimpaqua.benefit.params.v2';
+const DEF_SEL = ['case_pmc','case_pimta','case_pmcs'];
+const state = { models: new Set(DEF_SEL), scens: new Set(['Mean']), ind: 'profit' };
+
+function saveParams(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(
+    { models: MODELS, sel: Array.from(state.models), scens: Array.from(state.scens) })); }catch(e){}
+}
+function loadParams(){
+  try{
+    const raw = localStorage.getItem(LS_KEY); if (!raw) return;
+    const o = JSON.parse(raw); if (!o || !Array.isArray(o.models) || !o.models.length) return;
+    MODELS = o.models.map(m => Object.assign({}, DEFAULT_MODELS.find(d => d.id === m.id) || {}, m));
+    rebuildIndex();
+    if (Array.isArray(o.sel)){ const s = o.sel.filter(id => MMAP[id]); if (s.length) state.models = new Set(s); }
+    if (Array.isArray(o.scens)){ const s = o.scens.filter(k => SCENS.some(x => x.key === k)); if (s.length) state.scens = new Set(s); }
+    if (!state.models.size) state.models = new Set([MODELS[0].id]);
+  }catch(e){}
+}
+const selModels = () => MODELS.filter(m => state.models.has(m.id));
+const selScenKey = () => (SCENS.find(s => state.scens.has(s.key)) || SCENS[1]).key;
+
+/* ---------------- 图表挂载 ---------------- */
+const charts = {};
+function mount(id, opt){
+  const el = document.getElementById(id); if (!el) return;
+  let c = echarts.getInstanceByDom(el); if (!c) c = echarts.init(el);
+  c.setOption(opt, true); charts[id] = c;
+}
+function clearGrid(id){
+  const el = document.getElementById(id);
+  Array.prototype.slice.call(el.children).forEach(ch => { const c = echarts.getInstanceByDom(ch); if (c) c.dispose(); });
+  el.innerHTML = '';
+}
+function baseOpt(yName, extra){
+  const o = {
+    tooltip:{trigger:'axis', axisPointer:{type:'cross'}},
+    grid:{left:62, right:64, top:34, bottom:48},
+    toolbox:{right:6, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
+    xAxis:{type:'value', name:'Time (days)', nameLocation:'middle', nameGap:28, min:0, max:T_MAX,
+           splitLine:{show:false}, axisLine:{lineStyle:{color:'#9ca3af'}}},
+    yAxis:{type:'value', name:yName, nameTextStyle:{fontWeight:'bold'}, scale:false,
+           axisLine:{show:true, lineStyle:{color:'#9ca3af'}}, splitLine:{lineStyle:{color:'#f1f3f5'}}}
+  };
+  Object.assign(o, extra || {}); return o;
+}
+function lineSeries(name, color, data, lineType, width){
+  return {name:name, type:'line', showSymbol:false, sampling:'lttb',
+          data:T.map((t,i) => [t, data[i]]),
+          lineStyle:{width:width || 1.6, type:lineType || 'solid', color:color},
+          itemStyle:{color:color}, emphasis:{focus:'series'}};
+}
+
+/* ---------------- ① 单指标 ---------------- */
+function renderInd(){
+  const ind = state.ind, yNames = {profit:'Profit (USD/m²)', emission:'Emission (g/kg)',
+    social:'Social Benefit (USD/m²)', score:'Comprehensive Benefit'};
+  const series = [];
+  selModels().forEach(m => {
+    SCENS.filter(s => state.scens.has(s.key)).forEach(s => {
+      series.push(lineSeries(m.name + ' · ' + s.key, m.color, metric(m, s.key, ind), s.line, ind==='emission'?1.2:1.7));
+    });
+  });
+  const opt = baseOpt(yNames[ind], {
+    legend:{type:'scroll', top:2, textStyle:{fontSize:11}, itemWidth:18, itemHeight:9},
+    series:series
+  });
+  if (ind === 'emission'){
+    opt.yAxis.inverse = document.getElementById('invEco').checked;
+    opt.yAxis.name = 'Emission (g/kg, 越低越好)';
+  }
+  if (ind === 'score') opt.yAxis.min = 0;
+  mount('indChart', opt);
+}
+
+/* ---------------- ② 案例 vs Total ---------------- */
+/* 按 pair 键自动配对：同一养殖体系下「案例 ↔ Total」；仅一侧存在时该侧留空 */
+function buildPairs(){
+  const keys = [];
+  MODELS.forEach(m => { const k = m.pair || m.name; if (keys.indexOf(k) < 0) keys.push(k); });
+  return keys.map(k => ({
+    label: k,
+    a: (MODELS.find(m => (m.pair || m.name) === k && m.type === '案例') || {}).id || null,
+    b: (MODELS.find(m => (m.pair || m.name) === k && m.type === 'Total') || {}).id || null
+  })).filter(p => (p.a && MMAP[p.a]) || (p.b && MMAP[p.b]));
+}
+function pairMetric(m, kind){
+  const r = m[SCENS.find(s => s.key === selScenKey()).field];
+  const hp = profitAt(m, r)[Math.round(m.harvest / DT)];
+  if (kind === 'peak')          return Math.max.apply(null, profitAt(m, r).slice(IDX50));
+  if (kind === 'harvestProfit') return hp;
+  if (kind === 'harvestEmit')   return emitAt(m, r)[Math.round(m.harvest / DT)];
+  if (kind === 'best')          return scoreAt(m, r).best_score;
+  if (kind === 'socialEnd')     return socialAt(m, r)[T.length - 1];
+  return 0;
+}
+function renderPair(){
+  const kind = document.getElementById('pairMetric').value;
+  const unit = {peak:'USD/m²', harvestProfit:'USD/m²', harvestEmit:'g/kg', best:'得分', socialEnd:'USD/m²'}[kind];
+  const dec  = (kind === 'harvestEmit' || kind === 'best') ? 3 : 2;
+  const PAIRS = buildPairs();
+  const val = id => id ? +pairMetric(MMAP[id], kind).toFixed(dec) : null;
+  const a = PAIRS.map(p => val(p.a));
+  const b = PAIRS.map(p => val(p.b));
+  const withLabel = (arr, color, name) => ({
+    name:name, type:'bar', data:arr, itemStyle:{color:color, borderRadius:[3,3,0,0]},
+    label:{show:true, position:'top', fontSize:10, color:color,
+           formatter:p => (p.value == null ? '—' : p.value)}
+  });
+  mount('pairChart', {
+    tooltip:{trigger:'axis', valueFormatter:v => (v == null ? '—' : v + ' ' + unit)},
+    legend:{top:2, textStyle:{fontSize:11}},
+    toolbox:{right:6, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
+    grid:{left:70, right:24, top:34, bottom:40},
+    xAxis:{type:'category', data:PAIRS.map(p => p.label), axisLabel:{fontWeight:'bold'}},
+    yAxis:{type:'value', name:'值（' + unit + '）', nameTextStyle:{fontWeight:'bold'},
+           splitLine:{lineStyle:{color:'#f1f3f5'}}},
+    series:[withLabel(a, '#0c8a8a', '案例'), withLabel(b, '#f59e0b', 'Total')]
+  });
+}
+
+/* ---------------- ③ 综合效益（Max/Mean/Min） ---------------- */
+function renderScoreGrid(){
+  clearGrid('scoreGrid');
+  selModels().slice(0, 8).forEach(m => {
+    const box = document.createElement('div');
+    box.innerHTML = '<h3 style="margin:0 0 8px;font-size:13px">' + m.name +
+      ' <span class="badge ' + (m.type === '案例' ? 'case' : 'total') + '">' + m.type + '</span></h3>';
+    const div = document.createElement('div'); div.className = 'chart sm';
+    box.appendChild(div); document.getElementById('scoreGrid').appendChild(box);
+    const id = 'sc_' + m.id; div.id = id;
+    const series = [], pts = [];
+    SCENS.forEach((s, si) => {
+      const res = scoreAt(m, m[s.field]);
+      series.push({name:s.key, type:'line', showSymbol:false, data:T.map((t,i) => [t, res.score[i]]),
+        lineStyle:{width:2, type:(s.key === 'Mean' ? 'solid' : 'dashed'), color:s.color},
+        itemStyle:{color:s.color}, emphasis:{focus:'series'}});
+      pts.push({value:[res.best_t, res.best_score]});
+      series.push({name:s.key + '·最佳', type:'scatter', symbol:'diamond', symbolSize:11, data:pts.slice(-1),
+        itemStyle:{color:s.color},
+        label:{show:true, position:'right', fontSize:10, fontWeight:'bold', color:s.color,
+               formatter:res.best_score.toFixed(3)},
+        markLine:{silent:true, symbol:'none', label:{show:false},
+                  lineStyle:{type:'dashed', width:1, opacity:.55, color:s.color},
+                  data:[{xAxis:res.best_t}]},
+        tooltip:{show:true}});
+    });
+    mount(id, {
+      tooltip:{trigger:'axis'},
+      legend:{top:0, right:0, textStyle:{fontSize:10}, itemWidth:16, itemHeight:8, itemGap:8},
+      grid:{left:52, right:52, top:30, bottom:40},
+      toolbox:{right:0, top:18, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
+      xAxis:{type:'value', name:'Time (days)', nameLocation:'middle', nameGap:24, min:0, max:T_MAX,
+             axisLine:{lineStyle:{color:'#9ca3af'}}, splitLine:{show:false}},
+      yAxis:{type:'value', name:'Comprehensive Benefit', nameTextStyle:{fontSize:10, fontWeight:'bold'},
+             min:0, axisLine:{lineStyle:{color:'#9ca3af'}}, splitLine:{lineStyle:{color:'#f1f3f5'}}},
+      series:series
+    });
+  });
+  if (selModels().length > 8){
+    const tip = document.createElement('div');
+    tip.className = 'hint'; tip.textContent = '※ 为保证渲染性能，本区最多显示前 8 个已选模式。';
+    document.getElementById('scoreGrid').appendChild(tip);
+  }
+}
+
+/* ---------------- ④ 双轴总览 ---------------- */
+function renderDualGrid(){
+  clearGrid('dualGrid');
+  selModels().slice(0, 8).forEach(m => {
+    const box = document.createElement('div');
+    box.innerHTML = '<h3 style="margin:0 0 8px;font-size:13px">' + m.name +
+      ' <span class="badge ' + (m.type === '案例' ? 'case' : 'total') + '">' + m.type +
+      '</span> <span style="font-size:11px;color:#6b7280">碳汇系数 ' + m.carbon + '</span></h3>';
+    const div = document.createElement('div'); div.className = 'chart sm';
+    box.appendChild(div); document.getElementById('dualGrid').appendChild(box);
+    const id = 'du_' + m.id; div.id = id;
+
+    const pMin = profitAt(m, m.rLow), pMean = profitAt(m, m.rMid), pMax = profitAt(m, m.rHigh);
+    const eMin = emitAt(m, m.rLow), eMean = emitAt(m, m.rMid), eMax = emitAt(m, m.rHigh);
+    const soc  = socialAt(m, m.rMid);
+    const sMin = socialAt(m, m.rLow), sMean = socialAt(m, m.rMid), sMax = socialAt(m, m.rHigh);
+
+    const yUp = niceMax([pMin, pMean, pMax, sMin, sMean, sMax]);
+    let maxPoll = 0;
+    [eMin, eMean, eMax].forEach(a => { for (let i = IDX50; i < a.length; i++) if (a[i] > maxPoll) maxPoll = a[i]; });
+    const sf = Math.max(1, maxPoll / (yUp * 0.8));
+
+    const series = [];
+    series.push(lineSeries('Profit (Min)', CLR.profitMin, pMin, 'solid', 1.2));
+    series.push(lineSeries('Profit (Mean)', CLR.profitMean, pMean, 'solid', 1.2));
+    series.push(lineSeries('Profit (Max)', CLR.profitMax, pMax, 'solid', 1.2));
+    series.push(lineSeries('Social Benefit', CLR.social, soc, 'solid', 1.1));
+    [[ 'Emission (Min)', CLR.pollMin, eMin], ['Emission (Mean)', CLR.pollMean, eMean], ['Emission (Max)', CLR.pollMax, eMax]]
+      .forEach(t => { const s = lineSeries(t[0], t[1], t[2], 'dashed', 0.9);
+        s.data = T.map((tt,i) => tt >= 50 ? [tt, t[2][i] / sf] : [tt, null]); s.yAxisIndex = 1; series.push(s); });
+
+    // 利润峰值 ◆
+    ['min','mean','max'].forEach((k, i) => {
+      const arr = [pMin, pMean, pMax][i]; let bi = IDX50;
+      for (let j = IDX50; j < arr.length; j++) if (arr[j] > arr[bi]) bi = j;
+      series.push({name:'Peak', type:'scatter', symbol:'diamond', symbolSize:11, silent:true,
+        itemStyle:{color:CLR.peak}, data:[[T[bi], arr[bi]]], showLegend:false, tooltip:{show:false}});
+    });
+    // 收获点 ▲
+    const hIdx = Math.round(m.harvest / DT);
+    series.push({name:'Harvest', type:'scatter', symbol:'triangle', symbolSize:12, silent:true,
+      itemStyle:{color:'#111827'}, data:[[m.harvest, pMean[hIdx]]], showLegend:false, tooltip:{show:false}});
+    // 三目标最佳点 ★
+    [[pMin, eMin, sMin, CLR.bestMin, 'Min'], [pMean, eMean, sMean, CLR.bestMean, 'Mean'], [pMax, eMax, sMax, CLR.bestMax, 'Max']]
+      .forEach(t => {
+        const pr = t[0].slice(IDX50), er = t[1].slice(IDX50), sr = t[2].slice(IDX50);
+        const nrm = a => { const mn = Math.min.apply(null, a), mx = Math.max.apply(null, a);
+          return a.map(v => (v - mn) / ((mx - mn) || 1)); };
+        const pn = nrm(pr), en = nrm(er), sn = nrm(sr);
+        let bi = 0; for (let i = 1; i < pn.length; i++) if (pn[i] + sn[i] - en[i] > pn[bi] + sn[bi] - en[bi]) bi = i;
+        const tt = T[IDX50 + bi];
+        series.push({name:'Best ' + t[4], type:'scatter', symbol:'star', symbolSize:13, silent:true,
+          itemStyle:{color:t[3]}, data:[[tt, pr[bi]]], showLegend:false, tooltip:{show:false},
+          markLine:{silent:true, symbol:'none', label:{show:false}, data:[{xAxis:tt}],
+                    lineStyle:{type:'dashed', width:1, opacity:.5, color:t[3]}}});
+      });
+
+    mount(id, {
+      tooltip:{trigger:'axis'},
+      legend:{type:'scroll', top:0, left:0, textStyle:{fontSize:10}, itemWidth:16, itemHeight:8, itemGap:7},
+      grid:{left:62, right:62, top:56, bottom:42},
+      toolbox:{right:0, top:16, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
+      xAxis:{type:'value', name:'Time (days)', nameLocation:'middle', nameGap:26, min:0, max:T_MAX,
+             axisLine:{lineStyle:{color:'#9ca3af'}}, splitLine:{show:false}},
+      yAxis:[
+        {type:'value', name:'Profit / Social (USD/m²)', min:0, max:yUp, nameGap:20,
+         nameTextStyle:{fontSize:10, fontWeight:'bold', color:'#D6A37A'},
+         axisLine:{lineStyle:{color:'#D6A37A'}}, splitLine:{lineStyle:{color:'#f1f3f5'}},
+         axisLabel:{formatter:v => (+v.toFixed(2)).toString()}},
+        {type:'value', name:'Emission (g/kg)', min:0, max:yUp, position:'right', nameGap:20,
+         nameTextStyle:{fontSize:10, fontWeight:'bold', color:'#7BA38A'},
+         axisLine:{lineStyle:{color:'#7BA38A'}}, splitLine:{show:false},
+         axisLabel:{formatter:v => { const n = v * sf; return n >= 100 ? n.toFixed(0) : n.toFixed(1); }}}
+      ],
+      series:series
+    });
+  });
+}
+
+/* ---------------- ⑤ 参数编辑表 ---------------- */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtNum = (v, dec) => (v == null || !isFinite(v)) ? '—' : (+v).toFixed(dec);
+
+function renderParamTable(){
+  const tb = document.getElementById('paramTable');
+  let h = '<thead><tr><th>参数（单位）</th>';
+  MODELS.forEach(m => {
+    h += '<th><div class="phead">'
+      + '<span class="pdot" style="background:' + m.color + '"></span>'
+      + '<input class="ptxt" data-meta="name" data-id="' + m.id + '" value="' + esc(m.name) + '">'
+      + '<select class="psel" data-meta="type" data-id="' + m.id + '">'
+      +   ['案例','Total'].map(t => '<option' + (m.type === t ? ' selected' : '') + '>' + t + '</option>').join('')
+      + '</select>'
+      + '<input class="ptxt psel-sys" data-meta="sys" data-id="' + m.id + '" value="' + esc(m.sys) + '" title="体系分组（PMC / ISIC / 自定义）">'
+      + '<input class="ptxt psel-pair" data-meta="pair" data-id="' + m.id + '" value="' + esc(m.pair) + '" title="配对键：同键的案例与 Total 会在「案例 vs Total」中并排">'
+      + '<button class="pdel" data-del="' + m.id + '" title="删除该模式">×</button>'
+      + '</div></th>';
+  });
+  h += '</tr></thead><tbody>';
+  PARAM_DEFS.forEach(p => {
+    h += '<tr><td>' + p.label + '<span class="pu">（' + p.unit + '）</span>'
+       + (p.info ? '<span class="pinfo" title="' + p.info + '">?</span>' : '') + '</td>';
+    MODELS.forEach(m => {
+      h += '<td><input class="pin" type="number" step="' + p.step + '" data-id="' + m.id
+         + '" data-k="' + p.k + '" value="' + m[p.k] + '"></td>';
+    });
+    h += '</tr>';
+  });
+  DERIVED_ROWS.forEach((d, di) => {
+    h += '<tr class="pderived"><td>' + d.label + '<span class="pu">（' + d.unit + '）</span></td>';
+    MODELS.forEach(m => {
+      h += '<td data-der="' + di + '" data-id="' + m.id + '">' + fmtNum(d.get(m), d.dec) + '</td>';
+    });
+    h += '</tr>';
+  });
+  tb.innerHTML = h + '</tbody>';
+  bindParamTable();
+}
+function refreshDerived(){
+  document.querySelectorAll('#paramTable td[data-der]').forEach(td => {
+    const m = MMAP[td.dataset.id]; if (!m) return;
+    const d = DERIVED_ROWS[+td.dataset.der];
+    td.textContent = fmtNum(d.get(m), d.dec);
+  });
+}
+let renderTimer = null;
+function scheduleRender(){ clearTimeout(renderTimer); renderTimer = setTimeout(renderAll, 200); }
+function bindParamTable(){
+  const tb = document.getElementById('paramTable');
+  /* 数值参数：输入即重算（不重建表格，避免丢失焦点） */
+  Array.prototype.forEach.call(tb.querySelectorAll('input.pin'), inp => {
+    inp.addEventListener('input', () => {
+      const m = MMAP[inp.dataset.id]; if (!m) return;
+      const v = parseFloat(inp.value);
+      if (!isFinite(v)) return;
+      m[inp.dataset.k] = v;
+      refreshDerived(); scheduleRender(); saveParams();
+    });
+  });
+  /* 元信息：名称 / 类型 / 体系 / 配对键 */
+  Array.prototype.forEach.call(tb.querySelectorAll('[data-meta]'), el => {
+    el.addEventListener('change', () => {
+      const m = MMAP[el.dataset.id]; if (!m) return;
+      const k = el.dataset.meta, v = el.value.trim();
+      if (k === 'name' && !v){ el.value = m.name; return; }
+      m[k] = v;
+      renderParamTable(); buildChips(); renderAll(); saveParams();
+    });
+  });
+  /* 删除模式 */
+  Array.prototype.forEach.call(tb.querySelectorAll('[data-del]'), b => {
+    b.addEventListener('click', () => delModel(b.dataset.del));
+  });
+}
+
+/* ---------------- 交互 ---------------- */
+function buildChips(){
+  const wrap = document.getElementById('modelChips'); wrap.innerHTML = '';
+  let lastGrp = '';
+  MODELS.forEach(m => {
+    const g = (m.sys || '其他') + ' · ' + m.type;
+    if (g !== lastGrp){ const gl = document.createElement('span'); gl.className = 'chip grp'; gl.textContent = g; wrap.appendChild(gl); lastGrp = g; }
+    const el = document.createElement('span');
+    el.className = 'chip' + (state.models.has(m.id) ? ' on' : '');
+    el.innerHTML = '<span class="sw" style="background:' + m.color + '"></span>' + esc(m.name);
+    el.onclick = () => {
+      if (state.models.has(m.id)){ if (state.models.size > 1) state.models.delete(m.id); }
+      else state.models.add(m.id);
+      buildChips(); renderAll(); saveParams();
+    };
+    wrap.appendChild(el);
+  });
+}
+function buildScenChips(){
+  const wrap = document.getElementById('scenChips'); wrap.innerHTML = '';
+  SCENS.forEach(s => {
+    const el = document.createElement('span');
+    el.className = 'chip' + (state.scens.has(s.key) ? ' on' : '');
+    el.innerHTML = '<span class="sw" style="background:' + s.color + '"></span>' + s.key + '（' + s.eq + '）';
+    el.onclick = () => {
+      if (state.scens.has(s.key)){ if (state.scens.size > 1) state.scens.delete(s.key); }
+      else state.scens.add(s.key);
+      buildScenChips(); renderAll(); saveParams();
+    };
+    wrap.appendChild(el);
+  });
+}
+function renderAll(){
+  renderInd(); renderPair(); renderScoreGrid(); renderDualGrid();
+  document.getElementById('selInfo').textContent =
+    '已选 ' + state.models.size + ' / ' + MODELS.length + ' 模式 · ' + state.scens.size + ' 情境';
+}
+/* ---- 新增 / 删除 / 重置 ---- */
+function addModel(){
+  const base = selModels()[0] || MODELS[0];
+  const n = MODELS.filter(m => m.custom).length + 1;
+  const id = 'usr_' + Date.now().toString(36) + Math.floor(Math.random() * 1e3).toString(36);
+  const m = Object.assign({}, base, {
+    id: id, name: '新案例 ' + n, type: '案例', sys: '自定义', pair: '新案例 ' + n,
+    custom: true, color: USER_PALETTE[MODELS.length % USER_PALETTE.length]
+  });
+  MODELS.push(m); rebuildIndex(); state.models.add(id);
+  renderParamTable(); buildChips(); renderAll(); saveParams();
+  const w = document.querySelector('.ptable-wrap'); if (w) setTimeout(() => { w.scrollLeft = w.scrollWidth; }, 30);
+}
+function delModel(id){
+  const m = MMAP[id]; if (!m) return;
+  if (MODELS.length <= 1){ alert('至少需要保留一个模式。'); return; }
+  if (!confirm('确定删除「' + m.name + '」？\n删除内置模式后，可通过「↺ 恢复 R 代码默认」还原。')) return;
+  MODELS = MODELS.filter(x => x.id !== id);
+  state.models.delete(id); rebuildIndex();
+  if (!state.models.size) state.models.add(MODELS[0].id);
+  renderParamTable(); buildChips(); renderAll(); saveParams();
+}
+function resetAll(){
+  if (!confirm('将丢弃全部参数修改，恢复为 R 代码默认的 12 组参数与默认选择。确定继续？')) return;
+  MODELS = cloneModels(DEFAULT_MODELS); rebuildIndex();
+  state.models = new Set(DEF_SEL); state.scens = new Set(['Mean']); state.ind = 'profit';
+  Array.prototype.forEach.call(document.querySelectorAll('#indTabs .tab'), x =>
+    x.classList.toggle('active', x.dataset.ind === 'profit'));
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  renderParamTable(); buildChips(); buildScenChips(); renderAll();
+}
+/* ---- 导出 / 导入 ---- */
+function download(name, text, mime){
+  const blob = new Blob([text], {type: mime || 'application/octet-stream'});
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+function exportCsv(){
+  const rows = [['参数（单位）'].concat(MODELS.map(m => m.name))];
+  rows.push(['类型'].concat(MODELS.map(m => m.type)));
+  rows.push(['体系'].concat(MODELS.map(m => m.sys || '')));
+  rows.push(['配对键'].concat(MODELS.map(m => m.pair || '')));
+  PARAM_DEFS.forEach(p => rows.push([p.label + '（' + p.unit + '）'].concat(MODELS.map(m => m[p.k]))));
+  DERIVED_ROWS.forEach(d => rows.push([d.label + '（' + d.unit + '）'].concat(MODELS.map(m => fmtNum(d.get(m), d.dec)))));
+  const csv = rows.map(r => r.map(c => { const s = String(c);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\n');
+  download('效益评估参数.csv', '\ufeff' + csv, 'text/csv;charset=utf-8');
+}
+function importJson(text){
+  const o = JSON.parse(text);
+  const arr = Array.isArray(o) ? o : o.models;
+  if (!Array.isArray(arr) || !arr.length) throw new Error('JSON 中未找到 models 数组');
+  if (!confirm('将导入 ' + arr.length + ' 个模式并替换当前全部参数。继续？')) return;
+  MODELS = arr.map(m => Object.assign({}, m));
+  MODELS.forEach((m, i) => {
+    if (!m.id) m.id = 'imp_' + i;
+    if (!m.color) m.color = USER_PALETTE[i % USER_PALETTE.length];
+    if (!m.type) m.type = '案例';
+    if (m.protein == null) m.protein = 0.25;
+    if (m.price   == null) m.price   = 20;
+  });
+  rebuildIndex();
+  state.models = new Set(MODELS.slice(0, 3).map(m => m.id));
+  renderParamTable(); buildChips(); renderAll(); saveParams();
+}
+document.getElementById('indTabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  Array.prototype.forEach.call(document.querySelectorAll('#indTabs .tab'), x => x.classList.remove('active'));
+  t.classList.add('active'); state.ind = t.dataset.ind; renderInd();
+});
+document.getElementById('pairMetric').addEventListener('change', renderPair);
+document.getElementById('invEco').addEventListener('change', renderInd);
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+  const p = b.dataset.preset;
+  if (p === 'clear'){ state.models = new Set([selModels()[0] ? selModels()[0].id : MODELS[0].id]); }
+  else if (p === 'all'){ state.models = new Set(MODELS.map(m => m.id)); }
+  else if (p === 'case'){ state.models = new Set(MODELS.filter(m => m.type === '案例').map(m => m.id)); }
+  else if (p === 'total'){ state.models = new Set(MODELS.filter(m => m.type === 'Total').map(m => m.id)); }
+  else if (p === 'pmc'){ state.models = new Set(MODELS.filter(m => (m.sys || '').indexOf('PMC') === 0).map(m => m.id)); }
+  else if (p === 'isic'){ state.models = new Set(MODELS.filter(m => (m.sys || '').indexOf('ISIC') === 0).map(m => m.id)); }
+  if (!state.models.size) state.models.add(MODELS[0].id);
+  buildChips(); renderAll(); saveParams();
+}));
+document.getElementById('btnReset').addEventListener('click', resetAll);
+document.getElementById('btnAddModel').addEventListener('click', addModel);
+document.getElementById('btnExportJson').addEventListener('click', () =>
+  download('效益评估参数.json', JSON.stringify({version:2, models:MODELS}, null, 2), 'application/json'));
+document.getElementById('btnExportCsv').addEventListener('click', exportCsv);
+document.getElementById('btnImportJson').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { try{ importJson(rd.result); }catch(err){ alert('导入失败：' + err.message); } };
+  rd.readAsText(f); e.target.value = '';
+});
+window.addEventListener('resize', () => Object.keys(charts).forEach(k => { try { charts[k].resize(); } catch(e){} }));
+
+loadParams();
+buildChips(); buildScenChips(); renderParamTable(); renderAll();
+</script>
+
+<div class="footer">
+对虾养殖产业数据库工作台 · 数据源：<code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 累计 1,585 条有效记录 · 新增文献待确认 17 篇（每周三 08:00 自动检索，人工确认后并入主库）<br>
+<a href="index.html">返回主页</a> · <a href="newlit.html">新增文献</a> · <a href="database.html">浏览主库</a> · <a href="schema.html">Schema 字典</a>
+</div>
+</div>
+</body>
+</html>

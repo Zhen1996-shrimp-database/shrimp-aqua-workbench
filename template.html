@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>对虾养殖产业数据库工作台</title>
+<style>
+/* ============ 共享设计令牌 ============ */
+:root{
+  --c-primary:#0c8a8a;
+  --c-primary-d:#0a6f6f;
+  --c-primary-l:#e8f4f4;
+  --c-accent:#f97316;
+  --c-success:#10b981;
+  --c-warn:#f59e0b;
+  --c-danger:#ef4444;
+  --c-info:#3b82f6;
+  --c-text:#1f2937;
+  --c-muted:#6b7280;
+  --c-border:#e5e7eb;
+  --c-bg:#f6f8fa;
+  --c-panel:#ffffff;
+  --r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+/* ============ 顶栏 ============ */
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:6px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar nav a.active{background:rgba(255,255,255,.2);opacity:1;font-weight:600}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta span{display:flex;align-items:center;gap:4px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399}
+
+/* ============ 容器 ============ */
+.wrap{max-width:1320px;margin:0 auto;padding:28px 28px 60px}
+.page-head{margin-bottom:20px}
+.page-head h1{margin:0 0 6px;font-size:24px;font-weight:700;color:var(--c-text)}
+.page-head p{margin:0;color:var(--c-muted);font-size:14px}
+.crumbs{font-size:13px;color:var(--c-muted);margin-bottom:8px}
+.crumbs a{color:var(--c-muted)}
+.crumbs a:hover{color:var(--c-primary)}
+
+/* ============ 面板 ============ */
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-h h2{margin:0;font-size:16px;font-weight:600}
+.panel-h .actions{display:flex;gap:8px}
+
+/* ============ 按钮 ============ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:transparent;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+
+/* ============ KPI ============ */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}
+.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}
+.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:12px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi .value{font-size:28px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .delta{font-size:12px;margin-top:6px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+/* ============ 表格 ============ */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+tbody tr:hover{background:#fafbfc}
+
+/* ============ 标签 ============ */
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}
+.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}
+.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+/* ============ 工具栏 ============ */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:13px;background:#fff;font-family:inherit}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+/* ============ 进度条 ============ */
+.bar{height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}
+.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+/* ============ Tab ============ */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ============ 卡片网格 ============ */
+.grid{display:grid;gap:16px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+/* ============ 功能卡（用于主页） ============ */
+.feature{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:22px;transition:.2s;display:flex;flex-direction:column;gap:12px;text-decoration:none;color:inherit;box-shadow:var(--shadow)}
+.feature:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);text-decoration:none;border-color:var(--c-primary)}
+.feature .icon{width:46px;height:46px;border-radius:10px;background:var(--c-primary-l);display:flex;align-items:center;justify-content:center;font-size:22px}
+.feature h3{margin:0;font-size:16px;font-weight:600}
+.feature p{margin:0;color:var(--c-muted);font-size:13px;line-height:1.55;flex:1}
+.feature .open{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--c-primary);font-weight:500}
+.feature .arrow{transition:.2s}
+.feature:hover .arrow{transform:translateX(4px)}
+
+/* ============ 提示框 ============ */
+.alert{padding:14px 18px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:16px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+/* ============ 步骤条 ============ */
+.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px;position:relative}
+.step .no{font-size:11px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:13px;font-weight:600;margin-bottom:6px}
+.step .stat{font-size:11px}
+.step.done .name::after{content:" ✓";color:var(--c-success)}
+.step.running{border-color:var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-color:var(--c-danger);background:#fef2f2}
+
+/* ============ 审核卡 ============ */
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:18px;margin-bottom:14px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}
+.review-card .head h3{margin:0 0 4px;font-size:15px}
+.review-card .head .meta{font-size:12px;color:var(--c-muted)}
+.review-card .conf{font-size:12px;font-weight:600}
+.review-card .conf.high{color:var(--c-success)}
+.review-card .conf.mid{color:var(--c-warn)}
+.review-card .conf.low{color:var(--c-danger)}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:12px;font-size:13px;color:#4b5563;margin-bottom:12px;line-height:1.7}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:8px 10px}
+.review-card .field .k{font-size:11px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:13px;font-weight:600}
+.review-card .actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--c-border)}
+
+/* ============ 图 ============ */
+.canvas-wrap{position:relative;height:280px}
+
+/* ============ footer ============ */
+.footer{padding:30px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+
+/* ============ 响应式 ============ */
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start;gap:10px}
+  .topbar nav{width:100%}
+  .wrap{padding:18px}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    对虾养殖产业数据库工作台
+  </div>
+  <nav id="topnav"></nav>
+  <div class="meta">
+    <span><span class="dot"></span> 系统正常</span>
+    <span>季度: 2026 Q3</span>
+  </div>
+</div>
+</body>
+</html>

@@ -299,7 +299,7 @@ tbody tr:hover{background:#fafbfc}
   <div class="canvas-wrap tall"><canvas id="chDedup"></canvas></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="chart.umd.min.js"></script>
 <script>
 new Chart(document.getElementById('chDedup'),{type:'bar',data:{labels:['2024 Q4','2025 Q1','2025 Q2','2025 Q3','2025 Q4','2026 Q1','2026 Q2','2026 Q3'],datasets:[{label:'去重前',data:[1850,2100,1950,2300,2480,2150,1980,0],backgroundColor:'#94a3b8',borderRadius:4},{label:'去重后入库',data:[1320,1480,1410,1620,1820,1560,1440,0],backgroundColor:'#10b981',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
 

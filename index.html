@@ -435,7 +435,7 @@ tbody tr:hover{background:#fafbfc}
   <div class="canvas-wrap tall"><canvas id="chQuarter"></canvas></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="chart.umd.min.js"></script>
 <script>
 const yearData = {"2000": 8, "2002": 4, "2004": 4, "2005": 6, "2006": 2, "2007": 12, "2008": 2, "2009": 14, "2010": 14, "2011": 18, "2012": 24, "2013": 13, "2014": 19, "2015": 48, "2016": 44, "2017": 30, "2018": 42, "2019": 206, "2020": 88, "2021": 64, "2022": 204, "2023": 240, "2024": 75, "2025": 12};
 const modeData = [{"k": "工厂化生物絮团", "v": 420}, {"k": "工厂化换水", "v": 141}, {"k": "池塘单养", "v": 134}, {"k": "工厂化循环水", "v": 71}, {"k": "池塘多营养层次综合养殖模式", "v": 60}, {"k": "多营养层次综合养殖模式", "v": 24}, {"k": "工厂化换水（生物炭改良底泥）", "v": 15}, {"k": "工厂化生物絮团（LED光照）", "v": 15}];
@@ -444,7 +444,7 @@ const sheetData = {"水质参数数据": 376, "生长参数": 263, "产污与污
 
 try{new Chart(document.getElementById('chMode'),{type:'doughnut',data:{labels:modeData.map(x=>x.k.length>18?x.k.slice(0,18)+'…':x.k),datasets:[{data:modeData.map(x=>x.v),backgroundColor:['#0c8a8a','#16a3a3','#3b82f6','#f97316','#f59e0b','#10b981','#8b5cf6','#ec4899']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});}catch(e){console.warn('chMode:',e);}
 
-try{new Chart(document.getElementById('chSheet'),{type:'barh',indexAxis:'y',data:{labels:Object.keys(sheetData).map(k=>k.length>14?k.slice(0,14)+'…':k),datasets:[{label:'记录数',data:Object.values(sheetData),backgroundColor:'#16a3a3',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});}catch(e){console.warn('chSheet:',e);}
+try{new Chart(document.getElementById('chSheet'),{type:'bar',indexAxis:'y',data:{labels:Object.keys(sheetData).map(k=>k.length>14?k.slice(0,14)+'…':k),datasets:[{label:'记录数',data:Object.values(sheetData),backgroundColor:'#16a3a3',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});}catch(e){console.warn('chSheet:',e);}
 
 try{new Chart(document.getElementById('chLoc'),{type:'bar',data:{labels:locData.map(x=>x.k.length>14?x.k.slice(0,14)+'…':x.k),datasets:[{label:'记录数',data:locData.map(x=>x.v),backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}catch(e){console.warn('chLoc:',e);}
 

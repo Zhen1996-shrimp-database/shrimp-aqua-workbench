@@ -254,7 +254,7 @@ tbody tr:hover{background:#fafbfc}
   <div class="canvas-wrap tall"><canvas id="chAcc"></canvas></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="chart.umd.min.js"></script>
 <script>
 new Chart(document.getElementById('chAcc'),{type:'line',data:{labels:['B-2025Q4','B-2026Q1','B-2026Q2','B-2026Q3-08','B-2026Q3-09'],datasets:[{label:'正则抽取',data:[82,84,85,86,87],borderColor:'#0c8a8a',tension:.3},{label:'LLM 抽取',data:[88,89,90,91,92],borderColor:'#f97316',tension:.3},{label:'融合后',data:[86,87,88,89,89],borderColor:'#3b82f6',borderDash:[5,5],tension:.3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:75,max:100}}}});
 

@@ -183,6 +183,15 @@ tbody tr:hover{background:#fafbfc}
 .ben-grid.g2{grid-template-columns:repeat(auto-fit,minmax(430px,1fr))}
 .chart{width:100%;height:390px}
 .chart.sm{height:330px}
+/* 第⑤面板：四组三联图（R 代码 plot_one 复刻） */
+.rcode-groups{display:flex;flex-direction:column;gap:18px}
+.rcode-section{background:#fafbfc;border:1px solid var(--c-border);border-radius:10px;padding:14px 16px}
+.rcode-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.rcode-cell{background:#fff;border:1px solid var(--c-border);border-radius:8px;padding:8px 10px}
+.rcode-tag{font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;letter-spacing:.3px}
+.rcode-tag .badge{margin-left:4px;font-size:10px}
+.rcode-chart{height:300px}
+@media (max-width: 1100px){ .rcode-row{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))} }
 .ctrl-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px dashed var(--c-border)}
 .ctrl-row:last-child{border-bottom:none}
 .ctrl-label{flex:0 0 84px;font-size:12px;color:var(--c-muted);font-weight:600;padding-top:6px}
@@ -192,6 +201,13 @@ tbody tr:hover{background:#fafbfc}
 .chip.on{background:var(--c-primary-l);border-color:var(--c-primary);color:var(--c-primary-d);font-weight:600}
 .chip .sw{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto}
 .chip.grp{background:#f3f4f6;color:var(--c-muted);cursor:default;font-weight:600;border-style:dashed;pointer-events:none}
+.chip .x{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-left:4px;
+  border-radius:50%;background:transparent;color:var(--c-muted);font-size:13px;line-height:1;cursor:pointer;
+  font-weight:700;transition:.12s;border:1px solid transparent}
+.chip .x:hover{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.chip .x.del-all{color:var(--c-muted);font-weight:500}
+.chip .x.del-all:hover{background:#fee2e2;color:#b91c1c}
+.chart-lg{height:340px}
 .ctrl-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;padding-top:2px}
 .legend-note{font-size:12px;color:var(--c-muted);margin:0 0 12px;line-height:1.7}
 .legend-note code{background:#f3f4f6;padding:1px 5px;border-radius:4px;color:#374151}
@@ -208,17 +224,27 @@ tbody tr:hover{background:#fafbfc}
 .ptable tbody tr:hover td:first-child{background:#f5f7f9}
 .hint{font-size:12px;color:var(--c-muted);margin-top:8px}
 /* 可编辑表格 */
-.ptable.editable{min-width:1320px}
+.ptable.editable{min-width:1400px}
 .ptable.editable th:first-child,.ptable.editable td:first-child{width:286px;min-width:286px;max-width:286px;white-space:normal;line-height:1.5;vertical-align:middle}
 .ptable.editable thead th{vertical-align:middle}
 .ptable.editable thead th:first-child{font-weight:700}
 .ptable>thead>tr>th{padding:8px 10px}
 .phead{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:150px}
 .pdot{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
-.ptable input.pin{width:98px;padding:4px 6px;border:1px solid var(--c-border);border-radius:5px;
+.ptable input.pin{width:110px;padding:4px 6px;border:1px solid var(--c-border);border-radius:5px;
   font-size:12px;text-align:right;background:#fff;font-variant-numeric:tabular-nums}
 .ptable input.pin:hover{border-color:#c9cfd6}
 .ptable input.pin:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.ptable td.pend{position:relative;background:#fff7ed}
+.ptable td.pend input.pin{border-color:#f59e0b;background:#fff7ed;box-shadow:inset 0 0 0 1px #f59e0b33}
+.ptable td.pend::after{content:'●';position:absolute;top:2px;right:3px;font-size:8px;color:#f59e0b;line-height:1}
+.pend-badge{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;background:#f59e0b;color:#fff;
+  border-radius:9px;font-size:11px;font-weight:700;text-align:center;vertical-align:1px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.warn-bar{display:none;margin:10px 0 0;padding:8px 12px;background:#fff7ed;border:1px solid #f59e0b;
+  border-radius:6px;font-size:12.5px;color:#92400e;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.warn-bar.show{display:flex}
+.warn-bar .grow{flex:1}
 .ptable input.ptxt{width:104px;padding:3px 5px;border:1px solid var(--c-border);border-radius:5px;
   font-size:12px;font-weight:600;background:#fff;color:#111827}
 .ptable input.ptxt:focus{outline:none;border-color:var(--c-primary)}
@@ -311,21 +337,64 @@ tbody tr:hover{background:#fafbfc}
 </div>
 
 <div class="panel">
-  <div class="panel-h"><h2>⑤ 参数编辑（可改参数 · 可增案例）</h2>
+  <div class="panel-h"><h2>⑤ 四组三联图（按 R 代码 plot_one 复刻）</h2>
+    <div class="actions"><span class="badge">PMC · Total · ISIC · Total</span></div>
+  </div>
+  <p class="legend-note">完全按用户 R 代码 <code>plot_one()</code> 复刻：每组 3 个子图横排，依次为组内三个模型。每个子图包含 <b>Profit (Max/Mean/Min)</b> 实线、<b>Social Benefit</b>（仅 Mean）实线、<b>Emission (Max/Mean/Min)</b> 虚线（双轴，右轴）、◆ 利润峰值、▲ 收获点、★ 三目标最佳点，及最优区间底纹。改上方任意参数后本面板<b>实时重算</b>。</p>
+  <div id="rCodeGrid" class="rcode-groups"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>⑥ 经济 · 利润曲线</h2>
     <div class="actions">
-      <button class="btn btn-sm" id="btnAddModel">＋ 新增模式</button>
+      <span style="font-size:12px;color:var(--c-muted);align-self:center">情境</span>
+      <div class="chips" id="indScenProfit" data-target="profit"></div>
+    </div>
+  </div>
+  <p class="legend-note">把所有已选模式画在同一张图上，方便横向对比「谁赚得多」。曲线颜色 = 模式；不同情境请在右上角切换（默认显示 Mean）。</p>
+  <div id="indChartProfit" class="chart chart-lg"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>⑦ 生态 · 排放强度曲线</h2>
+    <div class="actions">
+      <span style="font-size:12px;color:var(--c-muted);align-self:center">情境</span>
+      <div class="chips" id="indScenEmission" data-target="emission"></div>
+    </div>
+  </div>
+  <p class="legend-note">同样把所有已选模式叠在一起，便于对比「谁污染更少」。可勾选「反转 Y 轴」（下方备注中提供）。曲线颜色 = 模式。</p>
+  <div id="indChartEmission" class="chart chart-lg"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>⑧ 社会 · 社会效益曲线</h2>
+    <div class="actions">
+      <span style="font-size:12px;color:var(--c-muted);align-self:center">情境</span>
+      <div class="chips" id="indScenSocial" data-target="social"></div>
+    </div>
+  </div>
+  <p class="legend-note">社会效益价值 = 蛋白产出 + 社会补贴 + 碳汇。把所有已选模式叠在同一张图上对比「谁社会贡献更大」。曲线颜色 = 模式。</p>
+  <div id="indChartSocial" class="chart chart-lg"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h"><h2>⑨ 参数编辑（可改参数 · 可增案例 · 可删模式）</h2>
+    <div class="actions">
       <button class="btn btn-ghost btn-sm" id="btnExportJson">导出 JSON</button>
       <button class="btn btn-ghost btn-sm" id="btnExportCsv">导出 CSV</button>
       <button class="btn btn-ghost btn-sm" id="btnImportJson">导入 JSON</button>
       <input type="file" id="fileImport" accept=".json,application/json" hidden>
+      <button class="btn btn-ghost btn-sm" id="btnRevertAll" disabled style="display:none">↺ 撤销修改</button>
+      <button class="btn btn-sm" id="btnApplyAll" disabled style="display:none">✓ 一键应用修改 <span id="pendBadge" class="pend-badge" style="display:none">0</span></button>
+      <button class="btn btn-sm" id="btnAddModel">＋ 新增模式</button>
     </div>
   </div>
-  <p class="legend-note">直接编辑任意数值单元格，上方所有图表<b>实时重算</b>；表头可改<b>名称 / 类型 / 体系 / 配对键</b>，<b>×</b> 删除该模式，<b>＋ 新增模式</b>会复制当前选中模式的参数作为新列。灰底行为<b>派生存</b>（由 z、r 自动换算 DO 与温度）。所有修改自动保存在本浏览器，点右上角「↺ 恢复 R 代码默认」可一键还原。</p>
+  <p class="legend-note">直接编辑任意数值单元格：编辑只进入<b>暂存队列</b>（橙色描边），<b>不会立即重算</b>；元信息（名称 / 类型 / 体系）实时生效。点右上角 <b>「✓ 一键应用修改」</b> 才统一提交并刷新全部图表，<b>「↺ 撤销修改」</b> 可丢弃暂存。<b>＋ 新增模式</b>会复制当前选中模式的参数作为新列，可一并勾选要删除的旧模式。灰底行为<b>派生存</b>。所有提交过的修改自动保存在本浏览器，点页面右上角「↺ 恢复 R 代码默认」可一键还原。</p>
   <div class="ptable-wrap"><table class="ptable editable" id="paramTable"></table></div>
   <div class="hint">※ 内置 12 组参数与 R 代码一一对应；案例 PMC / PIMTA / PMC_S 三组在本页的计算结果与 R 输出完全一致（蛋白比例 0.25 × 蛋白价格 20、补贴 0.03，与 R 默认值相同）。「性别平等」为记录项，R 口径未纳入公式。</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="echarts.min.js"></script>
 <script>
 /* =====================================================================
    效益评估 · 前端实现
@@ -345,20 +414,23 @@ const IDX50 = T.findIndex(v => v >= 50 - 1e-9);
 
 /* 12 组内置参数（与 R 代码 / 参数表一一对应）；colour 用于曲线配色，pair 用于「案例 vs Total」配对 */
 const DEFAULT_MODELS = [
- {id:'case_pmc',  name:'案例 PMC',   type:'案例', sys:'PMC',  pair:'PMC',    color:'#0c8a8a', n0:230, z:-0.00616,     cost:0.048,       rLow:0.984447, rMid:0.9777696, rHigh:0.96966,  base:18,  poll:0.199416667, co2:5.65,  build:50,   harvest:120, carbon:-0.02, subsidy:0.03,  gender:0.01},
- {id:'case_pimta',name:'案例 PIMTA', type:'案例', sys:'PMC',  pair:'PIMTA',  color:'#f97316', n0:60,  z:-0.001918368, cost:0.0109,      rLow:0.991267, rMid:0.98465625,rHigh:0.9771,   base:23,  poll:0.021333333, co2:0.32,  build:50,   harvest:121, carbon:0.08,   subsidy:0.03,  gender:0.01},
- {id:'case_pmcs', name:'案例 PMC_S', type:'案例', sys:'PMC',  pair:'PMC_S',  color:'#7c3aed', n0:80,  z:-0.007,       cost:0.01664,     rLow:0.9988,   rMid:0.9880533, rHigh:0.977224, base:25,  poll:0.111,       co2:2.97,  build:50,   harvest:120, carbon:-0.01,  subsidy:0.03,  gender:0.01},
- {id:'tot_pmc',   name:'Total PMC',  type:'Total',sys:'PMC',  pair:'PMC',    color:'#0891b2', n0:100, z:-0.00616,     cost:0.015311,    rLow:0.984447, rMid:0.9777696, rHigh:0.96966,  base:21,  poll:0.431,       co2:5.65,  build:50,   harvest:120, carbon:-0.01,  subsidy:0.03,  gender:0.015},
- {id:'tot_pimta', name:'Total PIMTA',type:'Total',sys:'PMC',  pair:'PIMTA',  color:'#ea580c', n0:100, z:-0.00163,     cost:0.015311,    rLow:0.991267, rMid:0.98465625,rHigh:0.9771,   base:19,  poll:0.418583333, co2:0.32,  build:50,   harvest:120, carbon:0.06,   subsidy:0.03,  gender:0.015},
- {id:'tot_pmcs',  name:'Total PMC_S',type:'Total',sys:'PMC',  pair:'PMC_S',  color:'#a855f7', n0:80,  z:-0.007,       cost:0.01524,     rLow:0.9988,   rMid:0.9880533, rHigh:0.977224, base:25,  poll:0.3525,      co2:2.97,  build:50,   harvest:120, carbon:0.00,   subsidy:0.03,  gender:0.015},
- {id:'case_isic1',name:'案例 ISIC_1',type:'案例', sys:'ISIC', pair:'ISIC_1', color:'#16a34a', n0:800, z:-0.0009723,   cost:0.488262911, rLow:0.982,    rMid:0.9802,    rHigh:0.97865,  base:21,  poll:8.0393,      co2:106.43,build:40.3, harvest:120, carbon:-0.03,  subsidy:0.14,  gender:0.07},
- {id:'case_isic2',name:'案例 ISIC_2',type:'案例', sys:'ISIC', pair:'ISIC_2', color:'#84cc16', n0:700, z:-0.00058,     cost:0.488262911, rLow:0.982,    rMid:0.9802,    rHigh:0.97865,  base:19,  poll:0.9518,      co2:69.58, build:40.3, harvest:120, carbon:-0.03,  subsidy:0.14,  gender:0.07},
- {id:'case_isirc',name:'案例 ISIRC', type:'案例', sys:'ISIC', pair:'ISIRC',  color:'#ca8a04', n0:600, z:0.000866564,  cost:0.824232971, rLow:0.9864,   rMid:0.98175,   rHigh:0.9771,   base:30,  poll:5.7122,      co2:80.64, build:40.3, harvest:120, carbon:-0.04,  subsidy:0.54,  gender:0.27},
- {id:'tot_isic',  name:'Total ISIC', type:'Total',sys:'ISIC', pair:'ISIC_1', color:'#dc2626', n0:800, z:-0.00217,     cost:0.359460552, rLow:0.985656, rMid:0.977,     rHigh:0.968792, base:19.9,poll:8.0393,      co2:106.43,build:40.3, harvest:120, carbon:-0.03,  subsidy:0.024, gender:0.012},
- {id:'tot_isirc', name:'Total ISIRC',type:'Total',sys:'ISIC', pair:'ISIC_2', color:'#db2777', n0:500, z:-0.00225,     cost:0.228273004, rLow:0.9926,   rMid:0.983,     rHigh:0.974,    base:19.9,poll:0.9518,      co2:69.58, build:40.3, harvest:120, carbon:-0.03,  subsidy:0.043, gender:0.0215},
- {id:'tot_isbic', name:'Total ISBIC',type:'Total',sys:'ISIC', pair:'ISIRC',  color:'#b45309', n0:800, z:-0.00553,     cost:0.121358958, rLow:0.986276, rMid:0.981,     rHigh:0.97555,  base:19.9,poll:5.7122,      co2:80.64, build:40.3, harvest:120, carbon:-0.04,  subsidy:0.038, gender:0.019}
+ {id:'case_pmc', name:'案例PMC', type:'案例', sys:'PMC', pair:'PMC', color:'#0c8a8a', n0:230, z:-0.00616, cost:0.048, rLow:0.984447, rMid:0.9777696, rHigh:0.96966, base:18, poll:0.199416667, co2:5.65, build:50, harvest:120, carbon:-0.02, protein:0.25, price:20, subsidy:0.03, gender:0.01},
+ {id:'case_pimta', name:'案例PIMTA', type:'案例', sys:'PMC', pair:'PIMTA', color:'#f97316', n0:60, z:-0.001918368, cost:0.0109, rLow:0.991267, rMid:0.98465625, rHigh:0.9771, base:23, poll:0.021333333, co2:0.32, build:50, harvest:121, carbon:0.08, protein:0.25, price:20, subsidy:0.03, gender:0.01},
+ {id:'case_pmcs', name:'案例PMC_S', type:'案例', sys:'PMC', pair:'PMC_S', color:'#7c3aed', n0:80, z:-0.007, cost:0.01664, rLow:0.9988, rMid:0.9880533, rHigh:0.977224, base:25, poll:0.111, co2:2.97, build:50, harvest:120, carbon:-0.01, protein:0.25, price:20, subsidy:0.03, gender:0.01},
+ {id:'tot_pmc', name:'Total_PMC', type:'Total', sys:'PMC', pair:'PMC', color:'#0891b2', n0:100, z:-0.00616, cost:0.015311, rLow:0.984447, rMid:0.9777696, rHigh:0.96966, base:21, poll:0.431, co2:5.65, build:50, harvest:120, carbon:-0.01, protein:0.25, price:20, subsidy:0.03, gender:0.015},
+ {id:'tot_pimta', name:'Total_PIMTA', type:'Total', sys:'PMC', pair:'PIMTA', color:'#ea580c', n0:100, z:-0.00163, cost:0.015311, rLow:0.991267, rMid:0.98465625, rHigh:0.9771, base:19, poll:0.418583333, co2:0.32, build:50, harvest:120, carbon:0.06, protein:0.25, price:20, subsidy:0.03, gender:0.015},
+ {id:'tot_pmcs', name:'Total_PMC_S', type:'Total', sys:'PMC', pair:'PMC_S', color:'#a855f7', n0:80, z:-0.007, cost:0.01524, rLow:0.9988, rMid:0.9880533, rHigh:0.977224, base:25, poll:0.3525, co2:2.97, build:50, harvest:120, carbon:0.0, protein:0.25, price:20, subsidy:0.03, gender:0.015},
+ {id:'case_isic1', name:'案例ISIC_1', type:'案例', sys:'ISIC', pair:'ISIC_1', color:'#16a34a', n0:800, z:-0.0009723, cost:0.488262911, rLow:0.982, rMid:0.9802, rHigh:0.97865, base:21, poll:8.0393, co2:106.43, build:40.3, harvest:120, carbon:-0.03, protein:0.25, price:20, subsidy:0.14, gender:0.07},
+ {id:'case_isic2', name:'案例ISIC_2', type:'案例', sys:'ISIC', pair:'ISIC_2', color:'#84cc16', n0:700, z:-0.00058, cost:0.488262911, rLow:0.982, rMid:0.9802, rHigh:0.97865, base:19, poll:0.9518, co2:69.58, build:40.3, harvest:120, carbon:-0.03, protein:0.25, price:20, subsidy:0.14, gender:0.07},
+ {id:'case_isirc', name:'案例ISIRC', type:'案例', sys:'ISIC', pair:'ISIRC', color:'#ca8a04', n0:600, z:0.000866564, cost:0.824232971, rLow:0.9864, rMid:0.98175, rHigh:0.9771, base:30, poll:5.7122, co2:80.64, build:40.3, harvest:120, carbon:-0.04, protein:0.25, price:20, subsidy:0.54, gender:0.27},
+ {id:'tot_isic', name:'Total_ISIC', type:'Total', sys:'ISIC', pair:'ISIC_1', color:'#dc2626', n0:800, z:-0.00217, cost:0.359460552, rLow:0.985656, rMid:0.977, rHigh:0.968792, base:19.9, poll:8.0393, co2:106.43, build:40.3, harvest:120, carbon:-0.03, protein:0.25, price:20, subsidy:0.024, gender:0.012},
+ {id:'tot_isirc', name:'Total_ISIRC', type:'Total', sys:'ISIC', pair:'ISIC_2', color:'#db2777', n0:500, z:-0.00225, cost:0.228273004, rLow:0.9926, rMid:0.983, rHigh:0.974, base:19.9, poll:0.9518, co2:69.58, build:40.3, harvest:120, carbon:-0.03, protein:0.25, price:20, subsidy:0.043, gender:0.0215},
+ {id:'tot_isbic', name:'Total_ISBIC', type:'Total', sys:'ISIC', pair:'ISIRC', color:'#b45309', n0:800, z:-0.00553, cost:0.121358958, rLow:0.986276, rMid:0.981, rHigh:0.97555, base:19.9, poll:5.7122, co2:80.64, build:40.3, harvest:120, carbon:-0.04, protein:0.25, price:20, subsidy:0.038, gender:0.019}
 ];
-DEFAULT_MODELS.forEach(m => { m.protein = 0.25; m.price = 20; });
+DEFAULT_MODELS.forEach(m => { if (m.protein == null) m.protein = 0.25; if (m.price == null) m.price = 20; });
+
+/* 参数表数据版本：改参数表时必须同步 +1，用于作废旧 localStorage 缓存 */
+const DATA_VERSION = 'v4.2026-09-11-rcode';
 
 /* 用户新增案例时轮换使用的配色 */
 const USER_PALETTE = ['#2563eb','#0d9488','#d946ef','#65a30d','#e11d48','#0284c7','#9333ea','#ea580c','#059669','#b45309'];
@@ -406,6 +478,19 @@ const DERIVED_ROWS = [
   {label:'高 r 对应温度', unit:'℃', get:m => (1.067 - m.rHigh) / 0.0031, dec:2}
 ];
 
+/* 按用户 R 代码 groups 列表：4 组 × 3 模型；找不到的模型自动跳过（允许自建/删除） */
+const MODEL_GROUPS = [
+  {label:'Group 1 · PMC / PIMTA / PMC_S',           tag:'(a)', members:['案例PMC','案例PIMTA','案例PMC_S']},
+  {label:'Group 2 · Total_PMC / Total_PIMTA / Total_PMC_S', tag:'(b)', members:['Total_PMC','Total_PIMTA','Total_PMC_S']},
+  {label:'Group 3 · ISIC_1 / ISIC_2 / ISIRC',       tag:'(c)', members:['案例ISIC_1','案例ISIC_2','案例ISIRC']},
+  {label:'Group 4 · Total_ISIC / Total_ISIRC / Total_ISBIC', tag:'(d)', members:['Total_ISIC','Total_ISIRC','Total_ISBIC']}
+];
+const MODEL_GROUPS_TAGS = ['(a)','(b)','(c)'];  /* 子图角标 */
+function lookupModelByName(nm){
+  return MODELS.find(m => m.name === nm) ||
+         MODELS.find(m => (m.pair || m.name) === nm);
+}
+
 /* ---------------- 计算 ---------------- */
 function baseAt(m, r){ return T.map(t => 0.1 + m.base * Math.pow((1 - Math.pow(r,t)) / (1 - Math.pow(r,T_MAX)), 3)); }
 function yieldAt(m, r){ const b = baseAt(m,r); return T.map((t,i) => m.n0 * Math.exp(m.z*t) * b[i] / 1000); }
@@ -445,22 +530,38 @@ function niceMax(vals){
 
 /* ---------------- 状态与持久化 ---------------- */
 const LS_KEY = 'shrimpaqua.benefit.params.v2';
+const LS_VERSION = DATA_VERSION;
 const DEF_SEL = ['case_pmc','case_pimta','case_pmcs'];
-const state = { models: new Set(DEF_SEL), scens: new Set(['Mean']), ind: 'profit' };
+const state = { models: new Set(DEF_SEL), scens: new Set(['Mean']), ind: 'profit',
+                 indScens: {profit:'Mean', emission:'Mean', social:'Mean'},
+                 pending: new Map() };
 
 function saveParams(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(
-    { models: MODELS, sel: Array.from(state.models), scens: Array.from(state.scens) })); }catch(e){}
+    { v: LS_VERSION, models: MODELS,
+      sel: Array.from(state.models), scens: Array.from(state.scens),
+      indScens: state.indScens })); }catch(e){}
 }
 function loadParams(){
   try{
     const raw = localStorage.getItem(LS_KEY); if (!raw) return;
     const o = JSON.parse(raw); if (!o || !Array.isArray(o.models) || !o.models.length) return;
-    MODELS = o.models.map(m => Object.assign({}, DEFAULT_MODELS.find(d => d.id === m.id) || {}, m));
+    if (o.v === LS_VERSION){
+      /* 同版本：用户编辑原样恢复（缺省字段用代码内置值补齐） */
+      MODELS = o.models.map(m => Object.assign({}, DEFAULT_MODELS.find(d => d.id === m.id) || {}, m));
+    } else {
+      /* 数据版本已更新：内置 12 组强制对齐代码（用户参数表），仅保留自建模式 */
+      const keep = o.models.filter(m => m.custom || /^(usr_|imp_)/.test(m.id));
+      MODELS = cloneModels(DEFAULT_MODELS).concat(keep.map(m => Object.assign({}, m)));
+    }
     rebuildIndex();
     if (Array.isArray(o.sel)){ const s = o.sel.filter(id => MMAP[id]); if (s.length) state.models = new Set(s); }
     if (Array.isArray(o.scens)){ const s = o.scens.filter(k => SCENS.some(x => x.key === k)); if (s.length) state.scens = new Set(s); }
+    if (o.indScens && typeof o.indScens === 'object'){
+      Object.keys(o.indScens).forEach(k => { if (SCENS.some(x => x.key === o.indScens[k])) state.indScens[k] = o.indScens[k]; });
+    }
     if (!state.models.size) state.models = new Set([MODELS[0].id]);
+    saveParams();  /* 回写新版本号，避免每次进页都触发对齐 */
   }catch(e){}
 }
 const selModels = () => MODELS.filter(m => state.models.has(m.id));
@@ -473,19 +574,44 @@ function mount(id, opt){
   let c = echarts.getInstanceByDom(el); if (!c) c = echarts.init(el);
   c.setOption(opt, true); charts[id] = c;
 }
+function mountEl(el, opt){
+  if (!el) return;
+  let c = echarts.getInstanceByDom(el); if (!c) c = echarts.init(el);
+  c.setOption(opt, true); if (el.id) charts[el.id] = c;
+}
 function clearGrid(id){
-  const el = document.getElementById(id);
-  Array.prototype.slice.call(el.children).forEach(ch => { const c = echarts.getInstanceByDom(ch); if (c) c.dispose(); });
+  const el = document.getElementById(id); if (!el) return;
+  /* 必须遍历 .chart 后代（图表容器不是网格的直接子元素），否则实例不会被销毁 */
+  Array.prototype.slice.call(el.querySelectorAll('.chart')).forEach(ch => {
+    const c = echarts.getInstanceByDom(ch); if (c) c.dispose();
+  });
   el.innerHTML = '';
+}
+/* 网格容器（auto-fit）在只挂入第一个子项时列数尚未稳定，
+   此时 echarts.init 量到的宽度会是整行宽，canvas 因此横跨多列。
+   统一做法：等全部子项挂载完成后，再让所有实例按真实容器尺寸重排。 */
+function relayout(scope){
+  const run = () => {
+    const root = (typeof scope === 'string') ? document.getElementById(scope) : scope;
+    if (!root) return;
+    Array.prototype.slice.call(root.querySelectorAll('.chart')).forEach(ch => {
+      const c = echarts.getInstanceByDom(ch);
+      if (c) { try { c.resize(); } catch (e) {} }
+    });
+  };
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+  setTimeout(run, 80);
+  setTimeout(run, 320);
 }
 function baseOpt(yName, extra){
   const o = {
     tooltip:{trigger:'axis', axisPointer:{type:'cross'}},
-    grid:{left:62, right:64, top:34, bottom:48},
+    grid:{left:78, right:64, top:34, bottom:48},
     toolbox:{right:6, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
     xAxis:{type:'value', name:'Time (days)', nameLocation:'middle', nameGap:28, min:0, max:T_MAX,
            splitLine:{show:false}, axisLine:{lineStyle:{color:'#9ca3af'}}},
-    yAxis:{type:'value', name:yName, nameTextStyle:{fontWeight:'bold'}, scale:false,
+    yAxis:{type:'value', name:yName, nameLocation:'middle', nameRotate:90, nameGap:56,
+           nameTextStyle:{fontSize:11, fontWeight:'bold'}, scale:false,
            axisLine:{show:true, lineStyle:{color:'#9ca3af'}}, splitLine:{lineStyle:{color:'#f1f3f5'}}}
   };
   Object.assign(o, extra || {}); return o;
@@ -517,6 +643,45 @@ function renderInd(){
   }
   if (ind === 'score') opt.yAxis.min = 0;
   mount('indChart', opt);
+}
+
+/* ---------------- ⑥⑦⑧ 单指标独立面板（经济/生态/社会） ---------------- */
+function renderIndSingle(target){
+  const yNames = {profit:'Profit (USD/m²)', emission:'Emission (g/kg)', social:'Social Benefit (USD/m²)'};
+  const ind = target;
+  const scenKey = state.indScens[ind] || 'Mean';
+  const series = [];
+  selModels().forEach(m => {
+    const r = m[SCENS.find(s => s.key === scenKey).field];
+    series.push(lineSeries(m.name + ' · ' + scenKey, m.color, metric(m, scenKey, ind), 'solid', ind==='emission'?1.4:1.8));
+  });
+  const opt = baseOpt(yNames[ind], {
+    legend:{type:'scroll', top:2, textStyle:{fontSize:11}, itemWidth:18, itemHeight:9},
+    series:series
+  });
+  if (ind === 'emission'){
+    opt.yAxis.inverse = document.getElementById('invEco') ? document.getElementById('invEco').checked : false;
+    opt.yAxis.name = 'Emission (g/kg, 越低越好)';
+  }
+  if (ind === 'social') opt.yAxis.min = 0;
+  mount('indChart' + ind.charAt(0).toUpperCase() + ind.slice(1), opt);
+}
+function buildIndScenChips(target){
+  const wrap = document.getElementById('indScen' + target.charAt(0).toUpperCase() + target.slice(1));
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  SCENS.forEach(s => {
+    const el = document.createElement('span');
+    el.className = 'chip' + ((state.indScens[target] || 'Mean') === s.key ? ' on' : '');
+    el.innerHTML = '<span class="sw" style="background:' + s.color + '"></span>' + s.key;
+    el.onclick = () => {
+      state.indScens[target] = s.key;
+      buildIndScenChips(target);
+      renderIndSingle(target);
+      saveParams();
+    };
+    wrap.appendChild(el);
+  });
 }
 
 /* ---------------- ② 案例 vs Total ---------------- */
@@ -584,7 +749,8 @@ function renderScoreGrid(){
       pts.push({value:[res.best_t, res.best_score]});
       series.push({name:s.key + '·最佳', type:'scatter', symbol:'diamond', symbolSize:11, data:pts.slice(-1),
         itemStyle:{color:s.color},
-        label:{show:true, position:'right', fontSize:10, fontWeight:'bold', color:s.color,
+        label:{show:true, position:(res.best_t > 120 ? 'left' : 'right'), distance:6,
+               fontSize:10, fontWeight:'bold', color:s.color,
                formatter:res.best_score.toFixed(3)},
         markLine:{silent:true, symbol:'none', label:{show:false},
                   lineStyle:{type:'dashed', width:1, opacity:.55, color:s.color},
@@ -593,12 +759,13 @@ function renderScoreGrid(){
     });
     mount(id, {
       tooltip:{trigger:'axis'},
-      legend:{top:0, right:0, textStyle:{fontSize:10}, itemWidth:16, itemHeight:8, itemGap:8},
-      grid:{left:52, right:52, top:30, bottom:40},
-      toolbox:{right:0, top:18, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
+      legend:{top:0, left:'center', textStyle:{fontSize:10}, itemWidth:16, itemHeight:8, itemGap:10},
+      grid:{left:68, right:60, top:30, bottom:42},
+      toolbox:{right:2, top:0, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
       xAxis:{type:'value', name:'Time (days)', nameLocation:'middle', nameGap:24, min:0, max:T_MAX,
              axisLine:{lineStyle:{color:'#9ca3af'}}, splitLine:{show:false}},
-      yAxis:{type:'value', name:'Comprehensive Benefit', nameTextStyle:{fontSize:10, fontWeight:'bold'},
+      yAxis:{type:'value', name:'Comprehensive Benefit', nameLocation:'middle', nameRotate:90, nameGap:44,
+             nameTextStyle:{fontSize:10, fontWeight:'bold'},
              min:0, axisLine:{lineStyle:{color:'#9ca3af'}}, splitLine:{lineStyle:{color:'#f1f3f5'}}},
       series:series
     });
@@ -608,6 +775,7 @@ function renderScoreGrid(){
     tip.className = 'hint'; tip.textContent = '※ 为保证渲染性能，本区最多显示前 8 个已选模式。';
     document.getElementById('scoreGrid').appendChild(tip);
   }
+  relayout('scoreGrid');
 }
 
 /* ---------------- ④ 双轴总览 ---------------- */
@@ -669,9 +837,11 @@ function renderDualGrid(){
 
     mount(id, {
       tooltip:{trigger:'axis'},
-      legend:{type:'scroll', top:0, left:0, textStyle:{fontSize:10}, itemWidth:16, itemHeight:8, itemGap:7},
-      grid:{left:62, right:62, top:56, bottom:42},
-      toolbox:{right:0, top:16, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
+      legend:{bottom:0, left:'center', textStyle:{fontSize:10}, itemWidth:14, itemHeight:8, itemGap:10,
+              data:['Profit (Min)','Profit (Mean)','Profit (Max)','Social Benefit',
+                    'Emission (Min)','Emission (Mean)','Emission (Max)']},
+      grid:{left:64, right:68, top:52, bottom:84},
+      toolbox:{right:0, top:0, feature:{saveAsImage:{title:'保存图片', pixelRatio:2}}},
       xAxis:{type:'value', name:'Time (days)', nameLocation:'middle', nameGap:26, min:0, max:T_MAX,
              axisLine:{lineStyle:{color:'#9ca3af'}}, splitLine:{show:false}},
       yAxis:[
@@ -687,9 +857,182 @@ function renderDualGrid(){
       series:series
     });
   });
+  relayout('dualGrid');
 }
 
-/* ---------------- ⑤ 参数编辑表 ---------------- */
+/* ---------------- ⑤ 四组三联图（R 代码 plot_one 复刻） ---------------- */
+/* 单图渲染：m 一个模型，返回 ECharts option
+   复刻 R 的 plot_one：Profit(3 实线) + Social(1 Mean 实线) + Emission(3 虚线 双轴)
+                       + 利润峰值 ◆ + 收获点 ▲ + 综合最佳 ★ + 最优区间底纹
+                       + Min/Mean/Max 三组最佳点垂直虚线 */
+function plotOneOpt(m){
+  const pMin = profitAt(m, m.rLow), pMean = profitAt(m, m.rMid), pMax = profitAt(m, m.rHigh);
+  const eMin = emitAt(m, m.rLow), eMean = emitAt(m, m.rMid), eMax = emitAt(m, m.rHigh);
+  const soc  = socialAt(m, m.rMid);
+
+  /* Y 轴上限：与 R 一致 ceiling(max/5)*5 + 5 */
+  const allUp = [].concat(pMin, pMean, pMax, soc).filter(v => isFinite(v));
+  const yMaxRaw = allUp.length ? Math.max.apply(null, allUp) : 5;
+  let yUp = Math.ceil(yMaxRaw / 5) * 5 + 5;
+  if (yUp < 5) yUp = 5;
+
+  /* 利润峰值 ◆（R 的 geom_point color=color_max_point #8B4A3A） */
+  const peakAt = arr => { let bi = IDX50; for (let i = IDX50; i < arr.length; i++) if (arr[i] > arr[bi]) bi = i; return [T[bi], arr[bi]]; };
+  const peakMin = peakAt(pMin), peakMean = peakAt(pMean), peakMax = peakAt(pMax);
+
+  /* 收获点 ▲（黑色三角） */
+  const hIdx = Math.round(m.harvest / DT);
+  const harvestPt = [m.harvest, pMean[hIdx]];
+
+  /* 缩放系数：让 Pollution 落在 yUp × 0.8 范围内（与 R 一致） */
+  let maxPoll = 0;
+  [eMin, eMean, eMax].forEach(a => { for (let i = IDX50; i < a.length; i++) if (a[i] > maxPoll) maxPoll = a[i]; });
+  if (!isFinite(maxPoll) || maxPoll <= 0) maxPoll = 1;
+  const sf = Math.max(1, maxPoll / (yUp * 0.8));
+
+  /* 最佳综合点 ★（R 用 pn+sn-en 在 [50,150] 区间） */
+  function bestOf(profitC, pollC, socialC){
+    const pr = profitC.slice(IDX50), er = pollC.slice(IDX50), sr = socialC.slice(IDX50);
+    const nrm = a => { const mn = Math.min.apply(null, a), mx = Math.max.apply(null, a);
+      return a.map(v => (v - mn) / ((mx - mn) || 1)); };
+    const pn = nrm(pr), en = nrm(er), sn = nrm(sr);
+    let bi = 0, bs = -Infinity;
+    for (let i = 0; i < pn.length; i++){ const v = pn[i] + sn[i] - en[i]; if (v > bs){ bs = v; bi = i; } }
+    return { t: T[IDX50 + bi], profit: pr[bi], score: bs };
+  }
+  const bestMin = bestOf(pMin, eMin, socialAt(m, m.rLow));
+  const bestMean = bestOf(pMean, eMean, socialAt(m, m.rMid));
+  const bestMax = bestOf(pMax, eMax, socialAt(m, m.rHigh));
+
+  /* 缩放后的 pollution（与 R 一致：t < 50 不画） */
+  const scaled = arr => T.map((tt, i) => tt >= 50 ? [tt, arr[i] / sf] : [tt, null]);
+
+  /* 用 ECharts markArea 模拟 R 的 geom_ribbon（最优区间底纹） */
+  const ribbonStart = Math.max(50, bestMean.t - 2.5);
+  const ribbonEnd   = Math.min(T_MAX, bestMean.t + 2.5);
+
+  return {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend:  { type: 'plain', bottom: 0, left: 'center', width: '94%', itemGap: 6,
+               data: ['Profit (Min)', 'Profit (Mean)', 'Profit (Max)', 'Social Benefit',
+                      'Emission (Min)', 'Emission (Mean)', 'Emission (Max)'],
+               textStyle: { fontSize: 8.5 }, itemWidth: 13, itemHeight: 6 },
+    grid:    { left: 56, right: 58, top: 14, bottom: 76 },
+    toolbox: { right: 0, bottom: 0, feature: { saveAsImage: { title: '保存图片', pixelRatio: 2 } } },
+    xAxis:   { type: 'value', name: 'Time (days)', nameLocation: 'middle', nameGap: 22, min: 0, max: T_MAX,
+               interval: 30, splitLine: { show: false }, axisLine: { lineStyle: { color: '#9ca3af' } } },
+    yAxis: [
+      { type: 'value', name: 'Profit / Social (USD/m²)', nameGap: 16, min: 0, max: yUp,
+        nameTextStyle: { fontSize: 9, fontWeight: 'bold', color: CLR.profitMean },
+        axisLine: { lineStyle: { color: CLR.profitMean } },
+        splitLine: { lineStyle: { color: '#f1f3f5' } },
+        axisLabel: { fontSize: 9, color: '#222', fontWeight: 'bold',
+                     formatter: v => (+v.toFixed(2)).toString() } },
+      { type: 'value', name: 'Emission (g/kg)', min: 0, max: yUp, position: 'right', nameGap: 16,
+        nameTextStyle: { fontSize: 9, fontWeight: 'bold', color: CLR.pollMean },
+        axisLine: { lineStyle: { color: CLR.pollMean } }, splitLine: { show: false },
+        axisLabel: { fontSize: 9, color: '#222', fontWeight: 'bold',
+                     formatter: v => { const n = v * sf; return n >= 100 ? n.toFixed(0) : n.toFixed(1); } } }
+    ],
+    series: [
+      /* 最优区间底纹（markArea） */
+      { name: 'Optimal Range', type: 'line', data: [], markArea: {
+          silent: true, itemStyle: { color: CLR.bestMean, opacity: 0.15 },
+          data: [[{ xAxis: ribbonStart }, { xAxis: ribbonEnd }]] } },
+      /* 三组最优点垂直虚线（markLine + scatter 复用同一对象） */
+      { name: 'Profit (Min)',  type: 'line', data: T.map((tt,i) => [tt, pMin[i]]),
+        lineStyle: { color: CLR.profitMin, width: 1.2 }, itemStyle: { color: CLR.profitMin },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      { name: 'Profit (Mean)', type: 'line', data: T.map((tt,i) => [tt, pMean[i]]),
+        lineStyle: { color: CLR.profitMean, width: 1.2 }, itemStyle: { color: CLR.profitMean },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      { name: 'Profit (Max)',  type: 'line', data: T.map((tt,i) => [tt, pMax[i]]),
+        lineStyle: { color: CLR.profitMax, width: 1.2 }, itemStyle: { color: CLR.profitMax },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      { name: 'Social Benefit', type: 'line', data: T.map((tt,i) => [tt, soc[i]]),
+        lineStyle: { color: CLR.social, width: 1.1 }, itemStyle: { color: CLR.social },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      { name: 'Emission (Min)',  type: 'line', data: scaled(eMin),  yAxisIndex: 1,
+        lineStyle: { color: CLR.pollMin,  width: 0.9, type: 'dashed' }, itemStyle: { color: CLR.pollMin },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      { name: 'Emission (Mean)', type: 'line', data: scaled(eMean), yAxisIndex: 1,
+        lineStyle: { color: CLR.pollMean, width: 0.9, type: 'dashed' }, itemStyle: { color: CLR.pollMean },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      { name: 'Emission (Max)',  type: 'line', data: scaled(eMax),  yAxisIndex: 1,
+        lineStyle: { color: CLR.pollMax,  width: 0.9, type: 'dashed' }, itemStyle: { color: CLR.pollMax },
+        showSymbol: false, emphasis: { focus: 'series' } },
+      /* 利润峰值 ◆（红色实心圆 + 位置标记） */
+      { name: 'Peak Min',  type: 'scatter', symbol: 'diamond', symbolSize: 9,
+        itemStyle: { color: CLR.peak }, data: [peakMin],  silent: true, tooltip: { show: false } },
+      { name: 'Peak Mean', type: 'scatter', symbol: 'diamond', symbolSize: 9,
+        itemStyle: { color: CLR.peak }, data: [peakMean], silent: true, tooltip: { show: false } },
+      { name: 'Peak Max',  type: 'scatter', symbol: 'diamond', symbolSize: 9,
+        itemStyle: { color: CLR.peak }, data: [peakMax],  silent: true, tooltip: { show: false } },
+      /* 收获点 ▲（黑色三角） */
+      { name: 'Harvest', type: 'scatter', symbol: 'triangle', symbolSize: 11,
+        itemStyle: { color: '#111827' }, data: [harvestPt], silent: true, tooltip: { show: false } },
+      /* 三组最佳点 ★ + 垂直长虚线（markLine） */
+      { name: 'Best Min',  type: 'scatter', symbol: 'diamond', symbolSize: 12, silent: true, tooltip: { show: true },
+        itemStyle: { color: CLR.bestMin, borderColor: '#fff', borderWidth: 1 }, data: [[bestMin.t,  bestMin.profit]],
+        markLine: { silent: true, symbol: 'none', label: { show: false },
+                    lineStyle: { type: 'dashed', width: 1, opacity: 0.7, color: CLR.bestMin },
+                    data: [{ xAxis: bestMin.t }] } },
+      { name: 'Best Mean', type: 'scatter', symbol: 'diamond', symbolSize: 12, silent: false, tooltip: { show: true },
+        itemStyle: { color: CLR.bestMean, borderColor: '#fff', borderWidth: 1 }, data: [[bestMean.t, bestMean.profit]],
+        markLine: { silent: true, symbol: 'none', label: { show: false },
+                    lineStyle: { type: 'dashed', width: 1, opacity: 0.7, color: CLR.bestMean },
+                    data: [{ xAxis: bestMean.t }] } },
+      { name: 'Best Max',  type: 'scatter', symbol: 'diamond', symbolSize: 12, silent: true, tooltip: { show: true },
+        itemStyle: { color: CLR.bestMax, borderColor: '#fff', borderWidth: 1 }, data: [[bestMax.t,  bestMax.profit]],
+        markLine: { silent: true, symbol: 'none', label: { show: false },
+                    lineStyle: { type: 'dashed', width: 1, opacity: 0.7, color: CLR.bestMax },
+                    data: [{ xAxis: bestMax.t }] } }
+    ]
+  };
+}
+
+function renderRCodeGrid(){
+  const root = document.getElementById('rCodeGrid'); if (!root) return;
+  /* 释放旧的 canvas 实例 */
+  Array.prototype.slice.call(root.querySelectorAll('.chart')).forEach(ch => {
+    const c = echarts.getInstanceByDom(ch); if (c) c.dispose();
+  });
+  root.innerHTML = '';
+  const jobs = [];
+  MODEL_GROUPS.forEach(g => {
+    const valid = g.members.map(nm => lookupModelByName(nm)).filter(Boolean);
+    if (!valid.length) return;
+    const sec = document.createElement('div');
+    sec.className = 'rcode-section';
+    sec.innerHTML = '<h3 style="margin:0 0 10px;font-size:13px;font-weight:600;color:#374151;letter-spacing:.5px">'
+      + esc(g.label) + '</h3>';
+    const row = document.createElement('div');
+    row.className = 'rcode-row';
+    valid.forEach((m, i) => {
+      const box = document.createElement('div');
+      box.className = 'rcode-cell';
+      box.innerHTML = '<div class="rcode-tag">' + (MODEL_GROUPS_TAGS[i] || '') + ' ' + esc(m.name)
+        + ' <span class="badge ' + (m.type === '案例' ? 'case' : 'total') + '">' + m.type + '</span></div>';
+      const div = document.createElement('div');
+      div.className = 'chart rcode-chart';
+      div.id = 'rc_' + m.id;
+      box.appendChild(div);
+      row.appendChild(box);
+      jobs.push({el: div, m: m});
+    });
+    sec.appendChild(row);
+    root.appendChild(sec);
+  });
+  /* 先把完整 DOM 挂进文档，容器宽度确定后再逐个初始化图表 */
+  jobs.forEach(j => mountEl(j.el, plotOneOpt(j.m)));
+  relayout(root);
+  /* 若某组完全没有有效成员，附提示 */
+  if (!root.children.length){
+    root.innerHTML = '<div class="hint">没有找到任何匹配模型。请检查内置模式名称是否被修改，或点击「↺ 恢复 R 代码默认」重置。</div>';
+  }
+}
+
+/* ---------------- ⑥ 参数编辑表 ---------------- */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtNum = (v, dec) => (v == null || !isFinite(v)) ? '—' : (+v).toFixed(dec);
@@ -728,6 +1071,22 @@ function renderParamTable(){
   });
   tb.innerHTML = h + '</tbody>';
   bindParamTable();
+  rehydratePending();
+}
+function rehydratePending(){
+  /* renderParamTable 之后，新 td 已替换；把 pending 里仍有效的项重新挂上 .pend 并更新 td 引用 */
+  if (!state.pending.size) return;
+  const tb = document.getElementById('paramTable');
+  state.pending.forEach((rec, key) => {
+    const [id, k] = key.split('|');
+    const m = MMAP[id]; if (!m){ state.pending.delete(key); return; }
+    const inp = tb.querySelector('input.pin[data-id="' + id + '"][data-k="' + k + '"]');
+    if (!inp){ state.pending.delete(key); return; }
+    rec.td = inp.closest('td');
+    rec.td.classList.add('pend');
+    rec.td.title = '暂存：' + rec.v + '（未应用）';
+  });
+  refreshPendUI();
 }
 function refreshDerived(){
   document.querySelectorAll('#paramTable td[data-der]').forEach(td => {
@@ -738,16 +1097,91 @@ function refreshDerived(){
 }
 let renderTimer = null;
 function scheduleRender(){ clearTimeout(renderTimer); renderTimer = setTimeout(renderAll, 200); }
+
+/* ---------------- 参数待应用（dirty 暂存队列） ---------------- */
+/* pending key = modelId + '|' + paramKey */
+function setPending(id, k, v, td){
+  const key = id + '|' + k;
+  const cur = state.pending.get(key);
+  if (cur){ cur.v = v; cur.td = td; }
+  else state.pending.set(key, { v: v, td: td });
+  td.classList.add('pend'); td.title = '暂存：' + v + '（未应用）';
+  refreshPendUI();
+}
+function clearPendingCell(td){ if (!td) return; td.classList.remove('pend'); td.removeAttribute('title'); }
+function refreshPendUI(){
+  const n = state.pending.size;
+  const ba = document.getElementById('btnApplyAll');
+  const br = document.getElementById('btnRevertAll');
+  const bg = document.getElementById('pendBadge');
+  if (n > 0){
+    ba.disabled = false; br.disabled = false;
+    ba.style.display = ''; br.style.display = '';
+    bg.style.display = ''; bg.textContent = n;
+  } else {
+    ba.disabled = true; br.disabled = true;
+    ba.style.display = 'none'; br.style.display = 'none';
+    bg.style.display = 'none';
+  }
+  let bar = document.getElementById('pendBar');
+  if (!bar){
+    bar = document.createElement('div');
+    bar.id = 'pendBar'; bar.className = 'warn-bar';
+    bar.innerHTML = '<span class="grow">⚠ 有 <b id="pendN">0</b> 项参数修改暂存中，尚未应用到图表。</span>'
+      + '<button class="btn btn-sm" id="pendBarApply">✓ 立即应用</button>'
+      + '<button class="btn btn-ghost btn-sm" id="pendBarRevert">↺ 撤销</button>';
+    const tbl = document.getElementById('paramTable');
+    tbl.parentElement.parentElement.insertBefore(bar, tbl.parentElement);
+    bar.querySelector('#pendBarApply').onclick = applyPending;
+    bar.querySelector('#pendBarRevert').onclick = revertPending;
+  }
+  bar.classList.toggle('show', n > 0);
+  bar.querySelector('#pendN').textContent = n;
+}
+function applyPending(){
+  if (!state.pending.size) return;
+  state.pending.forEach((rec, key) => {
+    const [id, k] = key.split('|');
+    const m = MMAP[id]; if (!m) return;
+    m[k] = rec.v; clearPendingCell(rec.td);
+  });
+  state.pending.clear();
+  refreshPendUI(); renderAll(); saveParams();
+}
+function revertPending(){
+  if (!state.pending.size) return;
+  state.pending.forEach((rec, key) => {
+    const [id, k] = key.split('|');
+    const m = MMAP[id]; if (!m) return;
+    const inp = rec.td && rec.td.querySelector('input.pin');
+    if (inp) inp.value = m[k];
+    clearPendingCell(rec.td);
+  });
+  state.pending.clear();
+  refreshPendUI();
+}
+/* 全量重渲染后（如删模式、切情境），重新绑定时把 pending 中已失效的项丢掉 */
+function prunePending(){
+  if (!state.pending.size) return;
+  const drop = [];
+  state.pending.forEach((rec, key) => {
+    const [id, k] = key.split('|');
+    const m = MMAP[id];
+    if (!m || !isFinite(m[k]) && false) drop.push(key);
+    if (!m) drop.push(key);
+  });
+  drop.forEach(k => state.pending.delete(k));
+  refreshPendUI();
+}
 function bindParamTable(){
   const tb = document.getElementById('paramTable');
-  /* 数值参数：输入即重算（不重建表格，避免丢失焦点） */
+  /* 数值参数：输入只进 pending，不触发实时重算 */
   Array.prototype.forEach.call(tb.querySelectorAll('input.pin'), inp => {
     inp.addEventListener('input', () => {
       const m = MMAP[inp.dataset.id]; if (!m) return;
       const v = parseFloat(inp.value);
       if (!isFinite(v)) return;
-      m[inp.dataset.k] = v;
-      refreshDerived(); scheduleRender(); saveParams();
+      setPending(inp.dataset.id, inp.dataset.k, v, inp.closest('td'));
     });
   });
   /* 元信息：名称 / 类型 / 体系 / 配对键 */
@@ -770,13 +1204,32 @@ function bindParamTable(){
 function buildChips(){
   const wrap = document.getElementById('modelChips'); wrap.innerHTML = '';
   let lastGrp = '';
+  /* 顶部加一个"全部删除"小按钮：方便一键清空当前已选 */
+  const clearBtn = document.createElement('span');
+  clearBtn.className = 'chip'; clearBtn.title = '一键清空当前已选模式';
+  clearBtn.innerHTML = '<span class="x del-all" title="一键清空已选模式">⊘</span><span style="font-size:11px;color:var(--c-muted)">清空已选</span>';
+  clearBtn.onclick = () => {
+    if (state.models.size === 0) return;
+    if (!confirm('将清空当前已选的 ' + state.models.size + ' 个模式（模型本身保留），确定？')) return;
+    state.models.clear();
+    buildChips(); renderAll(); saveParams();
+  };
+  wrap.appendChild(clearBtn);
+
   MODELS.forEach(m => {
     const g = (m.sys || '其他') + ' · ' + m.type;
     if (g !== lastGrp){ const gl = document.createElement('span'); gl.className = 'chip grp'; gl.textContent = g; wrap.appendChild(gl); lastGrp = g; }
     const el = document.createElement('span');
     el.className = 'chip' + (state.models.has(m.id) ? ' on' : '');
-    el.innerHTML = '<span class="sw" style="background:' + m.color + '"></span>' + esc(m.name);
-    el.onclick = () => {
+    el.innerHTML = '<span class="sw" style="background:' + m.color + '"></span>' + esc(m.name)
+      + (state.models.has(m.id) ? '<span class="x" title="从已选中移除（不会删除模型本身）">×</span>' : '');
+    el.onclick = (ev) => {
+      if (ev.target.classList.contains('x')){
+        /* 从已选中移除（不删除模型本身） */
+        state.models.delete(m.id);
+        buildChips(); renderAll(); saveParams();
+        return;
+      }
       if (state.models.has(m.id)){ if (state.models.size > 1) state.models.delete(m.id); }
       else state.models.add(m.id);
       buildChips(); renderAll(); saveParams();
@@ -799,23 +1252,73 @@ function buildScenChips(){
   });
 }
 function renderAll(){
-  renderInd(); renderPair(); renderScoreGrid(); renderDualGrid();
+  renderInd(); renderIndSingle('profit'); renderIndSingle('emission'); renderIndSingle('social');
+  renderPair(); renderScoreGrid(); renderDualGrid(); renderRCodeGrid();
   document.getElementById('selInfo').textContent =
     '已选 ' + state.models.size + ' / ' + MODELS.length + ' 模式 · ' + state.scens.size + ' 情境';
+  prunePending();
 }
 /* ---- 新增 / 删除 / 重置 ---- */
-function addModel(){
-  const base = selModels()[0] || MODELS[0];
+/* "新增模式 / 一并删除" 弹窗（弹窗中可勾选已有模式一并删除） */
+function openAddModal(){
+  const ov = document.getElementById('addModal');
+  ov.style.display = 'flex';
+  /* 默认名称 = 下一个新案例 N */
   const n = MODELS.filter(m => m.custom).length + 1;
+  document.getElementById('addName').value = '新案例 ' + n;
+  /* 模板下拉 */
+  const sel = document.getElementById('addTemplate'); sel.innerHTML = '';
+  MODELS.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id; o.textContent = m.name + '（' + (m.sys || '') + ' · ' + m.type + '）';
+    sel.appendChild(o);
+  });
+  sel.value = (selModels()[0] || MODELS[0]).id;
+  /* 删除勾选列表 */
+  const delBox = document.getElementById('addDelList'); delBox.innerHTML = '';
+  MODELS.forEach(m => {
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--c-border);border-radius:6px;font-size:12px;cursor:pointer;background:#fff';
+    row.innerHTML = '<input type="checkbox" value="' + m.id + '"><span class="sw" style="background:' + m.color + ';width:10px;height:10px;border-radius:2px;display:inline-block"></span><span>' + esc(m.name) + '</span><span style="color:var(--c-muted);margin-left:auto">' + (m.sys || '') + ' · ' + m.type + '</span>';
+    delBox.appendChild(row);
+  });
+  document.getElementById('addHint').textContent = '※ 模板用于复制参数；勾选的模式会在确认时被一并删除（不可恢复）。当前共 ' + MODELS.length + ' 个模式。';
+  setTimeout(() => document.getElementById('addName').focus(), 50);
+}
+function closeAddModal(){ document.getElementById('addModal').style.display = 'none'; }
+function submitAddModal(){
+  const name = (document.getElementById('addName').value || '').trim();
+  if (!name){ alert('请输入新模式名称。'); return; }
+  const tplId = document.getElementById('addTemplate').value;
+  const tpl = MMAP[tplId] || MODELS[0];
+  const delIds = Array.from(document.querySelectorAll('#addDelList input:checked')).map(x => x.value);
+  /* 防删空：必须保留 ≥1 个 */
+  const remain = MODELS.length - delIds.length;
+  if (remain < 1){ alert('至少需要保留 1 个模式（当前要删除 ' + delIds.length + ' 个，剩余 0）。'); return; }
+  /* 执行删除 */
+  if (delIds.length){
+    MODELS = MODELS.filter(x => !delIds.includes(x.id));
+    delIds.forEach(id => state.models.delete(id));
+  }
+  /* 新增 */
   const id = 'usr_' + Date.now().toString(36) + Math.floor(Math.random() * 1e3).toString(36);
-  const m = Object.assign({}, base, {
-    id: id, name: '新案例 ' + n, type: '案例', sys: '自定义', pair: '新案例 ' + n,
+  const m = Object.assign({}, tpl, {
+    id: id, name: name, type: '案例', sys: '自定义', pair: name,
     custom: true, color: USER_PALETTE[MODELS.length % USER_PALETTE.length]
   });
-  MODELS.push(m); rebuildIndex(); state.models.add(id);
+  MODELS.push(m); rebuildIndex();
+  state.models.add(id);
+  if (!state.models.size) state.models.add(MODELS[0].id);
+  rebuildIndex();
+  closeAddModal();
   renderParamTable(); buildChips(); renderAll(); saveParams();
   const w = document.querySelector('.ptable-wrap'); if (w) setTimeout(() => { w.scrollLeft = w.scrollWidth; }, 30);
+  /* 反馈 */
+  let msg = '✅ 已新增「' + name + '」';
+  if (delIds.length) msg += '，并删除 ' + delIds.length + ' 个模式';
+  alert(msg);
 }
+function addModel(){ openAddModal(); }
 function delModel(id){
   const m = MMAP[id]; if (!m) return;
   if (MODELS.length <= 1){ alert('至少需要保留一个模式。'); return; }
@@ -888,6 +1391,8 @@ document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('clic
   buildChips(); renderAll(); saveParams();
 }));
 document.getElementById('btnReset').addEventListener('click', resetAll);
+document.getElementById('btnApplyAll').addEventListener('click', applyPending);
+document.getElementById('btnRevertAll').addEventListener('click', revertPending);
 document.getElementById('btnAddModel').addEventListener('click', addModel);
 document.getElementById('btnExportJson').addEventListener('click', () =>
   download('效益评估参数.json', JSON.stringify({version:2, models:MODELS}, null, 2), 'application/json'));
@@ -902,8 +1407,38 @@ document.getElementById('fileImport').addEventListener('change', e => {
 window.addEventListener('resize', () => Object.keys(charts).forEach(k => { try { charts[k].resize(); } catch(e){} }));
 
 loadParams();
-buildChips(); buildScenChips(); renderParamTable(); renderAll();
+buildChips(); buildScenChips(); buildIndScenChips('profit'); buildIndScenChips('emission'); buildIndScenChips('social');
+renderParamTable(); renderAll();
 </script>
+
+<div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;
+  align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:20px 22px;width:560px;max-width:92vw;max-height:88vh;overflow:auto;
+    box-shadow:0 18px 50px rgba(0,0,0,.18)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="margin:0;font-size:15px">＋ 新增模式（可勾选一并删除）</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeAddModal()" title="关闭">×</button>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:12px;color:var(--c-muted);margin-bottom:4px">新模式名称</label>
+      <input id="addName" type="text" style="width:100%;padding:6px 8px;border:1px solid var(--c-border);border-radius:6px;font-size:13px" placeholder="例如：实验案例 A">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:12px;color:var(--c-muted);margin-bottom:4px">复制参数自</label>
+      <select id="addTemplate" style="width:100%;padding:6px 8px;border:1px solid var(--c-border);border-radius:6px;font-size:13px;background:#fff"></select>
+    </div>
+    <div style="margin-bottom:8px">
+      <label style="display:block;font-size:12px;color:var(--c-muted);margin-bottom:4px">一并删除以下模式（勾选后不可恢复，请谨慎）</label>
+      <div id="addDelList" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:280px;overflow:auto;
+        padding:4px;border:1px dashed var(--c-border);border-radius:6px;background:#fafbfc"></div>
+    </div>
+    <div id="addHint" style="font-size:11px;color:var(--c-muted);margin-bottom:12px;line-height:1.6"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="closeAddModal()">取消</button>
+      <button class="btn btn-sm" onclick="submitAddModal()">确认新增</button>
+    </div>
+  </div>
+</div>
 
 <div class="footer">
 对虾养殖产业数据库工作台 · 数据源：<code>/Users/mac/Desktop/对虾养殖产业数据库2.xlsx</code> · 累计 1,585 条有效记录 · 新增文献待确认 17 篇（每周三 08:00 自动检索，人工确认后并入主库）<br>

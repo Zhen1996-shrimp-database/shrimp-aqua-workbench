@@ -312,9 +312,9 @@ tbody tr:hover{background:#fafbfc}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="chart.umd.min.js"></script>
 <script>
-new Chart(document.getElementById('chFail'),{type:'barh',indexAxis:'y',data:{labels:['NO₂⁻-N 超界','NH₃-N 超界','NO₃⁻-N 超界','经纬度缺失','DOI 缺失','模式变体','COD 缺失','TSS 缺失','物种名异体','其他'],datasets:[{label:'失败条数',data:[8,5,3,2,2,1,1,0,0,1],backgroundColor:'#ef4444',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+new Chart(document.getElementById('chFail'),{type:'bar',indexAxis:'y',data:{labels:['NO₂⁻-N 超界','NH₃-N 超界','NO₃⁻-N 超界','经纬度缺失','DOI 缺失','模式变体','COD 缺失','TSS 缺失','物种名异体','其他'],datasets:[{label:'失败条数',data:[8,5,3,2,2,1,1,0,0,1],backgroundColor:'#ef4444',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
 
 new Chart(document.getElementById('chSev'),{type:'doughnut',data:{labels:['PASS 通过','WARN 警告','BLOCKED 阻断','CRITICAL 严重'],datasets:[{data:[58,33,5,4],backgroundColor:['#10b981','#f59e0b','#ef4444','#7f1d1d']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
 

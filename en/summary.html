@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Database Reviews · Shrimp Aquaculture Industry Database Workbench</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    Shrimp Aquaculture Industry Database Workbench
+  </div>
+  <nav>
+      <a href="index.html" >📊 Overview</a>
+      <a href="search.html" >🔍 Literature search</a>
+      <a href="etl.html" >⚙️ ETL Pipeline</a>
+      <a href="review.html" >✅ Data Review</a>
+      <a href="quality.html" >🛡️ Data quality</a>
+      <a href="dedup.html" >🔁 Dedup</a>
+      <a href="newlit.html" >🆕 New papers</a>
+      <a href="benefit.html" >📈 Benefit evaluation</a>
+      <a href="database.html" >💾 Main database</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">📑 Database reviews</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>System normal</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">Home</a> / Database Reviews</div>
+  <h1>📑 Database review reports</h1>
+  <p>Based on 1,585 real records · multi-dimensional aggregation · exportable as HTML / CSV</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi primary"><div class="label">Cumulative records</div><div class="value">1,585</div><div class="sub">12 sheets total</div></div>
+  <div class="kpi success"><div class="label">Farming mode</div><div class="value">22</div><div class="sub">incl. industrial / pond / IMTA</div></div>
+  <div class="kpi info"><div class="label">Sites covered</div><div class="value">119</div><div class="sub" title="Rio Grande, RS, Brazil · Florianópolis, SC, Brazil · Rohtak, Haryana, India">Top: Rio Grande, RS, Brazil</div></div>
+  <div class="kpi warn"><div class="label">Years covered</div><div class="value">26</div><div class="sub">2000 — 2025</div></div>
+  <div class="kpi danger"><div class="label">New in 2026 Q3</div><div class="value">0</div><div class="sub">Actual status</div></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📚 5 core review dimensions</h2>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="downloadReport()">📥 Export full review (HTML)</button>
+      <button class="btn btn-ghost" onclick="exportCSV('Full review')">📥 Export CSV</button>
+    </div>
+  </div>
+  
+  <div class="grid grid-2">
+    <div>
+      <h3>1️⃣ Farming-mode distribution Top 10</h3>
+      <div class="tbl-wrap" style="max-height:340px"><table><thead><tr><th>Mode</th><th class="num">Count</th></tr></thead><tbody><tr><td>Industrial biofloc</td><td class="num">420</td></tr><tr><td>Industrial water exchange</td><td class="num">141</td></tr><tr><td>Pond monoculture</td><td class="num">134</td></tr><tr><td>Industrial RAS</td><td class="num">71</td></tr><tr><td>Pond integrated multi-trophic aquaculture mode</td><td class="num">60</td></tr><tr><td>Integrated multi-trophic aquaculture mode</td><td class="num">24</td></tr><tr><td>Industrial water exchange (biochar-amended sediment)</td><td class="num">15</td></tr><tr><td>Industrial biofloc (LED lighting)</td><td class="num">15</td></tr><tr><td>Pond monoculture (inland saline)</td><td class="num">12</td></tr><tr><td>Integrated multi-trophic aquaculture</td><td class="num">11</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <h3>2️⃣ Region/country distribution Top 15</h3>
+      <div class="tbl-wrap" style="max-height:340px"><table><thead><tr><th>Region</th><th class="num">Count</th></tr></thead><tbody><tr><td>Rio Grande, RS, Brazil</td><td class="num">37</td></tr><tr><td>Florianópolis, SC, Brazil</td><td class="num">22</td></tr><tr><td>Rohtak, Haryana, India</td><td class="num">13</td></tr><tr><td>Frankfort, Kentucky, USA</td><td class="num">12</td></tr><tr><td>Frankfort, KY, USA</td><td class="num">12</td></tr><tr><td>Changde, Hunan, China</td><td class="num">10</td></tr><tr><td>Mumbai, Maharashtra, India</td><td class="num">9</td></tr><tr><td>Rio Grande, Rio Grande do Sul, Brazil</td><td class="num">8</td></tr><tr><td>La Paz, Baja California Sur, Mexico</td><td class="num">8</td></tr><tr><td>Recife, Brazil</td><td class="num">8</td></tr><tr><td>Can Tho, Vietnam</td><td class="num">7</td></tr><tr><td>Qingdao, Shandong</td><td class="num">6</td></tr><tr><td>Kakinada, Andhra Pradesh, India</td><td class="num">6</td></tr><tr><td>Rio Grande, Brazil</td><td class="num">6</td></tr><tr><td>Balsore, Odisha, India</td><td class="num">6</td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>3️⃣ 5 mainstream modes · growth-parameter comparison (Sun Yue 2023)</h2>
+  </div>
+  <div class="tbl-wrap"><table data-name="Mode comparison"><thead><tr><th>Farming mode (Chinese)</th><th>Year</th><th>Initial weight (g)</th><th>Final weight (g)</th><th>Survival rate (%)</th><th>Specific growth rate (%/day)</th><th>Feed conversion ratio (FCR)</th><th>Yield (kg/m³)</th><th>Data source</th><th>Paper source (author + et al)</th><th>Site</th><th>Latitude / longitude</th></tr></thead><tbody><tr><td>Industrial RAS</td><td>2023</td><td>0.08</td><td>16.02</td><td>68.07</td><td>5.89</td><td>1.1</td><td>8.62</td><td>Optimisation of Litopenaeus vannamei culture modes based on life cycle assessment (LCA) (PhD thesis, Ocean University of China)</td><td>Sun Yue, 2023</td><td>—</td><td>—</td></tr><tr><td>Industrial biofloc</td><td>2023</td><td>0.08</td><td>16.26</td><td>60.52</td><td>5.9</td><td>1.19</td><td>4.43</td><td>Optimisation of Litopenaeus vannamei culture modes based on life cycle assessment (LCA) (PhD thesis, Ocean University of China)</td><td>Sun Yue, 2023</td><td>—</td><td>—</td></tr><tr><td>Industrial water exchange</td><td>2023</td><td>0.08</td><td>16.14</td><td>72.15</td><td>5.9</td><td>1.17</td><td>10.03</td><td>Optimisation of Litopenaeus vannamei culture modes based on life cycle assessment (LCA) (PhD thesis, Ocean University of China)</td><td>Sun Yue, 2023</td><td>—</td><td>—</td></tr><tr><td>Elevated (high-level) pond</td><td>2023</td><td>0.08</td><td>15.68</td><td>64.03</td><td>5.87</td><td>1.33</td><td>1.55</td><td>Optimisation of Litopenaeus vannamei culture modes based on life cycle assessment (LCA) (PhD thesis, Ocean University of China)</td><td>Sun Yue, 2023</td><td>—</td><td>—</td></tr><tr><td>Greenhouse (plastic-tunnel) farming</td><td>2023</td><td>0.08</td><td>16.03</td><td>75.18</td><td>5.89</td><td>1.16</td><td>2.19</td><td>Optimisation of Litopenaeus vannamei culture modes based on life cycle assessment (LCA) (PhD thesis, Ocean University of China)</td><td>Sun Yue, 2023</td><td>—</td><td>—</td></tr></tbody></table></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>4️⃣ 5 modes · economic benefit comparison</h2>
+  </div>
+  <div class="tbl-wrap"><table data-name="Economic benefit"><thead><tr><th>Farming mode</th><th>Total cost
+(CNY/mu)</th><th>Total revenue
+(CNY/mu)</th><th>Net profit
+(CNY/mu)</th><th>Cost-profit ratio
+ (%)</th><th>Break-even price
+(CNY/kg)</th><th>Actual yield
+(kg/mu)</th><th>Data source</th><th>Year</th></tr></thead><tbody><tr><td>Industrial water-exchange mode</td><td>203843.54</td><td>282269.63</td><td>78594.86</td><td>38.56</td><td>33.99</td><td>5456.7</td><td>①</td><td>2023</td></tr><tr><td>Industrial recirculating (RAS) mode</td><td>143266.43</td><td>166453.54</td><td>23187.11</td><td>16.18</td><td>58.5</td><td>2013.45</td><td>①</td><td>2023</td></tr><tr><td>Industrial biofloc mode</td><td>179746.99</td><td>252069.55</td><td>72322.56</td><td>40.24</td><td>24.45</td><td>2560</td><td>①</td><td>2023</td></tr><tr><td>Integrated multi-trophic aquaculture mode</td><td>6308</td><td>12600</td><td>6292</td><td>99.75</td><td>—</td><td>870.15</td><td>①</td><td>2023</td></tr><tr><td>Integrated multi-trophic aquaculture mode (shrimp share)</td><td>1549.94</td><td>2400</td><td>850.06</td><td>54.8</td><td>21.99</td><td>40.05</td><td>①</td><td>2023</td></tr></tbody></table></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>5️⃣ Environmental impact equivalence factors</h2>
+  </div>
+  <div class="tbl-wrap"><table data-name="Environmental impact"><thead><tr><th>Environmental impact type</th><th>Equivalence factors</th><th>Contributing substance</th><th>Eigenvalue</th></tr></thead><tbody><tr><td>Global warming potential</td><td>kg CO2 eq</td><td>CO2</td><td>1</td></tr><tr><td>Global warming potential</td><td>kg CO2 eq</td><td>CH4 (biogenic)</td><td>28</td></tr><tr><td>Global warming potential</td><td>kg CO2 eq</td><td>CH4 (fossil origin)</td><td>30</td></tr><tr><td>Eutrophication potential</td><td>kg PO4³⁻</td><td>PO4³⁻</td><td>1</td></tr><tr><td>Eutrophication potential</td><td>kg PO4³⁻</td><td>N</td><td>3.06</td></tr><tr><td>Eutrophication potential</td><td>kg PO4³⁻</td><td>NH3</td><td>0.42</td></tr><tr><td>Eutrophication potential</td><td>kg PO4³⁻</td><td>NO3⁻</td><td>0.35</td></tr><tr><td>Eutrophication potential</td><td>kg PO4³⁻</td><td>COD</td><td>0.01</td></tr><tr><td>Acidification potential</td><td>kg SO2</td><td>SO2</td><td>1.2</td></tr><tr><td>Acidification potential</td><td>kg SO2</td><td>NH3</td><td>1.6</td></tr><tr><td>Acidification potential</td><td>kg SO2</td><td>NOx</td><td>0.5</td></tr><tr><td>Source: Optimisation of Litopenaeus vannamei culture modes based on life cycle assessment (LCA) (PhD thesis, Ocean University of China)
+Source: (local file) Optimization Study of Litopenaeus vannamei Farming Modes Based on Life Cycle Assessment (LCA) — Doctoral dissertation, Ocean University of China</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📊 Mode × region cross distribution (top combinations)</h2>
+  </div>
+  <div class="canvas-wrap tall"><canvas id="chCross"></canvas></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📊 Paper distribution by year per worksheet (stacked by topic, 2000-2025)</h2>
+  </div>
+  <div class="canvas-wrap tall"><canvas id="chQuarter"></canvas></div>
+</div>
+
+<script src="chart.umd.min.js"></script>
+<script>
+try{new Chart(document.getElementById('chQuarter'),{"type": "bar", "data": {"labels": ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"], "datasets": [{"label": "Water quality parameters", "data": [6, 0, 3, 0, 3, 5, 2, 10, 2, 5, 11, 15, 19, 8, 9, 34, 30, 19, 30, 74, 69, 38, 144, 71, 56, 12], "backgroundColor": "#0c8a8a", "borderRadius": 3, "stack": "y"}, {"label": "Growth parameters", "data": [2, 0, 1, 0, 1, 1, 0, 2, 0, 9, 3, 3, 5, 5, 10, 14, 8, 5, 6, 32, 19, 26, 60, 32, 19, 0], "backgroundColor": "#16a3a3", "borderRadius": 3, "stack": "y"}, {"label": "Pollution generation coefficients", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 36, 0, 0, 0, 55, 0, 0], "backgroundColor": "#3b82f6", "borderRadius": 3, "stack": "y"}, {"label": "Economic benefit", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0], "backgroundColor": "#f97316", "borderRadius": 3, "stack": "y"}, {"label": "Cost breakdown", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 75, 0, 0], "backgroundColor": "#10b981", "borderRadius": 3, "stack": "y"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"position": "top", "labels": {"font": {"size": 11}}}, "tooltip": {"callbacks": {"footer": "all_stacked"}}}, "scales": {"x": {"stacked": true, "title": {"display": true, "text": "Paper year"}}, "y": {"stacked": true, "beginAtZero": true, "title": {"display": true, "text": "Count (stacked)"}}}}});}catch(e){console.warn('chQuarter:',e);}
+
+const modeData=[{"k": "Industrial biofloc", "v": 420}, {"k": "Industrial water exchange", "v": 141}, {"k": "Pond monoculture", "v": 134}, {"k": "Industrial RAS", "v": 71}, {"k": "Pond integrated multi-trophic aquaculture mode", "v": 60}];
+const locData=[{"k": "Rio Grande, RS, Brazil", "v": 37}, {"k": "Florianópolis, SC, Brazil", "v": 22}, {"k": "Rohtak, Haryana, India", "v": 13}, {"k": "Frankfort, Kentucky, USA", "v": 12}, {"k": "Frankfort, KY, USA", "v": 12}];
+new Chart(document.getElementById('chCross'),{type:'bar',data:{labels:modeData.flatMap(m=>locData.map(l=>m.k.slice(0,8)+'/'+l.k.slice(0,6))),datasets:[{label:'Theoretical combinations',data:modeData.flatMap(m=>locData.map(l=>m.v+l.v)),backgroundColor:'#3b82f6',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+
+function downloadReport(){
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Shrimp Farming Industry Database Review Report</title>
+<style>body{font-family:-apple-system,sans-serif;max-width:960px;margin:30px auto;padding:24px;line-height:1.7;color:#1f2937}
+h1{color:#0a6f6f;border-bottom:3px solid #0c8a8a;padding-bottom:10px}
+h2{color:#0a6f6f;margin-top:30px;border-left:4px solid #0c8a8a;padding-left:12px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid #e5e7eb;padding:8px 12px;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.kpi{background:#f9fafb;border-left:4px solid #0c8a8a;padding:14px;border-radius:6px}
+.kpi .v{font-size:22px;font-weight:700;color:#0a6f6f}
+.kpi .l{font-size:11px;color:#6b7280;text-transform:uppercase}
+.meta{color:#6b7280;font-size:12px}
+</style></head><body>
+<h1>🦐 Shrimp Farming Industry Database · Comprehensive Review Report</h1>
+<p class="meta">Generated at: ${new Date().toLocaleString('zh-CN')}</p>
+<p class="meta">Based on the local <code>/Users/mac/Desktop/Shrimp Aquaculture Industry Database 2.xlsx</code> · 12 worksheets · live statistics</p>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="l">Cumulative records</div><div class="v">1,585</div></div>
+  <div class="kpi"><div class="l">Farming mode</div><div class="v">22</div></div>
+  <div class="kpi"><div class="l">Regions covered</div><div class="v">119</div></div>
+  <div class="kpi"><div class="l">New in 2026 Q3</div><div class="v">0</div></div>
+</div>
+
+<h2>1. records per worksheet</h2>
+<table><tr><th>Worksheet</th><th>Valid record count</th></tr>
+<tr><td>Water quality parameters</td><td>376</td></tr><tr><td>Growth parameters</td><td>263</td></tr><tr><td>Pollutant generation & pollution equivalents</td><td>87</td></tr><tr><td>Infrastructure & husbandry</td><td>30</td></tr><tr><td>Environmental impact</td><td>20</td></tr><tr><td>Biofloc farming</td><td>31</td></tr><tr><td>Economic benefit analysis</td><td>14</td></tr><tr><td>Cost breakdown</td><td>135</td></tr><tr><td>Environmental cost & efficiency</td><td>92</td></tr><tr><td>Dongying industrial database</td><td>108</td></tr><tr><td>Water quality ↔ growth parameter matching data</td><td>305</td></tr><tr><td>Survey and culture-trial data</td><td>124</td></tr>
+</table>
+
+<h2>2. Farming mode distribution, Top 10</h2>
+<table><tr><th>Mode</th><th>Count</th></tr>
+<tr><td>Industrial biofloc</td><td>420</td></tr><tr><td>Industrial water exchange</td><td>141</td></tr><tr><td>Pond monoculture</td><td>134</td></tr><tr><td>Industrial RAS</td><td>71</td></tr><tr><td>Pond integrated multi-trophic aquaculture mode</td><td>60</td></tr><tr><td>Integrated multi-trophic aquaculture mode</td><td>24</td></tr><tr><td>Industrial water exchange (biochar-amended sediment)</td><td>15</td></tr><tr><td>Industrial biofloc (LED lighting)</td><td>15</td></tr><tr><td>Pond monoculture (inland saline)</td><td>12</td></tr><tr><td>Integrated multi-trophic aquaculture</td><td>11</td></tr>
+</table>
+
+<h2>3. Regional distribution, Top 15</h2>
+<table><tr><th>Region</th><th>Count</th></tr>
+<tr><td>Rio Grande, RS, Brazil</td><td>37</td></tr><tr><td>Florianópolis, SC, Brazil</td><td>22</td></tr><tr><td>Rohtak, Haryana, India</td><td>13</td></tr><tr><td>Frankfort, Kentucky, USA</td><td>12</td></tr><tr><td>Frankfort, KY, USA</td><td>12</td></tr><tr><td>Changde, Hunan, China</td><td>10</td></tr><tr><td>Mumbai, Maharashtra, India</td><td>9</td></tr><tr><td>Rio Grande, Rio Grande do Sul, Brazil</td><td>8</td></tr><tr><td>La Paz, Baja California Sur, Mexico</td><td>8</td></tr><tr><td>Recife, Brazil</td><td>8</td></tr><tr><td>Can Tho, Vietnam</td><td>7</td></tr><tr><td>Qingdao, Shandong</td><td>6</td></tr><tr><td>Kakinada, Andhra Pradesh, India</td><td>6</td></tr><tr><td>Rio Grande, Brazil</td><td>6</td></tr><tr><td>Balsore, Odisha, India</td><td>6</td></tr>
+</table>
+
+<h2>4. 5 modes · growth parameters (Sun Yue 2023)</h2>
+<table><tr><th>Mode</th><th>Final weight (g)</th><th>Survival (%)</th><th>FCR</th><th>Yield (kg/m³)</th></tr>
+<tr><td>Industrial RAS</td><td>16.02</td><td>68.07</td><td>1.10</td><td>8.62</td></tr>
+<tr><td>Industrial biofloc</td><td>16.26</td><td>60.52</td><td>1.19</td><td>4.43</td></tr>
+<tr><td>Industrial water exchange</td><td>16.14</td><td>72.15</td><td>1.17</td><td>10.03</td></tr>
+<tr><td>Elevated (high-level) pond</td><td>15.68</td><td>64.03</td><td>1.33</td><td>1.55</td></tr>
+<tr><td>Greenhouse (plastic-tunnel) farming</td><td>16.03</td><td>75.18</td><td>1.16</td><td>2.19</td></tr>
+</table>
+
+<h2>5. 5 modes · economic benefits</h2>
+<table><tr><th>Mode</th><th>total cost (CNY/mu)</th><th>Total revenue</th><th>Net profit</th><th>cost-profit margin (%)</th><th>Break-even price (CNY/kg)</th></tr>
+<tr><td>Industrial water-exchange mode</td><td>203843.54</td><td>282269.63</td><td>78594.86</td><td>38.56</td><td>33.99</td></tr><tr><td>Industrial recirculating (RAS) mode</td><td>143266.43</td><td>166453.54</td><td>23187.11</td><td>16.18</td><td>58.5</td></tr><tr><td>Industrial biofloc mode</td><td>179746.99</td><td>252069.55</td><td>72322.56</td><td>40.24</td><td>24.45</td></tr><tr><td>Integrated multi-trophic aquaculture mode</td><td>6308</td><td>12600</td><td>6292</td><td>99.75</td><td>—</td></tr><tr><td>Integrated multi-trophic aquaculture mode (shrimp share)</td><td>1549.94</td><td>2400</td><td>850.06</td><td>54.8</td><td>21.99</td></tr>
+</table>
+
+<p style="margin-top:40px;color:#9ca3af;font-size:11px">This report was generated automatically by the Shrimp Farming Industry Database Workbench · Data source: local xlsx file</p>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shrimp_database_review_report_'+new Date().toISOString().slice(0,10)+'.html';a.click();
+  alert('✅ Review report exported · you can open / print / save as PDF directly');
+}
+
+function exportCSV(name){
+  const tb = document.querySelector('table[data-name="'+name+'"]');
+  if(!tb){
+    const rows=[['Export name',name],['Export time',new Date().toISOString()],['Notes','This panel has no exportable table (it may be a chart)']];
+    const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='\ufeff'+rows.map(r=>r.map(c=>esc(c)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    return;
+  }
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[];
+  if(tb.tHead && tb.tHead.rows[0]) rows.push(Array.from(tb.tHead.rows[0].cells).map(c=>esc(c.innerText.trim())));
+  if(tb.tBodies && tb.tBodies[0]) Array.from(tb.tBodies[0].rows).forEach(tr=>{if(tr.style.display==='none')return;rows.push(Array.from(tr.cells).map(c=>esc(c.innerText.trim())));});
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  console.log('Exported '+name+': '+rows.length+' rows');
+}
+</script>
+
+<div class="footer">
+Shrimp Aquaculture Industry Database Workbench · Data source: <code>/Users/mac/Desktop/Shrimp Aquaculture Industry Database 2.xlsx</code> · 1,585 valid records in total · 17 new papers pending confirmation (auto-searched every Wednesday 08:00, merged into the main database after manual confirmation)<br>
+<a href="index.html">Back to home</a> · <a href="newlit.html">New papers</a> · <a href="database.html">Browse the main database</a> · <a href="schema.html">Schema Dictionary</a>
+</div>
+</div>
+</body>
+</html>

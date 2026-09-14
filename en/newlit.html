@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>New Literature · Shrimp Farming Industry Database Workbench</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+
+.nl-card{border:1px solid var(--c-border);border-radius:10px;padding:16px 18px;margin-bottom:14px;background:var(--c-panel);box-shadow:var(--shadow);border-left:4px solid #cbd5e1;transition:.15s}
+.nl-card.pending{border-left-color:var(--c-warn)}
+.nl-card.merged{border-left-color:var(--c-success)}
+.nl-card.ignored{border-left-color:#cbd5e1;opacity:.68}
+.nl-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.nl-badge{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#374151;background:#f3f4f6;padding:2px 8px;border-radius:999px}
+.nl-title{font-size:15px;font-weight:600;margin:0 0 6px;line-height:1.45}
+.nl-meta{font-size:12.5px;color:var(--c-muted);margin-bottom:8px}
+.nl-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.nl-summary{font-size:13px;color:#374151;background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.nl-reason{font-size:12.5px;color:#065f46;background:#ecfdf5;border-radius:6px;padding:6px 10px;margin-bottom:10px}
+.nl-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--c-border);padding-top:10px}
+.nl-hint{font-size:12px;color:var(--c-primary-d);background:var(--c-primary-l);border-radius:6px;padding:6px 10px;display:none;margin-bottom:10px}
+.nl-hint.show{display:block}
+.nl-empty{text-align:center;color:var(--c-muted);padding:44px 20px}
+.nl-empty .big{font-size:40px;margin-bottom:10px}
+.sr-hero{background:linear-gradient(135deg,#f0fdfa,#fefce8);border:1px solid #a7f3d0;border-left:4px solid var(--c-primary);border-radius:10px;padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.sr-tip{font-size:12px;color:var(--c-muted);background:#fff;border:1px dashed var(--c-border);border-radius:6px;padding:6px 10px;margin-top:10px}
+.sr-body{margin-top:12px;border-top:1px dashed #d1fae5;padding-top:12px}
+.sr-card{border:1px solid #d1fae5;background:#fff;border-radius:8px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.sr-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.sr-opts{font-size:12px;color:#374151}
+.sr-opts select{font-size:12px;padding:3px 4px;border:1px solid var(--c-border);border-radius:6px;background:#fff;color:#111827;max-width:160px}
+.sr-note{font-size:11.5px;color:#6b7280;background:#f9fafb;border-radius:6px;padding:4px 8px;margin:6px 0 0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    Shrimp Aquaculture Industry Database Workbench
+  </div>
+  <nav>
+      <a href="index.html" >📊 Overview</a>
+      <a href="search.html" >🔍 Literature search</a>
+      <a href="etl.html" >⚙️ ETL Pipeline</a>
+      <a href="review.html" >✅ Data Review</a>
+      <a href="quality.html" >🛡️ Data quality</a>
+      <a href="dedup.html" >🔁 Dedup</a>
+      <a href="newlit.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">🆕 New papers</a>
+      <a href="benefit.html" >📈 Benefit evaluation</a>
+      <a href="database.html" >💾 Main database</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" >📑 Database reviews</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>System normal</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">Home</a> / New Literature (auto-search every Wednesday 08:00 · merged into main database after manual confirmation)</div>
+  <h1>🆕 New papers · Pending</h1>
+  <p>Records only the literature newly found each week; <b>it is not merged into the main database automatically</b>. Before merging, the assistant shows the content to be written and executes it after your confirmation.Supports <b>auto-search every Wednesday</b> and <b>instant one-click search anytime</b>.This page does not affect the existing main-database statistics (cumulative records / years covered / number of modes).</p>
+</div>
+
+<div class="alert success">
+📌 <b>Automatic search schedule</b> · Every Wednesday <b>08:00</b> Search newly published <b>5 papers</b> literature within the database scope (shrimp farming: water quality/growth/pollution output/benefits/costs/environment, etc.) and write it to this page. Latest round:<b>2026-W37</b> (2026-09-09 09:03).
+</div>
+
+<div class="sr-hero">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+    <h2 style="margin:0;font-size:15px;font-weight:600">🔍 One-click live search (trigger anytime · review before merge)</h2>
+    <span class="tag primary">Not auto-imported · you decide</span>
+  </div>
+  <p style="margin:0 0 10px;font-size:13px;color:#374151">
+    Clicking the button below will<b>The current filter settings below (keyword / source platform / farming platform) are used automatically as this search's criteria</b>, and <b>This page generates search results directly</b>: aggregates open scholarly libraries in real time (OpenAlex / Crossref, keywords auto-translated between Chinese and English), shown item by item<b>Paper status</b> (authors / journal / year / abstract highlights) and <b>🔗 Source download link</b> (OA PDF / DOI / journal website); if satisfied, click “➕ Add to Pending”<b>written directly to the “Pending Confirmation” section at the bottom of this page</b> —— afterwards you can still use “Confirm merge into main database” for a second confirmation — the main database is never touched in between.
+  </p>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <select id="srWin" style="font-size:13px;padding:7px 8px;border:1px solid var(--c-border);border-radius:8px;background:#fff;color:#111827">
+      <option value="7">Last 1 week</option>
+      <option value="30">Last 1 month</option>
+      <option value="90" selected>Last 3 months</option>
+      <option value="365">Last 1 year</option>
+    </select>
+    <button id="btnSearchNow" class="btn btn-primary" style="font-size:14px;padding:9px 18px" onclick="doInstantSearch()">🚀 Search the latest literature now</button>
+    <span style="font-size:12px;color:var(--c-muted)">leave search criteria blank = No restriction — search the latest literature across the full scope (Litopenaeus vannamei farming)</span>
+  </div>
+  <div id="srState" class="nl-hint" style="margin-top:10px;margin-bottom:0"></div>
+  <div id="srToolbar" style="display:none;margin-top:10px;padding:8px 10px;background:#ecfdf5;border:1px dashed #6ee7b7;border-radius:6px;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="srSelAll" onchange="srToggleAll(this.checked)"> Select all</label>
+    <span>Selected <b id="srSelCount">0</b> papers</span>
+    <button class="btn btn-primary btn-sm" id="srBatchJoin" onclick="srBatchJoin()">📥 Add Selected in One Click</button>
+    <span style="color:var(--c-muted)">·</span>
+    <button class="btn btn-ghost btn-sm" onclick="srClearSel()">Clear selection</button>
+  </div>
+  <div id="srResults" class="sr-body"></div>
+  <div class="sr-tip">💡 Requires the “local real-time workbench” (this page must be served by the live service in the WorkBuddy session). If you open the online read-only link directly, the search will report that it cannot connect — please return to the workbench's live preview window (http://127.0.0.1:8787) to operate.</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi warn"><div class="label">Pending</div><div class="value">17</div><div class="sub">awaiting manual confirmation and merging</div></div>
+  <div class="kpi info"><div class="label">Cumulatively found</div><div class="value">17</div><div class="sub">All staging pool records</div></div>
+  <div class="kpi success"><div class="label">Merged into main database</div><div class="value">0</div><div class="sub">merged after manual confirmation</div></div>
+  <div class="kpi"><div class="label">Last search</div><div class="value" style="font-size:16px">2026-09-09 09:03</div><div class="sub">round 2026-W37</div></div>
+</div><div class="toolbar">
+  <input id="kw" type="text" placeholder="🔍 keywords (title/author/abstract/reason)" style="min-width:220px">
+  <select id="fSource"><option value="">All source platforms</option><option value="Google Scholar">Google Scholar</option><option value="CNKI">CNKI</option><option value="Wanfang">Wanfang</option><option value="VIP (Weipu)">VIP (Weipu)</option><option value="Web of Science">Web of Science</option><option value="Scopus">Scopus</option><option value="ScienceDirect">ScienceDirect</option><option value="PubMed">PubMed</option><option value="Journal website">Journal website</option><option value="Other">Other</option></select>
+  <select id="fFarm"><option value="">All farming platforms/modes</option><option value="Industrial RAS">Industrial RAS</option><option value="Industrial biofloc">Industrial biofloc</option><option value="Industrial water exchange">Industrial water exchange</option><option value="Elevated (high-level) pond">Elevated (high-level) pond</option><option value="Greenhouse (plastic-tunnel) farming">Greenhouse (plastic-tunnel) farming</option><option value="Intensive pond culture">Intensive pond culture</option><option value="earthen pond">earthen pond</option><option value="Extensive or semi-intensive">Extensive or semi-intensive</option><option value="integrated multi-trophic aquaculture (IMTA)">integrated multi-trophic aquaculture (IMTA)</option><option value="Other">Other</option><option value="not specified">not specified</option></select>
+  <select id="fStatus"><option value="">All statuses</option><option value="pending">Pending</option><option value="merged">Merged into main database</option><option value="ignored">Ignored</option></select>
+  <span style="font-size:12px;color:var(--c-muted)">Currently showing <b id="nlCount">0 papers</b></span>
+  <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <label style="display:flex;align-items:center;gap:4px;font-size:12.5px;cursor:pointer;color:var(--c-muted)"><input type="checkbox" id="nlSelAll" onchange="nlToggleAll(this.checked)"> Select all (pending only)</label>
+    <button class="btn btn-ghost btn-sm" id="nlBatchDel" onclick="nlBatchDel()">🗑 Delete Selected</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportNLCSV()">📥 Export CSV</button>
+  </span>
+</div>
+<div id="nlList"><div class="nl-card pending" data-id="NL-20260908-01" data-src="Journal website" data-farm="Industrial RAS" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-01" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260908-01</span> <span class="tag warn nl-status" data-id="NL-20260908-01">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-08T15:40:23+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Comparative study on growth of Litopenaeus vannamei and water quality under two recirculating aquaculture modes</h3>
+  <div class="nl-meta">Yuan Xincheng; Xu Jiabo; Shi Yonghai; Liu Yongshi; Zhang Feng · Shanghai Fisheries Research Institute / Shanghai Fisheries Technology Extension Station · Journal article · 2026 · Fisheries Science & Technology Information (DOI prefix 1007-9580)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: industrial RAS</span>
+    <span class="tag info">Proposed main table: Water Quality–Growth Parameter Correspondence Data</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Industrial RAS</span><span class="tag">Growth</span><span class="tag">Water quality</span><span class="tag">Pond greenhouse recirculating water</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Specific growth rate</td><td>outdoor pond shed recirculating water</td><td>2.05 %/d</td><td>same initial size/density as indoor</td></tr><tr><td>Harvest body weight</td><td>indoor industrial RAS</td><td>11.03±2.60 g</td><td>Harvest body length 9.50±0.81 cm</td></tr><tr><td>survival rate</td><td>Both modes</td><td>≥80.9%</td><td>Throughout the trial</td></tr><tr><td>TN/TPand NO3--N</td><td>outdoor vs indoor</td><td>outdoor significantly lower than indoor</td><td>late culture stage</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 Comparison of Litopenaeus vannamei growth and water quality changes under two modes — outdoor pond-shed recirculating water and indoor industrial recirculating water (same initial size/density/duration). Both modes had a specific growth rate by body weight above 1.62%/d, with the outdoor mode faster (2.05%/d); at harvest the outdoor mode reached a body length of 10.17±0.76 cm and a body weight of 12.98±2.27 g, and the indoor mode 9.50±0.81 cm and 11.03±2.60 g, with survival ≥80.9% in both. TAN/NO2--N/NO3--N/CODMn/TN/TP differed markedly between the two modes, with outdoor TN/TP and late-stage NO3--N significantly lower than indoor.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: direct hit — water quality parameters + growth parameters from the same batch; mode is industrial RAS (can be merged into the recirculating-water / water quality–growth correspondence table)</div>
+  <div class="nl-hint" data-id="NL-20260908-01"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.agrijournal.com.cn/article/detail/2CF69B42-6E1D-4FE3-A228-34FE3A343C4A" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.26958/j.cnki.1007-9580.2026.01.006</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-01">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-01">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-01" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-02" data-src="Journal website" data-farm="Intensive pond culture" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-02" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260908-02</span> <span class="tag warn nl-status" data-id="NL-20260908-02">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-08T15:40:23+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Current status, technological innovation and development strategies of Litopenaeus vannamei farming in Fujian Province</h3>
+  <div class="nl-meta">Huang Yongchun; Lin Nan; Li Guoyong et al. · College of Fisheries, Jimei University / Fujian Fisheries Technology Extension Station · Journal article · 2026 · Fisheries Research 2026,48(3):427-436</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: intensive pond</span>
+    <span class="tag info">Proposed main table: Survey & Farming Trial Data</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Fujian</span><span class="tag">current farming status</span><span class="tag">Farming mode</span><span class="tag">Industry survey</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>total farming yield</td><td>Fujian Province 2024</td><td>26.14×10^7 kg (11.01% of national total, 4th)</td><td>Seawater + freshwater</td></tr><tr><td>Seawater yield per unit area</td><td>Fujian Province 2024</td><td>14.14×10^3 kg/hm2</td><td>up 79.22% vs 2014</td></tr><tr><td>Postlarvae yield</td><td>Fujian Province 2024</td><td>753.73hundred million PL (6.62% of national total)</td><td>Litopenaeus vannamei PL account for over 70% of the province</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 Based on Fujian shrimp-industry data from 2014–2024 plus questionnaire/field surveys, this study systematically analyses Litopenaeus vannamei seed stock, farming modes, yield, technology and development strategy. In 2024 the province produced 753.73 hundred million shrimp PL (6.62% of the national total); total Litopenaeus vannamei farming output was 26.14×10^7 kg (11.01% of the national total, 4th); annual yield per unit area in mariculture was 14.14×10^3 kg/hm², 79.22% higher than in 2014. Distinctive modes include “white + black” ecological rotation, pond engineering and continuous multi-crop systems, supported by real-time water quality monitoring + ecological water regulation + smart feeding.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: industry macro data + mode/technology survey; intended for “Survey and Farming Trial Data”; column mapping needs manual confirmation; contains yield, unit yield, seed stock, etc., which can be merged into survey statistics</div>
+  <div class="nl-hint" data-id="NL-20260908-02"></div>
+  <div class="nl-foot">
+    <div><a href="http://www.hyyysci.com/cn/article/doi/10.14012/j.jfr.2025136" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.14012/j.jfr.2025136</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-02">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-02">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-02" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-03" data-src="Journal website" data-farm="Other" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-03" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260908-03</span> <span class="tag warn nl-status" data-id="NL-20260908-03">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-08T15:40:23+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Water quality changes and fish–shrimp growth characteristics in ecological polyculture of grass carp and multi-crop Litopenaeus vannamei</h3>
+  <div class="nl-meta">Mei Bocheng; Xu Jiabo; Shi Yonghai; Liu Yongshi; Jiang Fei; Yuan Xincheng; Yang Ming; Jia Chuipan; Lin Weigang; Sun Zhuo · Shanghai Fisheries Research Institute / Shanghai Fisheries Technology Extension Station · Journal article · 2025 · Journal of Zhejiang University (Agriculture and Life Sciences)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: Other</span>
+    <span class="tag info">Proposed main table: Water Quality–Growth Parameter Correspondence Data</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Grass carp polyculture</span><span class="tag">Growth model</span><span class="tag">Water quality</span><span class="tag">Ecological farming</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Growth model</td><td>Batch 1</td><td>body length/body weight both Logistic R2&gt;0.96</td><td>3parallel ponds</td></tr><tr><td>Growth inflection point</td><td>Batch 1</td><td>49.54 d(6.83 cm) / 55.91 d(6.44 g)</td><td>body length/body weight inflection point</td></tr><tr><td>Growth inflection point</td><td>Batch 2</td><td>13.76 d(3.70 cm) / 15.95 d(2.60 g)</td><td>growth inferior to crop 1 due to high temperature and substrate</td></tr><tr><td>TAN/TN/TP</td><td>Grass carp–shrimp polyculture</td><td>rises then falls, never exceeding the discharge limit</td><td>throughout the culture period</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 Ecological trial of grass carp polycultured with 2 crops of Litopenaeus vannamei (3 parallel ponds): the best model for shrimp body length/weight in Batch 1 was Logistic (R2&gt;0.96), for Batch 2 body length Gompertz (R2&gt;0.97) and body weight Logistic (R2&gt;0.94); Batch 1 body-length and body-weight inflection points were 49.54 d (6.83 cm) and 55.91 d (6.44 g), and Batch 2 were 13.76 d (3.70 cm) and 15.95 d (2.60 g). TAN/TN/TP in each pond rose then fell and never exceeded the aquaculture discharge standard limits throughout, and water temperature followed a sinusoidal pattern, indicating that fish–shrimp polyculture favours water self-purification.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — growth parameters (multi-crop polyculture growth models/inflection points) + water quality changes (TAN/TN/TP within limits); can be merged into the water quality–growth correspondence table; farming mode is multi-crop fish–shrimp ecological polyculture</div>
+  <div class="nl-hint" data-id="NL-20260908-03"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.academax.com/doi/10.3785/j.issn.1008-9209.2025.11.092" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.3785/j.issn.1008-9209.2025.11.092</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-03">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-03">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-03" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-04" data-src="Google Scholar" data-farm="Other" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-04" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260908-04</span> <span class="tag warn nl-status" data-id="NL-20260908-04">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-08T15:40:23+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Sustainability Status of Vannamei Shrimp (Litopenaeus vannamei) Aquaculture in Millennial Pond Model</h3>
+  <div class="nl-meta">Prayitno A G; Purnomo S; Purnomo P et al. · Diponegoro University / BBPBAP Jepara, Indonesia · Journal paper · 2025 · Journal of Aquaculture and Fish Health 2025,14(3):321-335</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: Google Scholar</span>
+    <span class="tag success">farming platform/mode: Other</span>
+    <span class="tag info">Proposed main table: Environmental Impact</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Millennial Pond</span><span class="tag">sustainability</span><span class="tag">MDS</span><span class="tag">Indonesia</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Comprehensive sustainability index</td><td>Millennial Pond mode</td><td>88.94 (highly sustainable)</td><td>MDSmultidimensional scaling</td></tr><tr><td>By dimension</td><td>Ecological/Economic/Social/Technical/Regulatory</td><td>88.39 / 81.05 / 75.25 / 99.996 / 99.996</td><td>2024-10survey up to December</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 Taking Litopenaeus vannamei farming at the BBPBAP “Millennial Pond” in Jepara, Indonesia (a central waste-collection point in the pond reduces viral disease risk) as the object, MDS multidimensional scaling was used to analyse sustainability across 5 dimensions — ecological/economic/social/technical/regulatory (survey conducted Oct–Dec 2024). Overall sustainability index 88.94 (highly sustainable); by dimension: ecological 88.39, economic 81.05, social 75.25, technical 99.996, regulatory 99.996. Leverage analysis identified key sensitive attributes (disease, land utilization and suitability, price trends, market, farming profit, etc.).</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — farming sustainability / eco-economic assessment; maps to “Environmental Impact” (ecological dimension) with “Economic Benefit Analysis” as an alternative; includes mode design and key constraints for manual table assignment</div>
+  <div class="nl-hint" data-id="NL-20260908-04"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.mendeley.com/catalogue/25385ae7-81ec-3db1-b31e-93e435931e05" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.20473/jafh.v14i3.73619</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-04">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-04">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-04" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260908-05" data-src="Journal website" data-farm="earthen pond" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260908-05" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260908-05</span> <span class="tag warn nl-status" data-id="NL-20260908-05">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-08T15:40:23+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Risk and Income Analysis of Vaname Shrimp Cultivation Business (Litopenaeus vannamei) in Bantan District, Bengkalis Regency</h3>
+  <div class="nl-meta">Sarah M; Arief H; Yanti C W · Universitas Riau, Indonesia · Journal article · 2025 · Jurnal Perikanan dan Kelautan 2025,30(2):261-267</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: earthen pond</span>
+    <span class="tag info">Proposed main table: Economic Benefit Analysis</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Revenue analysis</span><span class="tag">Risk</span><span class="tag">Indonesia</span><span class="tag">farming economics</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>average income</td><td>Bantan District 2025 survey</td><td>IDR 614,516,253/ha</td><td>26 farmers</td></tr><tr><td>yield risk CV</td><td>Bantan District</td><td>0.0887</td><td>Low risk</td></tr><tr><td>Revenue risk CV</td><td>Bantan District</td><td>0.1139</td><td>Low risk</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 2025In April, a survey of 26 Litopenaeus vannamei farmers in the Bantan district of Bengkalis, Riau Province, Indonesia: average yield 660,558.85 kg/Ha (as stated in the source; suspected unit typo, needs verification), average income IDR 614,516,253/Ha; yield risk CV 0.0887 and income risk CV 0.1139, indicating generally low risk.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — farming income / risk analysis; can be merged into “Economic Benefit Analysis”; foreign (Indonesian) economic data — mind the currency and definition</div>
+  <div class="nl-hint" data-id="NL-20260908-05"></div>
+  <div class="nl-foot">
+    <div><a href="https://sociora.ejournal.unri.ac.id/index.php/jpk/article/view/2842" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.31258/jpk.30.2.261-267</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260908-05">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260908-05">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260908-05" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-01" data-src="Journal website" data-farm="not specified" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-01" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-01</span> <span class="tag warn nl-status" data-id="NL-20260909-01">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T07:50:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Dietary Rosmarinic Acid Improved the Growth, Immunity and Antioxidation of Litopenaeus vannamei</h3>
+  <div class="nl-meta">Yuting Xu; Shunxiao Shi; Beiping Tan; Xiaoqin Li; Xiangjun Leng · Shanghai Ocean University / Guangdong Ocean University · journal article · 2026 · Animals 2026, 16(17):2767 (MDPI, OA)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: unspecified</span>
+    <span class="tag info">Proposed main table: Growth Parameters</span>
+    <span class="tag">Rosmarinic acid</span><span class="tag">Feed additives</span><span class="tag">Growth</span><span class="tag">immunity</span><span class="tag">Antioxidant</span><span class="tag">Litopenaeus vannamei</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>weight gain rate/FCR</td><td>RA450 (450 mg/kg)</td><td>higher weight gain, significantly lower FCR</td><td>8 -week trial, initial 1.80±0.03 g</td></tr><tr><td>immune enzyme activity</td><td>RA450</td><td>ACP/ACH50/LZM/AKP significantly increased</td><td>Serum</td></tr><tr><td>Antioxidant</td><td>RA450</td><td>SOD/T-AOC increased, MDA decreased</td><td>Hepatopancreas</td></tr><tr><td>Disease resistance</td><td>RA450</td><td>enhanced resistance to Vibrio parahaemolyticus</td><td>Challenge test</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 8 -week farming trial (initial body weight 1.80±0.03 g) evaluating rosmarinic acid (RA) as a feed additive: the RA450 group (450 mg/kg) had higher weight gain and a significantly lower FCR; serum ACP/ACH50/LZM/AKP and hepatopancreas SOD/T-AOC were significantly higher while MDA decreased; resistance to Vibrio parahaemolyticus was enhanced, with hepatopancreas transcriptome analysis included. Published online 2026-09-03, the newest article of the past week.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — growth parameters (weight gain rate/FCR) + immune and antioxidant indices; new article from the past week, values can be extracted directly from the OA full text</div>
+  <div class="nl-hint" data-id="NL-20260909-01"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.3390/ani16172767" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.3390/ani16172767</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-01">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-01">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-01" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-02" data-src="Google Scholar" data-farm="Industrial biofloc" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-02" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-02</span> <span class="tag warn nl-status" data-id="NL-20260909-02">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T07:50:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Dose-dependent supplementation of Schizochytrium in the biofloc system modulates dual microbiomes to enhance growth and survival in Pacific white shrimp (Litopenaeus vannamei)</h3>
+  <div class="nl-meta">Zhi Li; Xiaohan Li; Buwen Sun; Hongwei Wu; Jingyi Zhang; Xiulin Wan; Baohua Zhao; Nasi Xiao; Zhen Qi; Qingyang Li; Haiyan Liu · Hebei Normal University et al. · Journal article · 2026 · Frontiers in Microbiology 17:1867320 (OA)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: Google Scholar</span>
+    <span class="tag success">farming platform/mode: industrial biofloc</span>
+    <span class="tag info">Proposed main table: Biofloc Farming</span>
+    <span class="tag">Schizochytrium</span><span class="tag">Biofloc</span><span class="tag">microbiome</span><span class="tag">Growth</span><span class="tag">survival rate</span><span class="tag">Litopenaeus vannamei</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Growth performance/feed efficiency</td><td>high dose 10⁶ cells/mL</td><td>significantly improved</td><td>vs control and low-dose group</td></tr><tr><td>survival rate</td><td>high-dose group</td><td>further increased</td><td>throughout the culture period</td></tr><tr><td>Digestive genes</td><td>high-dose group</td><td>upregulation of trypsin/lipase</td><td>Hepatopancreas/intestine</td></tr><tr><td>Beneficial bacteria in floc</td><td>high-dose group</td><td>Aureispira, Marivita enriched</td><td>Floc microbiome</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 A dose-dependent trial of supplementing Schizochytrium (10³ vs 10⁶ cells/mL vs a clear-water control) in a biofloc system: the high-dose group showed improved growth performance and feed efficiency and a further increase in survival; digestive genes such as trypsin/lipase and antimicrobial genes such as lysozyme/penaeidin 3a were upregulated; beneficial genera such as Aureispira and Marivita were enriched in the floc, while both the floc and intestinal microbiomes were modulated.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: direct hit — biofloc farming (floc microbiome + dose effects) + growth/survival data; OA full text</div>
+  <div class="nl-hint" data-id="NL-20260909-02"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.3389/fmicb.2026.1867320" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.3389/fmicb.2026.1867320</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-02">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-02">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-02" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-03" data-src="Journal website" data-farm="Other" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-03" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-03</span> <span class="tag warn nl-status" data-id="NL-20260909-03">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T07:50:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Increasing Production and Reducing Costs through Aquamimicry Approach in Litopenaeus vannamei Farming in Gomishan</h3>
+  <div class="nl-meta">Mostafa Kordkatouli; Hossein Chitsaz; Reza Akrami; Tahereh Bagheri · Islamic Azad University et al., Iran · Journal article · 2026 · Journal of Utilization and Cultivation of Aquatics (online first)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: Other</span>
+    <span class="tag info">Proposed main table: Water Quality–Growth Parameter Correspondence Data</span>
+    <span class="tag">Aquamimicry system</span><span class="tag">Aquamimicry</span><span class="tag">Water quality</span><span class="tag">Growth</span><span class="tag">Cost</span><span class="tag">Iran</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>FCR</td><td>Aquamimicry vs control</td><td>1.26 vs 1.51</td><td>120 -day culture</td></tr><tr><td>total biomass</td><td>Aquamimicry group</td><td>+44.4%</td><td>relative to control</td></tr><tr><td>unit production cost</td><td>Aquamimicry group</td><td>-25.4%</td><td>relative to control</td></tr><tr><td>DO/pH</td><td>Aquamimicry group</td><td>DO 6.5 mg/L more stable; pH 7.6-8.1</td><td>monitored throughout</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 120-day high-density culture trial in Gomishan, Iran (PL12, 20 PL/m²): control (commercial feed + routine water exchange) vs Aquamimicry group (fermented rice bran 16 kg + probiotics 14 L + 20% water exchange). The Aquamimicry group had more stable DO (6.5 vs 6.2 mg/L), stable pH 7.6–8.1 and lower TSS; growth was significantly better, FCR 1.26 vs 1.51, total biomass +44.4%, unit production cost −25.4%.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — water quality–growth correspondence data (DO/pH/TSS vs growth) + economic data (FCR/biomass/cost); Aquamimicry mode</div>
+  <div class="nl-hint" data-id="NL-20260909-03"></div>
+  <div class="nl-foot">
+    <div><a href="https://japu.gau.ac.ir/article_7718.html" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.22069/japu.2026.24704.2021</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-03">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-03">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-03" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-04" data-src="ScienceDirect" data-farm="Industrial biofloc" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-04" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-04</span> <span class="tag warn nl-status" data-id="NL-20260909-04">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T07:50:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Effects of different sources of dietary non-starch polysaccharides on Pacific white shrimp (Litopenaeus vannamei) performance, water quality and biofloc nutritional and microbial composition</h3>
+  <div class="nl-meta">Apriana Vinasyiam; Julie Ekasari; Fotini Kokou; Johan W. Schrama; Marc C.J. Verdegem · Bogor Agricultural University / Wageningen University, etc. · Journal paper · 2026 · Aquaculture (Elsevier)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: ScienceDirect</span>
+    <span class="tag success">farming platform/mode: industrial biofloc</span>
+    <span class="tag info">Proposed main table: Biofloc Farming</span>
+    <span class="tag">Non-starch polysaccharide</span><span class="tag">NSP</span><span class="tag">Biofloc</span><span class="tag">Carbon source</span><span class="tag">Water quality</span><span class="tag">Feed</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Carbon source addition</td><td>NSP Dietary group</td><td>can eliminate extra carbon source addition</td><td>water quality equivalent to the starch control</td></tr><tr><td>Protein content</td><td>isonitrogenous feeding group</td><td>increased protein in shrimp body and floc</td><td>isonitrogenous treatment</td></tr><tr><td>Shrimp performance</td><td>each NSP treatment</td><td>No significant difference</td><td>NSP Between-type comparison</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 30 -day digestibility + 42-day growth trial with 5 treatments (iso-nitrogenous/iso-amount × poorly/moderately fermented NSP diets + starch control): NSP diets eliminate the need for extra carbon source addition in the biofloc system, with water quality maintenance equivalent to the starch diet; iso-nitrogenous feeding raised the protein content of shrimp and floc; NSP type had no significant effect on shrimp performance. Directly useful for reducing biofloc carbon-source costs.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — biofloc farming (carbon source strategy / floc nutrition and microbial composition) + water quality maintenance data</div>
+  <div class="nl-hint" data-id="NL-20260909-04"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.1016/j.aquaculture.2026.743854" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.1016/j.aquaculture.2026.743854</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-04">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-04">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-04" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-05" data-src="Journal website" data-farm="Other" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-05" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-05</span> <span class="tag warn nl-status" data-id="NL-20260909-05">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T07:50:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Life Cycle Assessment and Life Cycle Costing of a Greenhouse Culture Model for Litopenaeus vannamei</h3>
+  <div class="nl-meta">Yuzhen Wang; Zhao Chen; Jiajia Wang; Zhiqiang Chang; Shuangyong Zhang; Jian Li · Chinese Academy of Fishery Sciences, et al. · journal article · 2026 · Fishes 2026, 11(3):131 (MDPI, OA)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: Other</span>
+    <span class="tag info">Proposed main table: Environmental Cost & Efficiency</span>
+    <span class="tag">Life cycle assessment</span><span class="tag">LCA</span><span class="tag">Life-cycle cost</span><span class="tag">Greenhouse culture</span><span class="tag">Environmental emissions</span><span class="tag">Economic benefit</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Life-cycle cost</td><td>Greenhouse culture</td><td>3.56 USD/kg</td><td>LCC Accounting</td></tr><tr><td>net profit / cost-profit margin</td><td>Greenhouse culture</td><td>5.31 USD/m²/cycle; 60.47%</td><td>higher than indoor super-intensive ISIC</td></tr><tr><td>GWP</td><td>Greenhouse culture</td><td>3.279 kg CO₂eq/kg</td><td>LCA</td></tr><tr><td>AP/EP</td><td>Greenhouse culture</td><td>0.369 kg SO₂eq/kg; 0.212 kg PO₄eq/kg</td><td>LCA</td></tr><tr><td>cost structure</td><td>single cycle</td><td>3510.76 USD/building (feed 30.54%/land rent 15.86%)</td><td>construction cost 4.58 USD/m²</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 Life-cycle assessment of greenhouse shrimp farming based on field research and company production records: life-cycle cost 3.56 USD/kg; construction cost 4.58 USD/m² (mainly steel pipe + film); single-cycle farming cost 3,510.76 USD/shed (feed 30.54%, land rent 15.86%); net profit 5.31 USD/m²/cycle, cost-profit margin 60.47% (significantly higher than indoor super-intensive ISIC). Environment: GWP 3.279 kg CO₂eq/kg, AP 0.369 kg SO₂eq, EP 0.212 kg PO₄eq/kg.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — environmental cost and efficiency (dual LCA/LCC basis) + cost breakdown + pollution equivalents (GWP/AP/EP); scarce data for the main database</div>
+  <div class="nl-hint" data-id="NL-20260909-05"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.3390/fishes11030131" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.3390/fishes11030131</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-05">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-05">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-05" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-06" data-src="Journal website" data-farm="Industrial RAS" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-06" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-06</span> <span class="tag warn nl-status" data-id="NL-20260909-06">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:00:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Effects of stocking density on growth and physiological indices of Litopenaeus vannamei under a low-salinity recirculating water mode</h3>
+  <div class="nl-meta">Chen Xiaoying; Huang Xuanyu; Lu Huijie; Zhao Jichen; Huang Wen; Guo Hui; Sun Yuping · Institute of Animal Science, Guangdong Academy of Agricultural Sciences / Key Laboratory of South China Animal Nutrition and Feed, Ministry of Agriculture and Rural Affairs / College of Fisheries, Guangdong Ocean University · Journal article · 2026 · Progress in Fishery Sciences 2026, 47(5)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: industrial RAS</span>
+    <span class="tag info">Proposed main table: Water Quality–Growth Parameter Correspondence Data</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">low salinity</span><span class="tag">RAS</span><span class="tag">stocking density</span><span class="tag">Growth</span><span class="tag">Feed conversion ratio</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Specific growth rate/weight gain rate</td><td>M90 (300 ind./m³)</td><td>significantly lowest</td><td>49 d</td></tr><tr><td>survival rate</td><td>M60 (200 ind./m³)</td><td>Highest</td><td>49 d</td></tr><tr><td>Feed conversion ratio (FCR)</td><td>M60</td><td>Lowest</td><td>49 d</td></tr><tr><td>Suitable density</td><td>low-salinity RAS</td><td>60 PL/300 L (about 200 ind./m³)</td><td>Salinity 3.5±0.5</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 In a recirculating aquaculture system (RAS) at salinity 3.5±0.5, juvenile Litopenaeus vannamei with an initial body weight of 1.04±0.01 g were assigned to 5 density groups of 30/45/60/75/90 PL/300 L (100–300 ind./m³) and cultured for 49 d. As density increased, final body length, daily body-length increment, body-length growth rate, final body weight, daily weight gain, weight gain rate and specific growth rate all decreased significantly, with the M90 group lowest; the M60 group had the highest survival and the lowest FCR. Considering growth, feed utilization and immune/antioxidant responses together, 60 PL/300 L (about 200 ind./m³) is the more suitable density under these low-salinity recirculating conditions.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — effects of stocking density under industrial RAS on growth, feed utilization, serum biochemistry and immune/antioxidant indices; can be merged into “Water Quality & Growth Parameter Correspondence” or “Infrastructure and Feeding”.</div>
+  <div class="nl-hint" data-id="NL-20260909-06"></div>
+  <div class="nl-foot">
+    <div><a href="https://journal.yykxjz.cn/yykxjz/article/html/20260506" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.3969/j.issn.2095-9869.20251117002</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-06">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-06">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-06" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-07" data-src="ScienceDirect" data-farm="Industrial RAS" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-07" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-07</span> <span class="tag warn nl-status" data-id="NL-20260909-07">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:00:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Assessment of carrying capacity and management practices for Litopenaeus vannamei industrialized aquaculture based on an ecosystem model</h3>
+  <div class="nl-meta">Kaiyang Jiang; Teng Jiang; Shipeng Dong; Fang Wang · Chinese Academy of Fishery Sciences / Laoshan Laboratory / GEOMAR Helmholtz Centre for Ocean Research Kiel, Germany, et al. · journal article · 2026 · Aquaculture 613 (2026)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: ScienceDirect</span>
+    <span class="tag success">farming platform/mode: industrial RAS</span>
+    <span class="tag info">Proposed main table: Environmental Impact</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Industrial RAS</span><span class="tag">carrying capacity</span><span class="tag">effluent</span><span class="tag">Nitrogen & phosphorus</span><span class="tag">Ecosystem model</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>carrying capacity</td><td>juvenile shrimp (body length 4.24±0.37 cm)</td><td>409 ind·m⁻²</td><td>based on effluent discharge standards</td></tr><tr><td>yield drop / economic benefit drop</td><td>current density 880 vs carrying capacity</td><td>53.5% / 71.5%</td><td>Model simulation</td></tr><tr><td>carrying capacity after effluent treatment</td><td>effluent treatment technology</td><td>1193 ind·m⁻²</td><td>Model optimisation</td></tr><tr><td>Economic benefit/effluent discharge</td><td>effluent treatment</td><td>+33.5% / -26.2%</td><td>unit yield</td></tr><tr><td>TN/TP emission reduction</td><td>effluent treatment</td><td>-48.2% / -49.0%</td><td>relative to current</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 An ecosystem model of industrial Litopenaeus vannamei farming was built to simulate growth and nitrogen/phosphorus dynamics, and the system's carrying capacity was assessed against effluent nitrogen and phosphorus discharge standards. The carrying capacity for juveniles (body length 4.24±0.37 cm) was 409 ind·m⁻²; compared with the current stocking density of 880 ind·m⁻², yield and economic benefit fell by 53.5% and 71.5% respectively. Improving feed quality, increasing water exchange, and adopting effluent treatment technology raised the carrying capacity to 449/593/1193 ind·m⁻² respectively; effluent treatment increased economic benefit by 33.5%, reduced effluent discharge per unit of yield by 26.2%, and cut total nitrogen/total phosphorus emissions by 48.2% and 49.0% respectively.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — carrying capacity of industrial RAS, effluent discharge and N/P pollution equivalents; can be merged into “Environmental Impact”, “Pollution Generation and Equivalents” and “Economic Benefit Analysis”.</div>
+  <div class="nl-hint" data-id="NL-20260909-07"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.sciencedirect.com/science/article/pii/S0044848625013390" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.1016/j.aquaculture.2025.743453</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-07">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-07">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-07" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-08" data-src="Journal website" data-farm="Industrial biofloc" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-08" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-08</span> <span class="tag warn nl-status" data-id="NL-20260909-08">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:00:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Effects of Low-Salinity Condition on Water Quality and Phytoplankton Community in Biofloc-Based Litopenaeus vannamei Culture Ponds</h3>
+  <div class="nl-meta">Alfina Pagita Larasati; Mohammad Mahmudi; Asus Maizar Suryanto Hertika; Mohammad Musa; Sunadji; Evellin Dewi Lusiana · Universitas Brawijaya / Universitas Nusa Cendana, Indonesia · Journal article · 2026 · International Journal of Design &amp; Nature and Ecodynamics (IJDNE), 2026</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: journal website</span>
+    <span class="tag success">farming platform/mode: industrial biofloc</span>
+    <span class="tag info">Proposed main table: Water Quality Parameter Data</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Biofloc</span><span class="tag">low salinity</span><span class="tag">Water quality</span><span class="tag">Phytoplankton</span><span class="tag">Community stability</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>Ammonia-N</td><td>low salinity vs normal salinity</td><td>0.067±0.044 vs 1.114±0.753 mg/L</td><td>90 d</td></tr><tr><td>Transparency</td><td>low salinity vs normal salinity</td><td>18.08±3.77 vs 37.21±7.93 cm</td><td>90 d</td></tr><tr><td>Community stability</td><td>low salinity vs normal salinity</td><td>4.40–5.28 vs 1.82–2.75</td><td>90 d</td></tr><tr><td>Species turnover rate</td><td>low salinity vs normal salinity</td><td>0.21 vs 0.25</td><td>90 d</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 90 d A farming trial compared water quality and the phytoplankton community in low-salinity and normal-salinity biofloc ponds. The low-salinity group had significantly lower ammonia-N (0.067±0.044 vs 1.114±0.753 mg/L) and transparency (18.08±3.77 vs 37.21±7.93 cm) than the normal-salinity group, and also lower nitrate and total organic matter. Low-salinity ponds had a more stable phytoplankton community (4.40–5.28 vs 1.82–2.75) and a lower species turnover rate (0.21 vs 0.25), dominated by Bacillariophyceae.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — effects of salinity under a biofloc mode on water quality (ammonia-N, transparency, nitrate, TOM) and the phytoplankton community; can be merged into “Water Quality Parameter Data”.</div>
+  <div class="nl-hint" data-id="NL-20260909-08"></div>
+  <div class="nl-foot">
+    <div><a href="https://iieta.org/node/23808" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.18280/ijdne.210607</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-08">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-08">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-08" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-09" data-src="ScienceDirect" data-farm="Industrial biofloc" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-09" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-09</span> <span class="tag warn nl-status" data-id="NL-20260909-09">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:00:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Quorum sensing mediates spatiotemporal microbial community dynamics and nitrogen metabolism in biofloc-based Litopenaeus vannamei aquaculture systems</h3>
+  <div class="nl-meta">Ni Liu; Yuhang Zhang; Yuanshuai Zhang; Yun Yang; Hao Long; Aiyou Huang; Yanhua Zeng; Zhenyu Xie · et al. · Journal article · 2026 · Bioresource Technology 440 (2026)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: ScienceDirect</span>
+    <span class="tag success">farming platform/mode: industrial biofloc</span>
+    <span class="tag info">Proposed main table: Biofloc Farming</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">Biofloc</span><span class="tag">Quorum sensing</span><span class="tag">microbiome</span><span class="tag">Nitrogen metabolism</span><span class="tag">denitrification</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>nitrite decline</td><td>Biofloc system</td><td>1.21 → 0.03 mg/L</td><td>Decline phase</td></tr><tr><td>Dominant phyla</td><td>Biofloc</td><td>Pseudomonadota / Actinomycetota / Bacteroidota</td><td>82 d full cycle</td></tr><tr><td>Enrichment of nitrogen-metabolism genes</td><td>Biofloc vs water</td><td>denitrification/dissimilatory nitrate reduction genes more abundant</td><td>metagenomics</td></tr><tr><td>QS Pathway</td><td>initial/stable phase</td><td>AHLs+AI-2 / AHKs+c-di-GMP</td><td>Temporal heterogeneity</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 82 d Study of the microbial community and nitrogen metabolism in a biofloc aquaculture system. Ammonia nitrogen and nitrite went through four phases — initial, rising, falling and stable — with nitrite dropping rapidly from 1.21 mg/L to 0.03 mg/L. Pseudomonadota, Actinomycetota and Bacteroidota were the dominant phyla; quorum-sensing (QS) pathways showed temporal heterogeneity: AHLs/AI-2 dominated in the initial phase, while AHKs/c-di-GMP were enriched in the stable phase. Denitrification and dissimilatory nitrate reduction genes were significantly enriched, and QS signalling coordinated a carbon–nitrogen–sulfur metabolic interaction network among 30 dominant genera (e.g. Amaricoccus, Ruegeria).</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — microbiome dynamics, quorum sensing and nitrogen metabolism (denitrification) mechanisms in biofloc systems; can be merged into “Biofloc Farming” and “Pollution Generation and Equivalents”.</div>
+  <div class="nl-hint" data-id="NL-20260909-09"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.sciencedirect.com/science/article/pii/S0960852425014269" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.1016/j.biortech.2025.133459</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-09">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-09">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-09" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-10" data-src="ScienceDirect" data-farm="Industrial RAS" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-10" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-10</span> <span class="tag warn nl-status" data-id="NL-20260909-10">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:00:00+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Optimizing shrimp growth and water quality in constructed wetland recirculating aquaculture systems: Effects of stocking density and shrimp size</h3>
+  <div class="nl-meta">Meimei Hu; Yanyan Wang; Jianlei Chen; Hongwu Cui; Shengmin Zhu; Tongtong Jin; Keming Qu; Zhengguo Cui · Yellow Sea Fisheries Research Institute, Chinese Academy of Fishery Sciences / Pilot National Laboratory for Marine Science and Technology (Qingdao), et al. · journal article · 2026 · Aquaculture 612 (2026)</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: ScienceDirect</span>
+    <span class="tag success">farming platform/mode: industrial RAS</span>
+    <span class="tag info">Proposed main table: Water Quality–Growth Parameter Correspondence Data</span>
+    <span class="tag">Litopenaeus vannamei</span><span class="tag">recirculating aquaculture system</span><span class="tag">constructed wetland</span><span class="tag">stocking density</span><span class="tag">Shrimp size</span><span class="tag">Water purification</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:200px;margin-bottom:8px"><table><thead><tr><th>Indicator</th><th>Mode/Group</th><th>Value</th><th>Condition</th></tr></thead><tbody><tr><td>System area/culture cycle</td><td>Wetland-RAS</td><td>112 m² / 90 d</td><td>4 density treatment</td></tr><tr><td>density sensitivity of large-size shrimp</td><td>9–16 cm / 1.16–3.67 g</td><td>Grey relational grade 0.819</td><td>more sensitive to density effects</td></tr><tr><td>density sensitivity of small-size shrimp</td><td>4–9 cm / 16.37–19.04 g</td><td>Grey relational grade 0.667</td><td>less sensitive to density effects</td></tr><tr><td>Growth-inhibiting density</td><td>small-size shrimp</td><td>540 ind/m³ significantly inhibited growth</td><td>90 d</td></tr></tbody></table></div>
+  <div class="nl-summary">📄 112 m² Wetland–recirculating aquaculture system (RAS) culture for 90 d at four densities: 90/135/180/360 ind/m³. The vertical-flow wetland was effective at removing ammonium nitrogen, nitrite nitrogen and COD, with removal efficiency rising as density increased; nitrate and phosphorus removal, however, declined as density increased. Large shrimp (9–16 cm; 1.16–3.67 g) were more sensitive to density effects (grey relational grade 0.819), while small shrimp (4–9 cm; 16.37–19.04 g) were less sensitive (0.667). The high density of 540 ind/m³ significantly inhibited the growth of small shrimp.</div>
+  <div class="nl-reason">🎯 Reason for inclusion: hit — interactive effects of density and size on water purification and growth in a wetland-coupled RAS; can be merged into “Water Quality & Growth Parameter Correspondence”.</div>
+  <div class="nl-hint" data-id="NL-20260909-10"></div>
+  <div class="nl-foot">
+    <div><a href="https://www.sciencedirect.com/science/article/pii/S0044848625011081" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.1016/j.aquaculture.2025.743222</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-10">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-10">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-10" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-11" data-src="Other" data-farm="not specified" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-11" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-11</span> <span class="tag warn nl-status" data-id="NL-20260909-11">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:23:24+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Microdroplet-based high-throughput screening for antagonistic bacteria targeting penaeid shrimp pathogenic Vibrio harveyi</h3>
+  <div class="nl-meta">Hajime Yuasa; Yuri Katayama; Kayo Konishi; Miho Furukawa; Reiko Nozaki; Hidehiro Kondo; Ikuo Hırono; Keiichiro Koiwai · Journal article · 2026 · Scientific Reports</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: Other</span>
+    <span class="tag success">farming platform/mode: unspecified</span>
+    <span class="tag info">Proposed main table: TBD</span>
+    <span class="tag">shrimp farming</span>
+  </div>
+  
+  <div class="nl-summary">📄 Antagonistic bacteria that suppress the growth of specific bacteria have attracted attention as an antibiotics-independent strategy for infectious disease control in aquaculture. Microfluidics-based water-in-oil droplets (microdroplets) enable high-throughput screening of antagonistic bacteria in the field of medicine or agriculture. However, the use of this screening system in aquaculture has not yet been reported. In particular, penaeid shrimp aquaculture, one of the largest sectors of global aquaculture, has a strong demand for alternative disease control strategies because vaccination is i…</div>
+  <div class="nl-reason">🎯 Reason for inclusion: local live-search hit — the title/abstract covers topics related to Litopenaeus vannamei farming and falls within the database scope; the specific target worksheet must be confirmed manually after opening the source.</div>
+  <div class="nl-hint" data-id="NL-20260909-11"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.1038/s41598-026-68242-x" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.1038/s41598-026-68242-x</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-11">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-11">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-11" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div><div class="nl-card pending" data-id="NL-20260909-12" data-src="Other" data-farm="not specified" data-status="pending">
+  <div class="nl-top">
+    <span><input type="checkbox" class="nl-pick" data-id="NL-20260909-12" style="margin-right:6px;transform:scale(1.1);cursor:pointer" title="Once checked, use “🗑 Delete Selected” above for bulk deletion"><span class="nl-badge">NL-20260909-12</span> <span class="tag warn nl-status" data-id="NL-20260909-12">Pending</span></span>
+    <span style="font-size:11px;color:var(--c-muted)">Found at 2026-09-09T08:55:02+08:00 · round 2026-W37</span>
+  </div>
+  <h3 class="nl-title">Production and economic performance of Penaeus vannamei Boone, 1931 cultured in HDPE-lined circular tanks across increasing stocking densities: a commercial case study</h3>
+  <div class="nl-meta">Eirnest D. S. R. Eliver; Lorriane F. C. Balandan · Journal article · 2026 · Aquaculture Aquarium Conservation &amp; Legislation</div>
+  <div class="nl-tags">
+    <span class="tag primary">Source platform: Other</span>
+    <span class="tag success">farming platform/mode: unspecified</span>
+    <span class="tag info">Proposed main table: TBD</span>
+    <span class="tag">Litopenaeus vannamei</span>
+  </div>
+  
+  <div class="nl-summary">📄 The increasing demand for aquaculture production under limited land availability requires efficient intensive culture systems. This commercial case study evaluated the production performance and economic viability of whiteleg shrimp, Penaeus vannamei Boone, 1931, cultured in an HDPE-lined circular tank system under commercial farm conditions across three sequential production cycles with progressively increasing stocking densities (318-467 ind m⁻²). Progressive intensification was associated with higher biomass production, increasing total biomass from 1,500 to 2,015 kg and yield from 4.78 to …</div>
+  <div class="nl-reason">🎯 Reason for inclusion: local live-search hit — the title/abstract covers topics related to Litopenaeus vannamei farming and falls within the database scope; the specific target worksheet must be confirmed manually after opening the source.</div>
+  <div class="nl-hint" data-id="NL-20260909-12"></div>
+  <div class="nl-foot">
+    <div><a href="https://doi.org/10.67784/0037" target="_blank" rel="noopener">🔗 Open source</a> · <span class="num">DOI: 10.67784/0037</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary btn-sm js-confirm" data-id="NL-20260909-12">✅ Confirm merge into main database</button> <button class="btn btn-ghost btn-sm js-skip" data-id="NL-20260909-12">Ignore</button> <button class="btn btn-ghost btn-sm js-del" data-id="NL-20260909-12" title="Permanently delete this item from the pending area">🗑 Delete</button></div>
+  </div>
+</div></div><script>
+const NL_ITEMS = [{"id": "NL-20260908-01", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Comparative study on growth of Litopenaeus vannamei and water quality under two recirculating aquaculture modes", "authors": "Yuan Xincheng; Xu Jiabo; Shi Yonghai; Liu Yongshi; Zhang Feng", "institution": "Shanghai Fisheries Research Institute / Shanghai Aquatic Technology Extension Station", "year": 2026, "journal": "Fisheries Science & Technology Information (DOI prefix 1007-9580)", "pub_type": "Journal paper", "source_platform": "Journal website", "farm_platform": "Industrial RAS", "target_sheet": "Water quality ↔ growth parameter matching data", "doi": "10.26958/j.cnki.1007-9580.2026.01.006", "link": "https://www.agrijournal.com.cn/article/detail/2CF69B42-6E1D-4FE3-A228-34FE3A343C4A", "summary": "Comparison of Litopenaeus vannamei growth and water quality changes under two modes — outdoor pond-shed recirculating water and indoor industrial recirculating water (same initial size/density/duration). Both modes had a specific growth rate by body weight above 1.62%/d, with the outdoor mode faster (2.05%/d); at harvest the outdoor mode reached a body length of 10.17±0.76 cm and a body weight of 12.98±2.27 g, and the indoor mode 9.50±0.81 cm and 11.03±2.60 g, with survival ≥80.9% in both. TAN/NO2--N/NO3--N/CODMn/TN/TP differed markedly between the two modes, with outdoor TN/TP and late-stage NO3--N significantly lower than indoor.", "relevance_reason": "Direct match: water-quality parameters + growth parameters from the same batch; the mode is industrial recirculating water (can be merged into the recirculating-water / water quality–growth correspondence table)", "keywords": ["Litopenaeus vannamei", "Industrial RAS", "Growth", "Water quality", "Pond greenhouse recirculating water"], "data_points": [{"Indicator": "Specific growth rate", "Mode/Group": "outdoor pond shed recirculating water", "Value": "2.05 %/d", "Condition": "same initial size/density as indoor"}, {"Indicator": "Harvest body weight", "Mode/Group": "indoor industrial RAS", "Value": "11.03±2.60 g", "Condition": "Harvest body length 9.50±0.81 cm"}, {"Indicator": "survival rate", "Mode/Group": "Both modes", "Value": "≥80.9%", "Condition": "Throughout the trial"}, {"Indicator": "TN/TPand NO3--N", "Mode/Group": "outdoor vs indoor", "Value": "outdoor significantly lower than indoor", "Condition": "late culture stage"}], "status": "pending", "note": "Manual search for the trial-run round. Received 2025-08-08, published in issue 1 of 2026; check the values and journal volume/issue against the source before merging."}, {"id": "NL-20260908-02", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Current status, technological innovation and development strategies of Litopenaeus vannamei farming in Fujian Province", "authors": "Huang Yongchun; Lin Nan; Li Guoyong et al.", "institution": "College of Fisheries, Jimei University / Fujian Fisheries Technology Extension Station", "year": 2026, "journal": "Fisheries Research 2026,48(3):427-436", "pub_type": "Journal paper", "source_platform": "Journal website", "farm_platform": "Intensive pond culture", "target_sheet": "Survey and culture-trial data", "doi": "10.14012/j.jfr.2025136", "link": "http://www.hyyysci.com/cn/article/doi/10.14012/j.jfr.2025136", "summary": "Based on Fujian shrimp-industry data from 2014–2024 plus questionnaire/field surveys, this study systematically analyses Litopenaeus vannamei seed stock, farming modes, yield, technology and development strategy. In 2024 the province produced 753.73 hundred million shrimp PL (6.62% of the national total); total Litopenaeus vannamei farming output was 26.14×10^7 kg (11.01% of the national total, 4th); annual yield per unit area in mariculture was 14.14×10^3 kg/hm², 79.22% higher than in 2014. Distinctive modes include “white + black” ecological rotation, pond engineering and continuous multi-crop systems, supported by real-time water quality monitoring + ecological water regulation + smart feeding.", "relevance_reason": "Industry macro data + mode/technology survey; intended for “Survey and Farming Trial Data”; column mapping needs manual confirmation; contains yield, unit yield, seed stock, etc., which can be merged into survey statistics", "keywords": ["Litopenaeus vannamei", "Fujian", "current farming status", "Farming mode", "Industry survey"], "data_points": [{"Indicator": "total farming yield", "Mode/Group": "Fujian Province 2024", "Value": "26.14×10^7 kg (11.01% of national total, 4th)", "Condition": "Seawater + freshwater"}, {"Indicator": "Seawater yield per unit area", "Mode/Group": "Fujian Province 2024", "Value": "14.14×10^3 kg/hm2", "Condition": "up 79.22% vs 2014"}, {"Indicator": "Postlarvae yield", "Mode/Group": "Fujian Province 2024", "Value": "753.73hundred million PL (6.62% of national total)", "Condition": "Litopenaeus vannamei PL account for over 70% of the province"}], "status": "pending", "note": "Manual search for the trial-run round. Online in 2026, vol. 48, issue 3 (DOI registered); it is advisable to confirm the official page numbers in the source before merging."}, {"id": "NL-20260908-03", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Water quality changes and fish–shrimp growth characteristics in ecological polyculture of grass carp and multi-crop Litopenaeus vannamei", "authors": "Mei Bocheng; Xu Jiabo; Shi Yonghai; Liu Yongshi; Jiang Fei; Yuan Xincheng; Yang Ming; Jia Chuipan; Lin Weigang; Sun Zhuo", "institution": "Shanghai Fisheries Research Institute / Shanghai Aquatic Technology Extension Station", "year": 2025, "journal": "Journal of Zhejiang University (Agriculture and Life Sciences)", "pub_type": "Journal paper", "source_platform": "Journal website", "farm_platform": "Other", "target_sheet": "Water quality ↔ growth parameter matching data", "doi": "10.3785/j.issn.1008-9209.2025.11.092", "link": "https://www.academax.com/doi/10.3785/j.issn.1008-9209.2025.11.092", "summary": "Ecological trial of grass carp polycultured with 2 crops of Litopenaeus vannamei (3 parallel ponds): the best model for shrimp body length/weight in Batch 1 was Logistic (R2>0.96), Batch 2 body length Gompertz (R2>0.97), body weight Logistic (R2>0.94); Batch 1 body-length and body-weight inflection points at 49.54 d (6.83 cm) and 55.91 d (6.44 g); Batch 2 at 13.76 d (3.70 cm) and 15.95 d (2.60 g). TAN/TN/TP in each pond rose then fell and never exceeded the aquaculture discharge standard limits throughout, and water temperature followed a sinusoidal pattern, indicating that fish–shrimp polyculture favours water self-purification.", "relevance_reason": "Hit: growth parameters (multi-crop polyculture growth models/inflection points) + water quality changes (TAN/TN/TP within limits); can be merged into the water quality–growth correspondence table; farming mode is multi-crop fish–shrimp ecological polyculture", "keywords": ["Litopenaeus vannamei", "Grass carp polyculture", "Growth model", "Water quality", "Ecological farming"], "data_points": [{"Indicator": "Growth model", "Mode/Group": "Batch 1", "Value": "body length/body weight both Logistic R2>0.96", "Condition": "3parallel ponds"}, {"Indicator": "Growth inflection point", "Mode/Group": "Batch 1", "Value": "49.54 d(6.83 cm) / 55.91 d(6.44 g)", "Condition": "body length/body weight inflection point"}, {"Indicator": "Growth inflection point", "Mode/Group": "Batch 2", "Value": "13.76 d(3.70 cm) / 15.95 d(2.60 g)", "Condition": "growth inferior to crop 1 due to high temperature and substrate"}, {"Indicator": "TAN/TN/TP", "Mode/Group": "Grass carp–shrimp polyculture", "Value": "rises then falls, never exceeding the discharge limit", "Condition": "throughout the culture period"}], "status": "pending", "note": "Manual search for the trial-run round. Online November 2025 (DOI registered); verify the source text before merging."}, {"id": "NL-20260908-04", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Sustainability Status of Vannamei Shrimp (Litopenaeus vannamei) Aquaculture in Millennial Pond Model", "authors": "Prayitno A G; Purnomo S; Purnomo P et al.", "institution": "Diponegoro University / BBPBAP Jepara, Indonesia", "year": 2025, "journal": "Journal of Aquaculture and Fish Health 2025,14(3):321-335", "pub_type": "Journal paper", "source_platform": "Google Scholar", "farm_platform": "Other", "target_sheet": "Environmental impact", "doi": "10.20473/jafh.v14i3.73619", "link": "https://www.mendeley.com/catalogue/25385ae7-81ec-3db1-b31e-93e435931e05", "summary": "Taking Litopenaeus vannamei farming at the BBPBAP “Millennial Pond” in Jepara, Indonesia (a central waste-collection point in the pond reduces viral disease risk) as the object, MDS multidimensional scaling was used to analyse sustainability across 5 dimensions — ecological/economic/social/technical/regulatory (survey conducted Oct–Dec 2024). Overall sustainability index 88.94 (highly sustainable); by dimension: ecological 88.39, economic 81.05, social 75.25, technical 99.996, regulatory 99.996. Leverage analysis identified key sensitive attributes (disease, land utilization and suitability, price trends, market, farming profit, etc.).", "relevance_reason": "Hit: farming sustainability / eco-economic assessment; maps to “Environmental Impact” (ecological dimension) with “Economic Benefit Analysis” as an alternative; includes mode design and key constraints for manual table assignment", "keywords": ["Litopenaeus vannamei", "Millennial Pond", "sustainability", "MDS", "Indonesia"], "data_points": [{"Indicator": "Comprehensive sustainability index", "Mode/Group": "Millennial Pond mode", "Value": "88.94 (highly sustainable)", "Condition": "MDSmultidimensional scaling"}, {"Indicator": "By dimension", "Mode/Group": "Ecological/Economic/Social/Technical/Regulatory", "Value": "88.39 / 81.05 / 75.25 / 99.996 / 99.996", "Condition": "2024-10survey up to December"}], "status": "pending", "note": "Manual search for the trial-run round (2025 issue). English-language paper; verify the authors' full names and the table-assignment convention before merging."}, {"id": "NL-20260908-05", "found_at": "2026-09-08T15:40:23+08:00", "round": "2026-W37", "title": "Risk and Income Analysis of Vaname Shrimp Cultivation Business (Litopenaeus vannamei) in Bantan District, Bengkalis Regency", "authors": "Sarah M; Arief H; Yanti C W", "institution": "Universitas Riau, Indonesia", "year": 2025, "journal": "Jurnal Perikanan dan Kelautan 2025,30(2):261-267", "pub_type": "Journal paper", "source_platform": "Journal website", "farm_platform": "earthen pond", "target_sheet": "Economic benefit analysis", "doi": "10.31258/jpk.30.2.261-267", "link": "https://sociora.ejournal.unri.ac.id/index.php/jpk/article/view/2842", "summary": "2025In April, a survey of 26 Litopenaeus vannamei farmers in the Bantan district of Bengkalis, Riau Province, Indonesia: average yield 660,558.85 kg/Ha (as stated in the source; suspected unit typo, needs verification), average income IDR 614,516,253/Ha; yield risk CV 0.0887 and income risk CV 0.1139, indicating generally low risk.", "relevance_reason": "Hit: farming income / risk analysis; can be merged into “Economic Benefit Analysis”; foreign (Indonesian) economic data — mind the currency and definition", "keywords": ["Litopenaeus vannamei", "Revenue analysis", "Risk", "Indonesia", "farming economics"], "data_points": [{"Indicator": "average income", "Mode/Group": "Bantan District 2025 survey", "Value": "IDR 614,516,253/ha", "Condition": "26 farmers"}, {"Indicator": "yield risk CV", "Mode/Group": "Bantan District", "Value": "0.0887", "Condition": "Low risk"}, {"Indicator": "Revenue risk CV", "Mode/Group": "Bantan District", "Value": "0.1139", "Condition": "Low risk"}], "status": "pending", "note": "Manual search for the trial-run round (2025 issue). The yield value in the paper's original table appears to have a unit typo; the source must be checked before merging."}, {"id": "NL-20260909-01", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "Journal paper", "status": "pending", "title": "Dietary Rosmarinic Acid Improved the Growth, Immunity and Antioxidation of Litopenaeus vannamei", "authors": "Yuting Xu; Shunxiao Shi; Beiping Tan; Xiaoqin Li; Xiangjun Leng", "institution": "Shanghai Ocean University / Guangdong Ocean University", "year": 2026, "journal": "Animals 2026, 16(17):2767 (MDPI, OA)", "source_platform": "Journal website", "farm_platform": "not specified", "target_sheet": "Growth parameters", "doi": "10.3390/ani16172767", "link": "https://doi.org/10.3390/ani16172767", "summary": "8 -week farming trial (initial body weight 1.80±0.03 g) evaluating rosmarinic acid (RA) as a feed additive: the RA450 group (450 mg/kg) had higher weight gain and a significantly lower FCR; serum ACP/ACH50/LZM/AKP and hepatopancreas SOD/T-AOC were significantly higher while MDA decreased; resistance to Vibrio parahaemolyticus was enhanced, with hepatopancreas transcriptome analysis included. Published online 2026-09-03, the newest article of the past week.", "relevance_reason": "Hit: growth parameters (weight gain rate/FCR) + immune and antioxidant indices; new article from the past week, values can be extracted directly from the OA full text", "keywords": ["Rosmarinic acid", "Feed additives", "Growth", "immunity", "Antioxidant", "Litopenaeus vannamei"], "data_points": [{"Indicator": "weight gain rate/FCR", "Mode/Group": "RA450 (450 mg/kg)", "Value": "higher weight gain, significantly lower FCR", "Condition": "8 -week trial, initial 1.80±0.03 g"}, {"Indicator": "immune enzyme activity", "Mode/Group": "RA450", "Value": "ACP/ACH50/LZM/AKP significantly increased", "Condition": "Serum"}, {"Indicator": "Antioxidant", "Mode/Group": "RA450", "Value": "SOD/T-AOC increased, MDA decreased", "Condition": "Hepatopancreas"}, {"Indicator": "Disease resistance", "Mode/Group": "RA450", "Value": "enhanced resistance to Vibrio parahaemolyticus", "Condition": "Challenge test"}], "note": "2026-09-09 Manual live-search round (new articles from the past week). OA PDF: https://www.mdpi.com/2076-2615/16/17/2767/pdf"}, {"id": "NL-20260909-02", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "Journal paper", "status": "pending", "title": "Dose-dependent supplementation of Schizochytrium in the biofloc system modulates dual microbiomes to enhance growth and survival in Pacific white shrimp (Litopenaeus vannamei)", "authors": "Zhi Li; Xiaohan Li; Buwen Sun; Hongwei Wu; Jingyi Zhang; Xiulin Wan; Baohua Zhao; Nasi Xiao; Zhen Qi; Qingyang Li; Haiyan Liu", "institution": "Hebei Normal University et al.", "year": 2026, "journal": "Frontiers in Microbiology 17:1867320 (OA)", "source_platform": "Google Scholar", "farm_platform": "Industrial biofloc", "target_sheet": "Biofloc farming", "doi": "10.3389/fmicb.2026.1867320", "link": "https://doi.org/10.3389/fmicb.2026.1867320", "summary": "A dose-dependent trial of supplementing Schizochytrium (10³ vs 10⁶ cells/mL vs a clear-water control) in a biofloc system: the high-dose group showed improved growth performance and feed efficiency and a further increase in survival; digestive genes such as trypsin/lipase and antimicrobial genes such as lysozyme/penaeidin 3a were upregulated; beneficial genera such as Aureispira and Marivita were enriched in the floc, while both the floc and intestinal microbiomes were modulated.", "relevance_reason": "Direct match: biofloc farming (floc microbiome + dose effects) + growth/survival data, OA full text", "keywords": ["Schizochytrium", "Biofloc", "microbiome", "Growth", "survival rate", "Litopenaeus vannamei"], "data_points": [{"Indicator": "Growth performance/feed efficiency", "Mode/Group": "high dose 10⁶ cells/mL", "Value": "significantly improved", "Condition": "vs control and low-dose group"}, {"Indicator": "survival rate", "Mode/Group": "high-dose group", "Value": "further increased", "Condition": "throughout the culture period"}, {"Indicator": "Digestive genes", "Mode/Group": "high-dose group", "Value": "upregulation of trypsin/lipase", "Condition": "Hepatopancreas/intestine"}, {"Indicator": "Beneficial bacteria in floc", "Mode/Group": "high-dose group", "Value": "Aureispira, Marivita enriched", "Condition": "Floc microbiome"}], "note": "2026-09-09 Manual live-search round (online 2026-07-22). Full text free to read."}, {"id": "NL-20260909-03", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "Journal paper", "status": "pending", "title": "Increasing Production and Reducing Costs through Aquamimicry Approach in Litopenaeus vannamei Farming in Gomishan", "authors": "Mostafa Kordkatouli; Hossein Chitsaz; Reza Akrami; Tahereh Bagheri", "institution": "Islamic Azad University et al., Iran", "year": 2026, "journal": "Journal of Utilization and Cultivation of Aquatics (online first)", "source_platform": "Journal website", "farm_platform": "Other", "target_sheet": "Water quality ↔ growth parameter matching data", "doi": "10.22069/japu.2026.24704.2021", "link": "https://japu.gau.ac.ir/article_7718.html", "summary": "120-day high-density culture trial in Gomishan, Iran (PL12, 20 PL/m²): control (commercial feed + routine water exchange) vs Aquamimicry group (fermented rice bran 16 kg + probiotics 14 L + 20% water exchange). The Aquamimicry group had more stable DO (6.5 vs 6.2 mg/L), stable pH 7.6–8.1 and lower TSS; growth was significantly better, FCR 1.26 vs 1.51, total biomass +44.4%, unit production cost −25.4%.", "relevance_reason": "Hit: water quality–growth correspondence data (DO/pH/TSS vs growth) + economic data (FCR/biomass/cost); Aquamimicry mode", "keywords": ["Aquamimicry system", "Aquamimicry", "Water quality", "Growth", "Cost", "Iran"], "data_points": [{"Indicator": "FCR", "Mode/Group": "Aquamimicry vs control", "Value": "1.26 vs 1.51", "Condition": "120 -day culture"}, {"Indicator": "total biomass", "Mode/Group": "Aquamimicry group", "Value": "+44.4%", "Condition": "relative to control"}, {"Indicator": "unit production cost", "Mode/Group": "Aquamimicry group", "Value": "-25.4%", "Condition": "relative to control"}, {"Indicator": "DO/pH", "Mode/Group": "Aquamimicry group", "Value": "DO 6.5 mg/L more stable; pH 7.6-8.1", "Condition": "monitored throughout"}], "note": "2026-09-09 Manual live-search round (online 2026-06-03). The DOI was not registered successfully with Crossref; please verify against the journal's official page."}, {"id": "NL-20260909-04", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "Journal paper", "status": "pending", "title": "Effects of different sources of dietary non-starch polysaccharides on Pacific white shrimp (Litopenaeus vannamei) performance, water quality and biofloc nutritional and microbial composition", "authors": "Apriana Vinasyiam; Julie Ekasari; Fotini Kokou; Johan W. Schrama; Marc C.J. Verdegem", "institution": "Bogor Agricultural University / Wageningen University, etc.", "year": 2026, "journal": "Aquaculture (Elsevier)", "source_platform": "ScienceDirect", "farm_platform": "Industrial biofloc", "target_sheet": "Biofloc farming", "doi": "10.1016/j.aquaculture.2026.743854", "link": "https://doi.org/10.1016/j.aquaculture.2026.743854", "summary": "30 -day digestibility + 42-day growth trial with 5 treatments (iso-nitrogenous/iso-amount × poorly/moderately fermented NSP diets + starch control): NSP diets eliminate the need for extra carbon source addition in the biofloc system, with water quality maintenance equivalent to the starch diet; iso-nitrogenous feeding raised the protein content of shrimp and floc; NSP type had no significant effect on shrimp performance. Directly useful for reducing biofloc carbon-source costs.", "relevance_reason": "Hit: biofloc farming (carbon source strategy / floc nutrition and microbial composition) + water quality maintenance data", "keywords": ["Non-starch polysaccharide", "NSP", "Biofloc", "Carbon source", "Water quality", "Feed"], "data_points": [{"Indicator": "Carbon source addition", "Mode/Group": "NSP Dietary group", "Value": "can eliminate extra carbon source addition", "Condition": "water quality equivalent to the starch control"}, {"Indicator": "Protein content", "Mode/Group": "isonitrogenous feeding group", "Value": "increased protein in shrimp body and floc", "Condition": "isonitrogenous treatment"}, {"Indicator": "Shrimp performance", "Mode/Group": "each NSP treatment", "Value": "No significant difference", "Condition": "NSP Between-type comparison"}], "note": "2026-09-09 Manual live-search round (Aquaculture, May 2026 issue). Subscription or institutional access required for the full text."}, {"id": "NL-20260909-05", "found_at": "2026-09-09T07:50:00+08:00", "round": "2026-W37", "pub_type": "Journal paper", "status": "pending", "title": "Life Cycle Assessment and Life Cycle Costing of a Greenhouse Culture Model for Litopenaeus vannamei", "authors": "Yuzhen Wang; Zhao Chen; Jiajia Wang; Zhiqiang Chang; Shuangyong Zhang; Jian Li", "institution": "Chinese Academy of Fishery Sciences, et al.", "year": 2026, "journal": "Fishes 2026, 11(3):131 (MDPI, OA)", "source_platform": "Journal website", "farm_platform": "Other", "target_sheet": "Environmental cost & efficiency", "doi": "10.3390/fishes11030131", "link": "https://doi.org/10.3390/fishes11030131", "summary": "Life-cycle assessment of greenhouse shrimp farming based on field research and company production records: life-cycle cost 3.56 USD/kg; construction cost 4.58 USD/m² (mainly steel pipe + film); single-cycle farming cost 3,510.76 USD/shed (feed 30.54%, land rent 15.86%); net profit 5.31 USD/m²/cycle, cost-profit margin 60.47% (significantly higher than indoor super-intensive ISIC). Environment: GWP 3.279 kg CO₂eq/kg, AP 0.369 kg SO₂eq, EP 0.212 kg PO₄eq/kg.", "relevance_reason": "Hit: environmental cost and efficiency (dual LCA/LCC basis) + cost breakdown + pollution equivalents (GWP/AP/EP); scarce data for the main database", "keywords": ["Life cycle assessment", "LCA", "Life-cycle cost", "Greenhouse culture", "Environmental emissions", "Economic benefit"], "data_points": [{"Indicator": "Life-cycle cost", "Mode/Group": "Greenhouse culture", "Value": "3.56 USD/kg", "Condition": "LCC Accounting"}, {"Indicator": "net profit / cost-profit margin", "Mode/Group": "Greenhouse culture", "Value": "5.31 USD/m²/cycle; 60.47%", "Condition": "higher than indoor super-intensive ISIC"}, {"Indicator": "GWP", "Mode/Group": "Greenhouse culture", "Value": "3.279 kg CO₂eq/kg", "Condition": "LCA"}, {"Indicator": "AP/EP", "Mode/Group": "Greenhouse culture", "Value": "0.369 kg SO₂eq/kg; 0.212 kg PO₄eq/kg", "Condition": "LCA"}, {"Indicator": "cost structure", "Mode/Group": "single cycle", "Value": "3510.76 USD/building (feed 30.54%/land rent 15.86%)", "Condition": "construction cost 4.58 USD/m²"}], "note": "2026-09-09 Manual live-search round (published 2026-02-25, outside the 3-month window, but a rare LCA + cost double hit). OA PDF: https://www.mdpi.com/2410-3888/11/3/131/pdf"}, {"id": "NL-20260909-06", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Effects of stocking density on growth and physiological indices of Litopenaeus vannamei under a low-salinity recirculating water mode", "authors": "Chen Xiaoying; Huang Xuanyu; Lu Huijie; Zhao Jichen; Huang Wen; Guo Hui; Sun Yuping", "institution": "Institute of Animal Science, Guangdong Academy of Agricultural Sciences / Key Laboratory of Animal Nutrition and Feed Science in South China, Ministry of Agriculture and Rural Affairs / College of Fisheries, Guangdong Ocean University", "year": 2026, "journal": "Progress in Fishery Sciences 2026, 47(5)", "pub_type": "Journal paper", "source_platform": "Journal website", "farm_platform": "Industrial RAS", "target_sheet": "Water quality ↔ growth parameter matching data", "doi": "10.3969/j.issn.2095-9869.20251117002", "link": "https://journal.yykxjz.cn/yykxjz/article/html/20260506", "summary": "In a recirculating aquaculture system (RAS) at salinity 3.5±0.5, juvenile Litopenaeus vannamei with an initial body weight of 1.04±0.01 g were assigned to 5 density groups of 30/45/60/75/90 PL/300 L (100–300 ind./m³) and cultured for 49 d. As density increased, final body length, daily body-length increment, body-length growth rate, final body weight, daily weight gain, weight gain rate and specific growth rate all decreased significantly, with the M90 group lowest; the M60 group had the highest survival and the lowest FCR. Considering growth, feed utilization and immune/antioxidant responses together, 60 PL/300 L (about 200 ind./m³) is the more suitable density under these low-salinity recirculating conditions.", "relevance_reason": "Hit: effects of stocking density under industrial RAS on growth, feed utilization, serum biochemistry and immune/antioxidant indices; can be merged into “Water Quality & Growth Parameter Correspondence” or “Infrastructure and Feeding”.", "keywords": ["Litopenaeus vannamei", "low salinity", "RAS", "stocking density", "Growth", "Feed conversion ratio"], "data_points": [{"Indicator": "Specific growth rate/weight gain rate", "Mode/Group": "M90 (300 ind./m³)", "Value": "significantly lowest", "Condition": "49 d"}, {"Indicator": "survival rate", "Mode/Group": "M60 (200 ind./m³)", "Value": "Highest", "Condition": "49 d"}, {"Indicator": "Feed conversion ratio (FCR)", "Mode/Group": "M60", "Value": "Lowest", "Condition": "49 d"}, {"Indicator": "Suitable density", "Mode/Group": "low-salinity RAS", "Value": "60 PL/300 L (about 200 ind./m³)", "Condition": "Salinity 3.5±0.5"}], "status": "pending", "note": "2026-09-09 Wednesday 08:00 automatic search round; 2026, vol. 47, no. 5. Before merging, verify the values and the journal's official page numbers against the source."}, {"id": "NL-20260909-07", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Assessment of carrying capacity and management practices for Litopenaeus vannamei industrialized aquaculture based on an ecosystem model", "authors": "Kaiyang Jiang; Teng Jiang; Shipeng Dong; Fang Wang", "institution": "Chinese Academy of Fishery Sciences / Laoshan Laboratory / GEOMAR Helmholtz Centre for Ocean Research Kiel, Germany, et al.", "year": 2026, "journal": "Aquaculture 613 (2026)", "pub_type": "Journal paper", "source_platform": "ScienceDirect", "farm_platform": "Industrial RAS", "target_sheet": "Environmental impact", "doi": "10.1016/j.aquaculture.2025.743453", "link": "https://www.sciencedirect.com/science/article/pii/S0044848625013390", "summary": "An ecosystem model of industrial Litopenaeus vannamei farming was built to simulate growth and nitrogen/phosphorus dynamics, and the system's carrying capacity was assessed against effluent nitrogen and phosphorus discharge standards. The carrying capacity for juveniles (body length 4.24±0.37 cm) was 409 ind·m⁻²; compared with the current stocking density of 880 ind·m⁻², yield and economic benefit fell by 53.5% and 71.5% respectively. Improving feed quality, increasing water exchange, and adopting effluent treatment technology raised the carrying capacity to 449/593/1193 ind·m⁻² respectively; effluent treatment increased economic benefit by 33.5%, reduced effluent discharge per unit of yield by 26.2%, and cut total nitrogen/total phosphorus emissions by 48.2% and 49.0% respectively.", "relevance_reason": "Hit: carrying capacity of industrial RAS, effluent discharge and N/P pollution equivalents; can be merged into “Environmental Impact”, “Pollution Generation and Equivalents” and “Economic Benefit Analysis”.", "keywords": ["Litopenaeus vannamei", "Industrial RAS", "carrying capacity", "effluent", "Nitrogen & phosphorus", "Ecosystem model"], "data_points": [{"Indicator": "carrying capacity", "Mode/Group": "juvenile shrimp (body length 4.24±0.37 cm)", "Value": "409 ind·m⁻²", "Condition": "based on effluent discharge standards"}, {"Indicator": "yield drop / economic benefit drop", "Mode/Group": "current density 880 vs carrying capacity", "Value": "53.5% / 71.5%", "Condition": "Model simulation"}, {"Indicator": "carrying capacity after effluent treatment", "Mode/Group": "effluent treatment technology", "Value": "1193 ind·m⁻²", "Condition": "Model optimisation"}, {"Indicator": "Economic benefit/effluent discharge", "Mode/Group": "effluent treatment", "Value": "+33.5% / -26.2%", "Condition": "unit yield"}, {"Indicator": "TN/TP emission reduction", "Mode/Group": "effluent treatment", "Value": "-48.2% / -49.0%", "Condition": "relative to current"}], "status": "pending", "note": "2026-09-09 Wednesday 08:00 automatic search round; Aquaculture 2026, vol. 613. The source is paywalled/institutional-access; verify the authors' affiliations and the complete values before merging."}, {"id": "NL-20260909-08", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Effects of Low-Salinity Condition on Water Quality and Phytoplankton Community in Biofloc-Based Litopenaeus vannamei Culture Ponds", "authors": "Alfina Pagita Larasati; Mohammad Mahmudi; Asus Maizar Suryanto Hertika; Mohammad Musa; Sunadji; Evellin Dewi Lusiana", "institution": "Universitas Brawijaya / Universitas Nusa Cendana, Indonesia", "year": 2026, "journal": "International Journal of Design & Nature and Ecodynamics (IJDNE), 2026", "pub_type": "Journal paper", "source_platform": "Journal website", "farm_platform": "Industrial biofloc", "target_sheet": "Water quality parameters", "doi": "10.18280/ijdne.210607", "link": "https://iieta.org/node/23808", "summary": "90 d A farming trial compared water quality and the phytoplankton community in low-salinity and normal-salinity biofloc ponds. The low-salinity group had significantly lower ammonia-N (0.067±0.044 vs 1.114±0.753 mg/L) and transparency (18.08±3.77 vs 37.21±7.93 cm) than the normal-salinity group, and also lower nitrate and total organic matter. Low-salinity ponds had a more stable phytoplankton community (4.40–5.28 vs 1.82–2.75) and a lower species turnover rate (0.21 vs 0.25), dominated by Bacillariophyceae.", "relevance_reason": "Hit: effects of salinity under a biofloc mode on water quality (ammonia-N, transparency, nitrate, TOM) and the phytoplankton community; can be merged into “Water Quality Parameter Data”.", "keywords": ["Litopenaeus vannamei", "Biofloc", "low salinity", "Water quality", "Phytoplankton", "Community stability"], "data_points": [{"Indicator": "Ammonia-N", "Mode/Group": "low salinity vs normal salinity", "Value": "0.067±0.044 vs 1.114±0.753 mg/L", "Condition": "90 d"}, {"Indicator": "Transparency", "Mode/Group": "low salinity vs normal salinity", "Value": "18.08±3.77 vs 37.21±7.93 cm", "Condition": "90 d"}, {"Indicator": "Community stability", "Mode/Group": "low salinity vs normal salinity", "Value": "4.40–5.28 vs 1.82–2.75", "Condition": "90 d"}, {"Indicator": "Species turnover rate", "Mode/Group": "low salinity vs normal salinity", "Value": "0.21 vs 0.25", "Condition": "90 d"}], "status": "pending", "note": "2026-09-09 Wednesday 08:00 automatic search round; online 2026-06-30 (OA). Before merging, verify the phytoplankton abundance data against the source."}, {"id": "NL-20260909-09", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Quorum sensing mediates spatiotemporal microbial community dynamics and nitrogen metabolism in biofloc-based Litopenaeus vannamei aquaculture systems", "authors": "Ni Liu; Yuhang Zhang; Yuanshuai Zhang; Yun Yang; Hao Long; Aiyou Huang; Yanhua Zeng; Zhenyu Xie", "institution": "College of Marine Sciences, Hainan University / Key Laboratory of Utilization and Conservation of Tropical Marine Bio-resources (Ministry of Education) / Wenchang Advanced Fisheries Research Institute, Hainan University, et al.", "year": 2026, "journal": "Bioresource Technology 440 (2026)", "pub_type": "Journal paper", "source_platform": "ScienceDirect", "farm_platform": "Industrial biofloc", "target_sheet": "Biofloc farming", "doi": "10.1016/j.biortech.2025.133459", "link": "https://www.sciencedirect.com/science/article/pii/S0960852425014269", "summary": "82 d Study of the microbial community and nitrogen metabolism in a biofloc aquaculture system. Ammonia nitrogen and nitrite went through four phases — initial, rising, falling and stable — with nitrite dropping rapidly from 1.21 mg/L to 0.03 mg/L. Pseudomonadota, Actinomycetota and Bacteroidota were the dominant phyla; quorum-sensing (QS) pathways showed temporal heterogeneity: AHLs/AI-2 dominated in the initial phase, while AHKs/c-di-GMP were enriched in the stable phase. Denitrification and dissimilatory nitrate reduction genes were significantly enriched, and QS signalling coordinated a carbon–nitrogen–sulfur metabolic interaction network among 30 dominant genera (e.g. Amaricoccus, Ruegeria).", "relevance_reason": "Hit: microbiome dynamics, quorum sensing and nitrogen metabolism (denitrification) mechanisms in biofloc systems; can be merged into “Biofloc Farming” and “Pollution Generation and Equivalents”.", "keywords": ["Litopenaeus vannamei", "Biofloc", "Quorum sensing", "microbiome", "Nitrogen metabolism", "denitrification"], "data_points": [{"Indicator": "nitrite decline", "Mode/Group": "Biofloc system", "Value": "1.21 → 0.03 mg/L", "Condition": "Decline phase"}, {"Indicator": "Dominant phyla", "Mode/Group": "Biofloc", "Value": "Pseudomonadota / Actinomycetota / Bacteroidota", "Condition": "82 d full cycle"}, {"Indicator": "Enrichment of nitrogen-metabolism genes", "Mode/Group": "Biofloc vs water", "Value": "denitrification/dissimilatory nitrate reduction genes more abundant", "Condition": "metagenomics"}, {"Indicator": "QS Pathway", "Mode/Group": "initial/stable phase", "Value": "AHLs+AI-2 / AHKs+c-di-GMP", "Condition": "Temporal heterogeneity"}], "status": "pending", "note": "2026-09-09 Wednesday 08:00 automatic search round; Bioresource Technology 2026, vol. 440. The source is paywalled/institutional-access."}, {"id": "NL-20260909-10", "found_at": "2026-09-09T08:00:00+08:00", "round": "2026-W37", "title": "Optimizing shrimp growth and water quality in constructed wetland recirculating aquaculture systems: Effects of stocking density and shrimp size", "authors": "Meimei Hu; Yanyan Wang; Jianlei Chen; Hongwu Cui; Shengmin Zhu; Tongtong Jin; Keming Qu; Zhengguo Cui", "institution": "Yellow Sea Fisheries Research Institute, Chinese Academy of Fishery Sciences / Pilot National Laboratory for Marine Science and Technology (Qingdao), et al.", "year": 2026, "journal": "Aquaculture 612 (2026)", "pub_type": "Journal paper", "source_platform": "ScienceDirect", "farm_platform": "Industrial RAS", "target_sheet": "Water quality ↔ growth parameter matching data", "doi": "10.1016/j.aquaculture.2025.743222", "link": "https://www.sciencedirect.com/science/article/pii/S0044848625011081", "summary": "112 m² Wetland–recirculating aquaculture system (RAS) culture for 90 d at four densities: 90/135/180/360 ind/m³. The vertical-flow wetland was effective at removing ammonium nitrogen, nitrite nitrogen and COD, with removal efficiency rising as density increased; nitrate and phosphorus removal, however, declined as density increased. Large shrimp (9–16 cm; 1.16–3.67 g) were more sensitive to density effects (grey relational grade 0.819), while small shrimp (4–9 cm; 16.37–19.04 g) were less sensitive (0.667). The high density of 540 ind/m³ significantly inhibited the growth of small shrimp.", "relevance_reason": "Hit: interactive effects of density and size on water purification and growth in a wetland-coupled RAS; can be merged into “Water Quality & Growth Parameter Correspondence”.", "keywords": ["Litopenaeus vannamei", "recirculating aquaculture system", "constructed wetland", "stocking density", "Shrimp size", "Water purification"], "data_points": [{"Indicator": "System area/culture cycle", "Mode/Group": "Wetland-RAS", "Value": "112 m² / 90 d", "Condition": "4 density treatment"}, {"Indicator": "density sensitivity of large-size shrimp", "Mode/Group": "9–16 cm / 1.16–3.67 g", "Value": "Grey relational grade 0.819", "Condition": "more sensitive to density effects"}, {"Indicator": "density sensitivity of small-size shrimp", "Mode/Group": "4–9 cm / 16.37–19.04 g", "Value": "Grey relational grade 0.667", "Condition": "less sensitive to density effects"}, {"Indicator": "Growth-inhibiting density", "Mode/Group": "small-size shrimp", "Value": "540 ind/m³ significantly inhibited growth", "Condition": "90 d"}], "status": "pending", "note": "2026-09-09 Wednesday 08:00 automatic search round; Aquaculture 2026, vol. 612. The source is paywalled/institutional-access; the specific values for the density treatments must be verified against the source."}, {"id": "NL-20260909-11", "found_at": "2026-09-09T08:23:24+08:00", "round": "2026-W37", "title": "Microdroplet-based high-throughput screening for antagonistic bacteria targeting penaeid shrimp pathogenic Vibrio harveyi", "authors": "Hajime Yuasa; Yuri Katayama; Kayo Konishi; Miho Furukawa; Reiko Nozaki; Hidehiro Kondo; Ikuo Hırono; Keiichiro Koiwai", "institution": "", "year": 2026, "journal": "Scientific Reports", "pub_type": "Journal paper", "source_platform": "Other", "farm_platform": "not specified", "target_sheet": "To be determined", "doi": "10.1038/s41598-026-68242-x", "link": "https://doi.org/10.1038/s41598-026-68242-x", "summary": "Antagonistic bacteria that suppress the growth of specific bacteria have attracted attention as an antibiotics-independent strategy for infectious disease control in aquaculture. Microfluidics-based water-in-oil droplets (microdroplets) enable high-throughput screening of antagonistic bacteria in the field of medicine or agriculture. However, the use of this screening system in aquaculture has not yet been reported. In particular, penaeid shrimp aquaculture, one of the largest sectors of global aquaculture, has a strong demand for alternative disease control strategies because vaccination is i…", "relevance_reason": "Local instant-search hit: the title/abstract covers topics related to Litopenaeus vannamei farming, which falls within the database's scope; the exact matching worksheet must be confirmed manually after opening the source.", "keywords": ["shrimp farming"], "data_points": [], "status": "pending", "note": "added to Pending Confirmation via the local instant search (OpenAlex); please verify the source text and provenance before manual merging."}, {"id": "NL-20260909-12", "found_at": "2026-09-09T08:55:02+08:00", "round": "2026-W37", "title": "Production and economic performance of Penaeus vannamei Boone, 1931 cultured in HDPE-lined circular tanks across increasing stocking densities: a commercial case study", "authors": "Eirnest D. S. R. Eliver; Lorriane F. C. Balandan", "institution": "", "year": 2026, "journal": "Aquaculture Aquarium Conservation & Legislation", "pub_type": "Journal paper", "source_platform": "Other", "farm_platform": "not specified", "target_sheet": "To be determined", "doi": "10.67784/0037", "link": "https://doi.org/10.67784/0037", "summary": "The increasing demand for aquaculture production under limited land availability requires efficient intensive culture systems. This commercial case study evaluated the production performance and economic viability of whiteleg shrimp, Penaeus vannamei Boone, 1931, cultured in an HDPE-lined circular tank system under commercial farm conditions across three sequential production cycles with progressively increasing stocking densities (318-467 ind m⁻²). Progressive intensification was associated with higher biomass production, increasing total biomass from 1,500 to 2,015 kg and yield from 4.78 to …", "relevance_reason": "Local instant-search hit: the title/abstract covers topics related to Litopenaeus vannamei farming, which falls within the database's scope; the exact matching worksheet must be confirmed manually after opening the source.", "keywords": ["Litopenaeus vannamei"], "data_points": [], "status": "pending", "note": "added to Pending Confirmation via the local instant search (OpenAlex); please verify the source text and provenance before manual merging."}];
+const NL_META = {"description": "Pending new-paper store: auto-searched and written every Wednesday 08:00 (up to 5 per round), logged only and not merged into the main database; after manual confirmation the assistant merges them into the main xlsx database and sets status=merged", "created_at": "2026-09-08T15:36:00+08:00", "round": "2026-W37", "last_run": "2026-09-09T09:03:32", "note": "Manually deleted 1 pending paper (2026-09-09 09:03:32)", "source_platforms": ["Google Scholar", "CNKI", "Wanfang", "VIP (Weipu)", "Web of Science", "Scopus", "ScienceDirect", "PubMed", "Journal website", "Other"], "farm_platforms": ["Industrial RAS", "Industrial biofloc", "Industrial water exchange", "Elevated (high-level) pond", "Greenhouse (plastic-tunnel) farming", "Intensive pond culture", "earthen pond", "Extensive or semi-intensive", "integrated multi-trophic aquaculture (IMTA)", "Other", "not specified"], "target_sheets": ["Water quality parameters", "Growth parameters", "Pollutant generation & pollution equivalents", "Infrastructure & husbandry", "Environmental impact", "Biofloc farming", "Economic benefit analysis", "Cost breakdown", "Environmental cost & efficiency", "Dongying industrial database", "Water quality ↔ growth parameter matching data", "Survey and culture-trial data"]};
+function applyFilter(){
+  const kw=(document.getElementById('kw')?.value||'').trim().toLowerCase();
+  const src=document.getElementById('fSource')?.value||'';
+  const farm=document.getElementById('fFarm')?.value||'';
+  const st=document.getElementById('fStatus')?.value||'';
+  let vis=0;
+  document.querySelectorAll('.nl-card').forEach(c=>{
+    const txt=(c.innerText||'').toLowerCase();
+    const okKw=!kw||txt.indexOf(kw)>=0;
+    const okSrc=!src||c.dataset.src===src;
+    const okFarm=!farm||c.dataset.farm===farm;
+    const okSt=!st||c.dataset.status===st;
+    const show=okKw&&okSrc&&okFarm&&okSt;
+    c.style.display=show?'':'none';
+    if(show)vis++;
+  });
+  const el=document.getElementById('nlCount');if(el)el.innerText=vis+' papers';
+}
+function _fallbackCopy(t,done){
+  const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}catch(e){done();}
+  document.body.removeChild(ta);
+}
+function copyText(t,done){
+  const ok=()=>{try{if(done)done();}catch(e){}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok).catch(()=>_fallbackCopy(t,ok));}else{_fallbackCopy(t,ok);}
+}
+/* ===== One-click live search (local real-time service)===== */
+function $id(i){return document.getElementById(i);}
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function srState(msg,kind){
+  const el=$id('srState'); if(!el)return;
+  el.classList.add('show'); el.className='nl-hint show'+(kind==='success'?'':'');
+  el.style.background=kind==='success'?'#ecfdf5':'';
+  el.style.color=kind==='success'?'#065f46':'';
+  el.innerText=msg;
+}
+function isInStore(title){
+  const nt=String(title||'').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g,'');
+  if(!nt)return null;
+  for(let i=0;i<NL_ITEMS.length;i++){
+    const it=NL_ITEMS[i]||{};
+    const ne=String(it.title||'').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g,'');
+    if(ne&&(ne===nt||(nt.length>=15&&(nt.indexOf(ne)>=0||ne.indexOf(nt)>=0))))return it;
+  }
+  return null;
+}
+function doInstantSearch(){
+  const kw=($id('kw')?$id('kw').value:'').trim();
+  const src=$id('fSource')?$id('fSource').value:'';
+  const farm=$id('fFarm')?$id('fFarm').value:'';
+  const w=$id('srWin')?$id('srWin').value:'90';
+  const winTxt={7:'Last 1 week',30:'Last 1 month',90:'Last 3 months',365:'Last 1 year'}[w]||('Last '+w+' days');
+  const b=$id('btnSearchNow');
+  const box=$id('srResults');
+  if(box){box.innerHTML='<div style="padding:16px;text-align:center;color:#0a6f6f">🔎 Searching open scholarly databases (OpenAlex / Crossref; keywords are auto-translated between Chinese and English)… takes about 3-12 seconds</div>';}
+  srState('arch started with the current criteria: keywords “'+(kw||'Any')+'” · Source platform “'+(src||'Any')+'” · Farming platform “'+(farm||'Any')+'” · '+winTxt);
+  if(b){b.disabled=true;b.innerText='Searching…';}
+  const params=new URLSearchParams({q:kw,src:src,farm:farm,w:w});
+  fetch('/api/search?'+params.toString())
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(d){
+      if(!d.ok)throw new Error(d.error||'Unknown error');
+      if(d.warn){srState('⚠️ Some sources are unavailable: '+d.warn);}
+      if(!d.count){
+        if(box){box.innerHTML='<div style="padding:16px;text-align:center;color:var(--c-muted)">😕 No recent papers in scope (Litopenaeus vannamei culture) were found under these conditions. Try widening the time window to "last 1 year", or remove the keyword / farming-platform filters and retry.<br><span style="font-size:11px">'+(d.warn?escHtml(d.warn):'')+'</span></div>';}
+        return;
+      }
+      renderSrCards(d.results);
+    })
+    .catch(function(e){
+      if(box){box.innerHTML='<div style="padding:16px;text-align:center;color:#b45309">⚠️ Cannot reach the local search service ('+(e&&e.message?escHtml(e.message):'Connection failed')+').<br><b>This page may not be served by the live service</b> (for example, you opened the read-only online link directly). Go back to the <b>live preview window (http://127.0.0.1:8787)</b> inside the WorkBuddy session to use one-click instant search.</div>';}
+      srState('Search failed: please use the local live workbench entry point (http://127.0.0.1:8787)');
+    })
+    .then(function(){if(b){b.disabled=false;b.innerText='🚀 Search the latest literature now';}});
+}
+function renderSrCards(list){
+  window._lastSrList=list||[];
+  const box=$id('srResults'); if(!box)return;
+  const sp=(NL_META&&NL_META.source_platforms)||[];
+  const fp=(NL_META&&NL_META.farm_platforms)||[];
+  const srcOpts=sp.map(function(v){return '<option'+(v==='Other'?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
+  const farmOpts=fp.map(function(v){return '<option'+(v==='not specified'?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
+  const cards=list.map(function(it,idx){
+    const ex=isInStore(it.title);
+    const links=[];
+    if(it.pdf_url){links.push('<a class="btn btn-ghost btn-sm" href="'+escHtml(it.pdf_url)+'" target="_blank" rel="noopener">📄 Download OA PDF</a>');}
+    if(it.doi){links.push('<a class="btn btn-ghost btn-sm" href="https://doi.org/'+escHtml(it.doi)+'" target="_blank" rel="noopener">🔗 DOI full text</a>');}
+    if(it.link&&it.link.indexOf('doi.org')<0){links.push('<a class="btn btn-ghost btn-sm" href="'+escHtml(it.link)+'" target="_blank" rel="noopener">🏛 Journal website</a>');}
+    const meta=[it.authors,it.year?it.year:'',it.journal,it.type].filter(Boolean).join(' · ');
+    const absTxt=it.abstract?escHtml(it.abstract):'<span style="color:#9ca3af">(this database provides no open abstract; open the original to review the paper)</span>';
+    const joinBtn=ex
+      ? '<button class="btn btn-sm" disabled title="Title already exists in the pending store '+escHtml(ex.id)+'">Already in the pending store</button>'
+      : '<button class="btn btn-primary btn-sm sr-join" data-i="'+idx+'">➕ Add to pending</button>';
+    const selBox='<input type="checkbox" class="sr-pick" data-i="'+idx+'"'+(ex?' disabled title="Already in the pending store"':'')+' style="margin-right:8px;transform:scale(1.15);cursor:pointer">';
+    return '<div class="sr-card" data-i="'+idx+'">'
+      +'<div style="display:flex;align-items:flex-start;gap:0">'
+      +'<div style="padding-top:2px">'+selBox+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<h4 style="margin:0 0 6px;font-size:14px;font-weight:600;line-height:1.45">'+escHtml(it.title)+'</h4>'
+      +'<div style="font-size:12.5px;color:var(--c-muted);margin-bottom:6px">'+escHtml(meta)+'</div>'
+      +'<div style="font-size:12.5px;color:#374151;background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:8px 10px;margin-bottom:8px;max-height:118px;overflow:auto">'+absTxt+'</div>'
+      +'<div class="sr-foot">'
+      +'<div class="sr-opts">Source platform <select class="sr-src" data-i="'+idx+'">'+srcOpts+'</select>　Farming platform / mode <select class="sr-farm" data-i="'+idx+'">'+farmOpts+'</select></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+links.join('')+joinBtn+'</div>'
+      +'</div>'
+      +'<div class="sr-note">Source: '+escHtml(it.source_note||'Open scholarly databases')+(it.doi?' · DOI: '+escHtml(it.doi):'')+' · When added, defaults to “intended main table=to be determined“; decide the table before confirming the merge</div>'
+      +'</div></div></div>';
+  }).join('');
+  box.innerHTML='<div style="font-size:12.5px;color:#065f46;margin-bottom:8px">✅ Found <b>'+list.length+'</b> candidate papers (newest first). Tick ☑ on the cards to multi-select, then click “📥 Add selected” above to write them in bulk; you can still add them one at a time with “➕ Add to pending”.</div>'+cards;
+  srState('✅ Search complete — '+list.length+' candidate papers. Tick the checkbox on each card to multi-select, or add them one at a time with “➕ Add to pending”.','success');
+  $id('srToolbar').style.display='flex';
+  $id('srSelAll').checked=false;
+  $id('srSelCount').innerText='0';
+  // bind checkbox events
+  box.querySelectorAll('.sr-pick').forEach(function(cb){
+    cb.addEventListener('change',srUpdateCount);
+  });
+}
+function srUpdateCount(){
+  const box=$id('srResults'); if(!box)return;
+  const cbs=box.querySelectorAll('.sr-pick:not(:disabled):checked');
+  $id('srSelCount').innerText=String(cbs.length);
+}
+function srToggleAll(on){
+  const box=$id('srResults'); if(!box)return;
+  box.querySelectorAll('.sr-pick:not(:disabled)').forEach(function(cb){cb.checked=on;});
+  srUpdateCount();
+}
+function srClearSel(){
+  $id('srSelAll').checked=false;
+  const box=$id('srResults'); if(box){
+    box.querySelectorAll('.sr-pick:not(:disabled)').forEach(function(cb){cb.checked=false;});
+  }
+  srUpdateCount();
+}
+function srBatchJoin(){
+  const box=$id('srResults'); if(!box)return;
+  const picks=Array.from(box.querySelectorAll('.sr-pick:not(:disabled):checked'));
+  if(!picks.length){srState('⚠️ Tick the candidates to add first (☑ on the cards)');return;}
+  const list=(window._lastSrList||[]);
+  const queue=picks.map(function(cb){
+    const i=Number(cb.dataset.i); return {idx:i,it:list[i]};
+  }).filter(function(o){return o.it&&!isInStore(o.it.title);});
+  if(!queue.length){srState('⚠️ This candidate has already been added (already in the pending store)');return;}
+  const btn=$id('srBatchJoin'); btn.disabled=true; btn.innerText='Writing 0/'+queue.length;
+  let done=0, ok=0, dup=0, fail=0, addedIds=[];
+  function next(){
+    if(!queue.length){
+      btn.disabled=false; btn.innerText='📥 Add Selected in One Click';
+      const parts=[];
+      if(ok) parts.push('✅ Succeeded '+ok+' papers '+addedIds.join(' '));
+      if(dup) parts.push('⚠️ Duplicate '+dup);
+      if(fail) parts.push('❌ Failed '+fail);
+      srState(parts.join(' · ')+'. Refreshing the page…','success');
+      setTimeout(function(){location.reload();},900);
+      return;
+    }
+    const o=queue.shift();
+    const card=document.querySelector('.sr-card[data-i="'+o.idx+'"]'); if(!card){next();return;}
+    const srcSel=card.querySelector('.sr-src');
+    const farmSel=card.querySelector('.sr-farm');
+    const src=srcSel?srcSel.value:'Other';
+    const farm=farmSel?farmSel.value:'not specified';
+    const it=o.it;
+    fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      title:it.title,authors:it.authors,year:it.year,journal:it.journal,doi:it.doi,
+      link:it.link,pdf_url:it.pdf_url,abstract:it.abstract,source_note:it.source_note,
+      source_platform:src,farm_platform:farm,
+      q:($id('kw')?$id('kw').value:'').trim()
+    })})
+    .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+    .then(function(res){
+      const d=res.d||{};
+      if(res.ok&&d.ok){
+        ok++; addedIds.push(d.id);
+        // mark the card as added in place
+        const jb=card.querySelector('.sr-join'); if(jb){jb.disabled=true;jb.classList.remove('btn-primary');jb.classList.add('btn-success');jb.innerText='✓ Added '+(d.id||'');}
+        const cb=card.querySelector('.sr-pick'); if(cb){cb.disabled=true;cb.checked=false;}
+        card.style.background='#f0fdf4';card.style.borderColor='#86efac';
+      }else if(d&&d.dup){dup++;}
+      else{fail++; srState('❌ Failed to add: '+(d&&d.error||'Unknown error'));}
+    })
+    .catch(function(err){fail++;})
+    .then(function(){done++;btn.innerText='Writing '+done+'/'+queue.length;next();});
+  }
+  next();
+}
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.sr-join'); if(!btn)return;
+  const i=Number(btn.dataset.i);
+  const card=document.querySelector('.sr-card[data-i="'+i+'"]'); if(!card)return;
+  const it=(window._lastSrList||[])[i]; if(!it)return;
+  const srcSel=card.querySelector('.sr-src');
+  const farmSel=card.querySelector('.sr-farm');
+  const src=srcSel?srcSel.value:'Other';
+  const farm=farmSel?farmSel.value:'not specified';
+  btn.disabled=true; btn.innerText='Writing to the pending store…';
+  fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    title:it.title,authors:it.authors,year:it.year,journal:it.journal,doi:it.doi,
+    link:it.link,pdf_url:it.pdf_url,abstract:it.abstract,source_note:it.source_note,
+    source_platform:src,farm_platform:farm,
+    q:($id('kw')?$id('kw').value:'').trim()
+  })})
+  .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+  .then(function(res){
+    const d=res.d;
+    if(d&&d.ok){
+      btn.classList.remove('btn-primary');btn.classList.add('btn-success');btn.innerText='✓ Added '+d.id;
+      // mark the card green in place and disable that row's checkbox (to avoid duplicate selection)
+      card.style.background='#f0fdf4';card.style.borderColor='#86efac';
+      const cb=card.querySelector('.sr-pick'); if(cb){cb.disabled=true;cb.checked=false;}
+      srUpdateCount();
+      srState('✅ Written to the pending area: '+d.id+'. You can keep selecting other candidates; once you are done, click “Add selected” to refresh in one go — or click “🔃 Refresh page” below to view them now.','success');
+    }else if(d&&d.dup){
+      btn.disabled=false;btn.innerText='➕ Add to pending';
+      srState('⚠️ Duplicate of an existing record in the pending store: '+d.dup_id+'“'+(d.dup_title||'')+'”, No need to add again.');
+    }else{
+      btn.disabled=false;btn.innerText='➕ Add to pending';
+      srState('❌ Failed to add: '+(d&&d.error||'Unknown error'));
+    }
+  })
+  .catch(function(err){btn.disabled=false;btn.innerText='➕ Add to pending';srState('❌ Failed to add: '+err.message);});
+});
+document.addEventListener('click',function(e){
+  const c=e.target.closest('.js-confirm');
+  const s=e.target.closest('.js-skip');
+  const d=e.target.closest('.js-del');
+  if(d){
+    const id=d.dataset.id;
+    if(!id)return;
+    if(!confirm('Confirm permanent deletion from the pending area '+id+' ?\n\nNote: deletion is irreversible (this is a real deletion — the record is removed from the pending store and the page is regenerated).'))return;
+    d.disabled=true;d.innerText='Deleting…';
+    fetch('/api/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:[id]})})
+      .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+      .then(function(res){
+        const x=res.d||{};
+        if(res.ok&&x.ok){
+          const card=document.querySelector('.nl-card[data-id="'+id+'"]');
+          if(card){card.style.transition='opacity .25s';card.style.opacity='.0';setTimeout(function(){card.remove();nlUpdateCount();},260);}
+          srState?.('✅ Deleted '+id+'(total '+x.removed.length+' records), waiting to refresh…');
+          if(typeof srState!=='function'){alert('Deleted '+id);}
+          setTimeout(function(){location.reload();},700);
+        }else{
+          d.disabled=false;d.innerText='🗑 Delete';
+          alert('Delete failed: '+(x&&x.error||'Unknown error'));
+        }
+      })
+      .catch(function(err){d.disabled=false;d.innerText='🗑 Delete';alert('Delete failed: '+err.message);});
+  }
+  if(c){
+    const id=c.dataset.id;
+    try{localStorage.setItem('nlok_'+id,'1');}catch(err){}
+    c.disabled=true;c.classList.remove('btn-primary');c.classList.add('btn-success');c.innerText='Marked confirmed · awaiting merge';
+    const h=document.querySelector('.nl-hint[data-id="'+id+'"]');
+    const msg='Confirm merge of new papers '+id;
+    if(h){h.classList.add('show');h.innerText=' command copied — send it in the WorkBuddy chat: “'+msg+'”';}
+    const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='Confirmed · awaiting merge';p.className='tag primary nl-status';}
+    copyText(msg,null);
+  }
+  if(s){
+    const id=s.dataset.id;
+    try{localStorage.setItem('nlskip_'+id,'1');}catch(err){}
+    s.disabled=true;s.innerText='Ignored (local)';
+    const card=document.querySelector('.nl-card[data-id="'+id+'"]');if(card)card.style.opacity=.55;
+    const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='Ignored (local flag)';p.className='tag nl-status';}
+    const h=document.querySelector('.nl-hint[data-id="'+id+'"]');if(h){h.innerText='To archive them permanently, send in the WorkBuddy chat: ignore new papers '+id;h.classList.add('show');}
+  }
+});
+function exportNLCSV(){
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const heads=['id','found_at','round','title','authors','institution','year','journal','pub_type','source_platform','farm_platform','target_sheet','doi','link','summary','relevance_reason','keywords','status','note'];
+  const rows=[heads];
+  NL_ITEMS.forEach(it=>rows.push(heads.map(h=>Array.isArray(it[h])?esc(it[h].join(';')):esc(it[h]))));
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='new_papers_pending_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+function nlSelectedIds(){
+  return Array.from(document.querySelectorAll('.nl-pick:checked')).map(function(cb){return cb.dataset.id;}).filter(Boolean);
+}
+function nlToggleAll(on){
+  document.querySelectorAll('.nl-pick').forEach(function(cb){cb.checked=on;});
+}
+function nlUpdateCount(){
+  const n=nlSelectedIds().length;
+  const btn=document.getElementById('nlBatchDel');
+  if(btn){btn.innerText='🗑 Delete selected ('+n+')';btn.disabled=(n===0);}
+}
+function nlBatchDel(){
+  const ids=nlSelectedIds();
+  if(!ids.length){alert('Tick the entries to delete first (only pending entries can be selected)');return;}
+  if(!confirm('Confirm bulk deletion '+ids.length+' records of literature awaiting confirmation?\n\n'+ids.join('\n')+'\n\nDeletion is irreversible and the page will be regenerated.'))return;
+  const btn=document.getElementById('nlBatchDel'); btn.disabled=true; btn.innerText='Deleting…';
+  fetch('/api/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:ids})})
+    .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+    .then(function(res){
+      const x=res.d||{};
+      if(res.ok&&x.ok){
+        ids.forEach(function(id){
+          const card=document.querySelector('.nl-card[data-id="'+id+'"]');
+          if(card){card.style.transition='opacity .25s';card.style.opacity='.0';setTimeout(function(){card.remove();},260);}
+        });
+        alert('✅ Deleted '+x.removed.length+' records'+(x.unknown&&x.unknown.length?'(not found '+x.unknown.length+' records)':'')+'.');
+        setTimeout(function(){location.reload();},700);
+      }else{
+        btn.disabled=false; btn.innerText='🗑 Delete Selected';
+        alert('Delete failed: '+(x&&x.error||'Unknown error'));
+      }
+    })
+    .catch(function(err){btn.disabled=false; btn.innerText='🗑 Delete Selected';alert('Delete failed: '+err.message);});
+}
+['kw','fSource','fFarm','fStatus'].forEach(function(id){const el=document.getElementById(id);if(el)el.addEventListener(id==='kw'?'input':'change',applyFilter);});
+document.addEventListener('DOMContentLoaded',function(){
+  NL_ITEMS.forEach(function(it){
+    if(!it||!it.id)return;
+    const id=it.id;
+    try{
+      if(localStorage.getItem('nlok_'+id)==='1'&&it.status==='pending'){
+        const b=document.querySelector('.js-confirm[data-id="'+id+'"]');if(b){b.disabled=true;b.classList.remove('btn-primary');b.classList.add('btn-success');b.innerText='Marked confirmed · awaiting merge';}
+        const h=document.querySelector('.nl-hint[data-id="'+id+'"]');if(h){h.classList.add('show');h.innerText='Send in the WorkBuddy chat: confirm merge of new papers '+id;}
+        const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='Confirmed · awaiting merge';p.className='tag primary nl-status';}
+      }
+      if(localStorage.getItem('nlskip_'+id)==='1'&&it.status==='pending'){
+        const s=document.querySelector('.js-skip[data-id="'+id+'"]');if(s){s.disabled=true;s.innerText='Ignored (local)';}
+        const card=document.querySelector('.nl-card[data-id="'+id+'"]');if(card)card.style.opacity=.55;
+        const p=document.querySelector('.nl-status[data-id="'+id+'"]');if(p){p.textContent='Ignored (local flag)';p.className='tag nl-status';}
+      }
+    }catch(err){}
+  });
+  applyFilter();
+  nlUpdateCount();
+  document.querySelectorAll('.nl-pick').forEach(function(cb){cb.addEventListener('change',nlUpdateCount);});
+});
+</script>
+<div class="footer">
+Shrimp Aquaculture Industry Database Workbench · Data source: <code>/Users/mac/Desktop/Shrimp Aquaculture Industry Database 2.xlsx</code> · 1,585 valid records in total · 17 new papers pending confirmation (auto-searched every Wednesday 08:00, merged into the main database after manual confirmation)<br>
+<a href="index.html">Back to home</a> · <a href="newlit.html">New papers</a> · <a href="database.html">Browse the main database</a> · <a href="schema.html">Schema Dictionary</a>
+</div>
+</div>
+</body>
+</html>

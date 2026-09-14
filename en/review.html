@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Data Review · Shrimp Aquaculture Industry Database Workbench</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    Shrimp Aquaculture Industry Database Workbench
+  </div>
+  <nav>
+      <a href="index.html" >📊 Overview</a>
+      <a href="search.html" >🔍 Literature search</a>
+      <a href="etl.html" >⚙️ ETL Pipeline</a>
+      <a href="review.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">✅ Data Review</a>
+      <a href="quality.html" >🛡️ Data quality</a>
+      <a href="dedup.html" >🔁 Dedup</a>
+      <a href="newlit.html" >🆕 New papers</a>
+      <a href="benefit.html" >📈 Benefit evaluation</a>
+      <a href="database.html" >💾 Main database</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" >📑 Database reviews</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>System normal</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">Home</a> / Data Review</div>
+  <h1>✅ Data Review Workbench</h1>
+  <p>Confidence cards · source quotes · system verdict · pass / reject / escalate · 3 currently pending</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi primary"><div class="label">Pending review</div><div class="value">3</div><div class="sub">This batch</div></div>
+  <div class="kpi success"><div class="label">High confidence</div><div class="value">1</div><div class="sub">Can pass directly</div></div>
+  <div class="kpi warn"><div class="label">Medium confidence</div><div class="value">1</div><div class="sub">Needs review</div></div>
+  <div class="kpi danger"><div class="label">Low confidence / BLOCKED</div><div class="value">1</div><div class="sub">Always escalate</div></div>
+  <div class="kpi info"><div class="label">Passed this week</div><div class="value">142</div><div class="sub">28 records per day</div></div>
+  <div class="kpi"><div class="label">Rejected this week</div><div class="value">7</div><div class="sub">Rejection rate 4.7%</div></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📑 Papers pending review (3 · real xlsx data)</h2>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="exportCSV('Review report')">📥 Export review report</button>
+      <button class="btn btn-primary btn-sm" onclick="alert('✅ 3 records have all been marked as passed')">✓ All passed</button>
+    </div>
+  </div>
+  
+<div class="review-card high">
+  <div class="head">
+    <div>
+      <h3>Song et al. 2024 · The occurrence of pollutants in organisms and water</h3>
+      <div class="meta">DOI: 10.xxxx/xxx · Qingdao, Shandong · industrial water-exchange mode</div>
+    </div>
+    <span class="conf high">Confidence 92%</span>
+  </div>
+  <div class="quote">"Water temp held at 28.92 ± 0.5 °C, salinity 27.8, dissolved oxygen 6.02 mg/L, pH 8.69... ammonia-N 0.32 mg/L, nitrate-N 2.06 mg/L, nitrite-N 6.11 mg/L"</div>
+  <div class="fields"><div class="field"><div class="k">Water temperature</div><div class="v">28.92 °C</div></div><div class="field"><div class="k">Salinity</div><div class="v">27.8</div></div><div class="field"><div class="k">DO</div><div class="v">6.02 mg/L</div></div><div class="field"><div class="k">pH</div><div class="v">8.69</div></div><div class="field"><div class="k">Ammonia-N</div><div class="v">0.32 mg/L</div></div><div class="field"><div class="k">Nitrate-N</div><div class="v">2.06 mg/L</div></div><div class="field"><div class="k">Nitrite-N</div><div class="v">6.11 mg/L</div></div><div class="field"><div class="k">COD</div><div class="v">4.52 mg/L</div></div></div>
+  <div class="meta" style="margin-top:10px"><span class="tag success">System verdict</span> High automatic confidence; all fields pass sanity checks</div>
+  <div class="actions">
+    <button class="btn btn-success btn-sm" onclick="alert('✅ Passed: '+'Song et al. 2024 · The occurrence of pollutants in...')">✓ Pass</button>
+    <button class="btn btn-warn btn-sm" onclick="alert('↩ Rejected: '+'Song et al. 2024 · The occurrence of pollutants in...')">↩ Reject</button>
+    <button class="btn btn-primary btn-sm" onclick="alert('🤝 Escalated to senior review: '+'Song et al. 2024 · The occurrence of pollutants in...')">→ Senior review</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV('review record_92%')">📥 Export this entry</button>
+  </div>
+</div>
+<div class="review-card mid">
+  <div class="head">
+    <div>
+      <h3>Gladys et al. 2024 · Farmed stage (age)-dependent accumulation</h3>
+      <div class="meta">DOI: 10.xxxx/yyy · Rizhao / Qingdao, Shandong · industrial water exchange</div>
+    </div>
+    <span class="conf mid">Confidence 76%</span>
+  </div>
+  <div class="quote">"Water temp 28.92 °C, salinity 27.8, pH 8.69... ammonia-N 0.64 mg/L, nitrate-N abnormally high at 56.81 mg/L (possible NO₃⁻ / NO₂⁻ unit mix-up)"</div>
+  <div class="fields"><div class="field"><div class="k">Water temperature</div><div class="v">28.92 °C</div></div><div class="field"><div class="k">Salinity</div><div class="v">27.8</div></div><div class="field"><div class="k">DO</div><div class="v">6.02 mg/L</div></div><div class="field"><div class="k">pH</div><div class="v">8.69</div></div><div class="field"><div class="k">Ammonia-N</div><div class="v">0.64 mg/L</div></div><div class="field"><div class="k">Nitrate-N</div><div class="v">56.81 mg/L ⚠️</div></div><div class="field"><div class="k">Nitrite-N</div><div class="v">0.27 mg/L</div></div><div class="field"><div class="k">COD</div><div class="v">4.52 mg/L</div></div></div>
+  <div class="meta" style="margin-top:10px"><span class="tag warn">System verdict</span> Nitrate-N 56.81 exceeds the normal 0-30 mg/L range; a unit mix-up is suspected — manual review recommended</div>
+  <div class="actions">
+    <button class="btn btn-success btn-sm" onclick="alert('✅ Passed: '+'Gladys et al. 2024 · Farmed stage (age)-dependent ...')">✓ Pass</button>
+    <button class="btn btn-warn btn-sm" onclick="alert('↩ Rejected: '+'Gladys et al. 2024 · Farmed stage (age)-dependent ...')">↩ Reject</button>
+    <button class="btn btn-primary btn-sm" onclick="alert('🤝 Escalated to senior review: '+'Gladys et al. 2024 · Farmed stage (age)-dependent ...')">→ Senior review</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV('review record_76%')">📥 Export this entry</button>
+  </div>
+</div>
+<div class="review-card low">
+  <div class="head">
+    <div>
+      <h3>Mariana et al. 2023 · Integrated multitrophic culture</h3>
+      <div class="meta">DOI: 10.xxxx/zzz · Rio Grande, Brazil · pond IMTA mode</div>
+    </div>
+    <span class="conf low">Confidence 54%</span>
+  </div>
+  <div class="quote">"Water temp 28.35 °C, salinity 14.3, nitrate-N 69.3 mg/L (far above normal), pH 7.5..."</div>
+  <div class="fields"><div class="field"><div class="k">Water temperature</div><div class="v">28.35 °C</div></div><div class="field"><div class="k">Salinity</div><div class="v">14.3</div></div><div class="field"><div class="k">DO</div><div class="v">—</div></div><div class="field"><div class="k">pH</div><div class="v">7.5</div></div><div class="field"><div class="k">Ammonia-N</div><div class="v">—</div></div><div class="field"><div class="k">Nitrate-N</div><div class="v">69.3 mg/L ⚠️</div></div><div class="field"><div class="k">Nitrite-N</div><div class="v">0.8 mg/L</div></div><div class="field"><div class="k">COD</div><div class="v">—</div></div></div>
+  <div class="meta" style="margin-top:10px"><span class="tag danger">System verdict</span> DO / ammonia-N / COD missing, nitrate-N abnormally high — BLOCKED awaiting manual review</div>
+  <div class="actions">
+    <button class="btn btn-success btn-sm" onclick="alert('✅ Passed: '+'Mariana et al. 2023 · Integrated multitrophic cult...')">✓ Pass</button>
+    <button class="btn btn-warn btn-sm" onclick="alert('↩ Rejected: '+'Mariana et al. 2023 · Integrated multitrophic cult...')">↩ Reject</button>
+    <button class="btn btn-primary btn-sm" onclick="alert('🤝 Escalated to senior review: '+'Mariana et al. 2023 · Integrated multitrophic cult...')">→ Senior review</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV('review record_54%')">📥 Export this entry</button>
+  </div>
+</div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📚 Database reviews / combined reports</h2>
+    <a href="#summary" class="btn btn-primary btn-sm">→ Go to review</a>
+  </div>
+  <div class="alert">
+    <b>Database review reports</b> · Based on the 1,585 records already ingested, aggregated across farming mode × region × year to produce 5 review reports (PDF + tables).
+  </div>
+</div>
+
+<div id="summary"></div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📖 Database reviews · generated live</h2>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="downloadSummary()">📥 Export combined report (HTML)</button>
+      <button class="btn btn-ghost" onclick="exportCSV('Review CSV')">📥 Export CSV</button>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div class="external-link">
+      <div class="info"><div class="name">📊 Review 1 · Water-quality comparison of 5 modes (2024-2025)</div><div class="desc">Based on 376 water-quality records · with significance testing</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('database.html#wq','_blank')">→ Open</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">📈 Review 2 · Economic benefit comparison of 5 modes</div><div class="desc">Based on 14 records · total cost / net profit / break-even price</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('database.html#ec','_blank')">→ Open</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">🌍 Review 3 · Global shrimp farming distribution and production</div><div class="desc">Based on the “Water Quality Parameters” sheet · 119 sites · 361 records</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('database.html#geo','_blank')">→ Open</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">♻️ Review 4 · Environmental impact and LCA</div><div class="desc">Based on 20 equivalence factors + 87 pollution coefficients</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('database.html#env','_blank')">→ Open</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">📚 Review 5 · In-depth reading of the PhD thesis of Sun Yue, Ocean University of China</div><div class="desc">Comparison of 5 modes based on LCA · all data from that paper</div></div>
+      <button class="btn btn-primary btn-sm" onclick="window.open('database.html#sun','_blank')">→ Open</button>
+    </div>
+    <div class="external-link">
+      <div class="info"><div class="name">🆕 Review 6 · 2026 Q3 incremental ingest report (0 this quarter)</div><div class="desc">Actual status · next search in late September</div></div>
+      <button class="btn btn-warn btn-sm" onclick="alert('0 new items this quarter · awaiting the late-September run')">→ Preview</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function exportCSV(name){
+  const tb = document.querySelector('table[data-name="'+name+'"]');
+  if(!tb){
+    const rows=[['Export name',name],['Export time',new Date().toISOString()],['Notes','This panel has no exportable table (it may be a chart)']];
+    const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='\ufeff'+rows.map(r=>r.map(c=>esc(c)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    return;
+  }
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[];
+  if(tb.tHead && tb.tHead.rows[0]) rows.push(Array.from(tb.tHead.rows[0].cells).map(c=>esc(c.innerText.trim())));
+  if(tb.tBodies && tb.tBodies[0]) Array.from(tb.tBodies[0].rows).forEach(tr=>{if(tr.style.display==='none')return;rows.push(Array.from(tr.cells).map(c=>esc(c.innerText.trim())));});
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  console.log('Exported '+name+': '+rows.length+' rows');
+}
+
+function downloadSummary(){
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Shrimp Farming Industry Database Review Report</title><style>body{font-family:sans-serif;max-width:900px;margin:30px auto;padding:20px;line-height:1.7}h1{color:#0a6f6f}table{width:100%;border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ddd;padding:8px;font-size:13px}</style></head><body><h1>Shrimp Farming Industry Database · Comprehensive Review Report</h1><p>Generated at: ${new Date().toLocaleString('zh-CN')}</p><p>Based on 1,585 records · 12 worksheets</p><h2>1. Overall statistics</h2><table><tr><th>Indicator</th><th>Value</th></tr><tr><td>Cumulative records</td><td>1585</td></tr><tr><td>Years covered</td><td>2000-2025 (26 years)</td></tr><tr><td>Farming mode</td><td>22 types</td></tr><tr><td>Regions covered</td><td>119 regions</td></tr><tr><td>New in 2026 Q3</td><td>0 records</td></tr></table><h2>2. records per sheet</h2><table><tr><th>Worksheet</th><th>Records</th></tr><tr><td>Water quality parameters</td><td>376</td></tr><tr><td>Growth parameters</td><td>263</td></tr><tr><td>Pollutant generation & pollution equivalents</td><td>87</td></tr><tr><td>Infrastructure & husbandry</td><td>30</td></tr><tr><td>Environmental impact</td><td>20</td></tr><tr><td>Biofloc farming</td><td>31</td></tr><tr><td>Economic benefit analysis</td><td>14</td></tr><tr><td>Cost breakdown</td><td>135</td></tr><tr><td>Environmental cost & efficiency</td><td>92</td></tr><tr><td>Dongying industrial database</td><td>108</td></tr><tr><td>Water quality ↔ growth parameter matching data</td><td>305</td></tr><tr><td>Survey and culture-trial data</td><td>124</td></tr></table><p style="margin-top:30px;color:#666">This report was generated automatically by the Shrimp Farming Industry Database Workbench</p></body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='database_review_'+new Date().toISOString().slice(0,10)+'.html';a.click();
+  alert('✅ Review report exported');
+}
+</script>
+
+<div class="footer">
+Shrimp Aquaculture Industry Database Workbench · Data source: <code>/Users/mac/Desktop/Shrimp Aquaculture Industry Database 2.xlsx</code> · 1,585 valid records in total · 17 new papers pending confirmation (auto-searched every Wednesday 08:00, merged into the main database after manual confirmation)<br>
+<a href="index.html">Back to home</a> · <a href="newlit.html">New papers</a> · <a href="database.html">Browse the main database</a> · <a href="schema.html">Schema Dictionary</a>
+</div>
+</div>
+</body>
+</html>

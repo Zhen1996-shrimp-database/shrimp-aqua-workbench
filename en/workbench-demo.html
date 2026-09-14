@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shrimp Aquaculture Industry Database Workbench · Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --c-bg: #f5f7fa;
+  --c-panel: #ffffff;
+  --c-text: #1f2937;
+  --c-muted: #6b7280;
+  --c-border: #e5e7eb;
+  --c-primary: #0c8a8a;
+  --c-primary-soft: #e6f4f4;
+  --c-accent: #f97316;
+  --c-success: #16a34a;
+  --c-warning: #ea580c;
+  --c-danger: #dc2626;
+  --c-blue: #2563eb;
+  --r: 10px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+aside {
+  background: #0c1e2c;
+  color: #cbd5e1;
+  padding: 24px 0;
+}
+.brand {
+  padding: 0 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 12px;
+}
+.brand h1 { font-size: 16px; color: #fff; margin: 0; letter-spacing: 0.3px; }
+.brand p { margin: 4px 0 0; font-size: 11px; color: #94a3b8; }
+.nav { list-style: none; padding: 0; margin: 0; }
+.nav li {
+  padding: 10px 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 3px solid transparent;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.nav li:hover { background: rgba(255,255,255,0.04); color: #fff; }
+.nav li.active {
+  background: rgba(12,138,138,0.18);
+  border-left-color: var(--c-primary);
+  color: #fff;
+}
+.nav-icon {
+  width: 18px; height: 18px;
+  display: inline-block;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  flex: none;
+}
+.nav-badge {
+  margin-left: auto;
+  background: var(--c-accent);
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+main { padding: 24px 28px 40px; overflow-x: hidden; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 22px;
+}
+.topbar h2 { font-size: 20px; margin: 0; }
+.topbar .meta { color: var(--c-muted); font-size: 13px; margin-top: 4px; }
+.search-input {
+  border: 1px solid var(--c-border);
+  background: var(--c-panel);
+  padding: 8px 14px;
+  border-radius: 8px;
+  width: 280px;
+  outline: none;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.kpi {
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+.kpi-label { color: var(--c-muted); font-size: 12px; }
+.kpi-value { font-size: 24px; font-weight: 600; margin-top: 4px; }
+.kpi-trend { font-size: 12px; margin-top: 4px; }
+.kpi-trend.up { color: var(--c-success); }
+.kpi-trend.down { color: var(--c-danger); }
+.section {
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.section h3 {
+  font-size: 15px; margin: 0 0 12px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--c-border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.section h3 small { font-weight: 400; color: var(--c-muted); font-size: 12px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th, td {
+  padding: 9px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--c-border);
+}
+th {
+  color: var(--c-muted);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: #fafbfc;
+}
+tbody tr:hover { background: var(--c-primary-soft); }
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: #f1f5f9;
+  color: #475569;
+}
+.tag.green { background: #dcfce7; color: #166534; }
+.tag.amber { background: #fef3c7; color: #92400e; }
+.tag.red { background: #fee2e2; color: #991b1b; }
+.tag.teal { background: var(--c-primary-soft); color: var(--c-primary); }
+.tag.blue { background: #dbeafe; color: #1e40af; }
+.grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.row-flex { display: flex; gap: 10px; align-items: center; }
+.btn {
+  background: var(--c-primary);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 0;
+}
+.btn.secondary { background: #475569; }
+.btn.ghost { background: transparent; color: var(--c-primary); border: 1px solid var(--c-primary); }
+.progressbar {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progressbar > div {
+  height: 100%;
+  background: var(--c-primary);
+}
+.tab-buttons { display: flex; gap: 4px; border-bottom: 1px solid var(--c-border); margin-bottom: 16px; }
+.tab-btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+.tab-btn.active { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.pipeline-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fafbfc;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--c-border);
+}
+.pipeline-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--c-primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex: none;
+}
+.pipeline-status {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+.pipeline-status.success { background: #dcfce7; color: #166534; }
+.pipeline-status.running { background: #fef3c7; color: #92400e; }
+.pipeline-status.queued { background: #e0f2fe; color: #075985; }
+.pipeline-status.failed { background: #fee2e2; color: #991b1b; }
+.chart-container { position: relative; height: 220px; }
+.legend-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--c-border);
+  color: var(--c-muted);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+.review-card {
+  background: #fafbfc;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.review-card.confidence-high { border-left: 4px solid var(--c-success); }
+.review-card.confidence-mid { border-left: 4px solid var(--c-warning); }
+.review-card.confidence-low { border-left: 4px solid var(--c-danger); }
+.review-card h4 { margin: 0 0 6px; font-size: 13px; }
+.review-card .excerpt {
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-style: italic;
+  border-radius: 6px;
+  margin: 6px 0;
+  border: 1px dashed var(--c-border);
+  color: #475569;
+}
+.review-card .extracted {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+.review-card .field {
+  background: #fff;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--c-border);
+}
+.field .k { color: var(--c-muted); font-size: 11px; }
+.field .v { font-weight: 500; }
+.confidence-bar {
+  display: inline-block;
+  height: 4px;
+  border-radius: 2px;
+  vertical-align: middle;
+  background: var(--c-primary);
+  margin-right: 6px;
+}
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+}
+.empty-state {
+  text-align: center;
+  padding: 36px;
+  color: var(--c-muted);
+}
+.quality-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--c-border);
+}
+.quality-row:last-child { border: 0; }
+.quality-rule { flex: 1; }
+.quality-rule code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+.quality-count { font-size: 13px; font-weight: 500; }
+.dup-cluster {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.dup-cluster h4 { margin: 0 0 6px; font-size: 13px; color: var(--c-warning); }
+.dup-row { font-size: 12px; color: #475569; padding: 4px 0; border-top: 1px dashed #fed7aa; }
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <h1>对虾产业数据库</h1>
+    <p>v1.0 Demo · 2026Q3</p>
+  </div>
+  <ul class="nav">
+    <li class="active" data-tab="overview"><span class="nav-icon"></span>Overview dashboard</li>
+    <li data-tab="search"><span class="nav-icon"></span>Literature Search & Collection</li>
+    <li data-tab="pipeline"><span class="nav-icon"></span>ETL Pipeline</li>
+    <li data-tab="review"><span class="nav-icon"></span>Data review队列<span class="nav-badge">23</span></li>
+    <li data-tab="quality"><span class="nav-icon"></span>Data-quality monitoring</li>
+    <li data-tab="dedup"><span class="nav-icon"></span>Duplicate paper deduplication</li>
+    <li data-tab="maindata"><span class="nav-icon"></span>Main Database Browser</li>
+    <li data-tab="schema"><span class="nav-icon"></span>Field Dictionary & Schema</li>
+  </ul>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div>
+      <h2 id="page-title">Overview dashboard</h2>
+      <div class="meta" id="page-subtitle">截至 2026-09-08 · 季度Batch <strong>2026Q3</strong> · 上一次全量同步 4 小时前</div>
+    </div>
+    <div class="row-flex">
+      <input class="search-input" placeholder="🔍 全库检索: DOI / Title / 作者">
+      <button class="btn ghost">Export报告</button>
+      <button class="btn">+ New papers</button>
+    </div>
+  </div>
+
+  <!-- ===== Overview ===== -->
+  <div class="tab-content active" data-pane="overview">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">入库文献总数</div><div class="kpi-value">1,348</div><div class="kpi-trend up">▲ 本季Add 197 (+17.1%)</div></div>
+      <div class="kpi"><div class="kpi-label">Water quality样本记录</div><div class="kpi-value">8,924</div><div class="kpi-trend up">▲ 312 条Pending review</div></div>
+      <div class="kpi"><div class="kpi-label">Cost收益数据集</div><div class="kpi-value">2,156</div><div class="kpi-trend up">▲ 78 条Add</div></div>
+      <div class="kpi"><div class="kpi-label">数据完整度</div><div class="kpi-value">87.4%</div><div class="kpi-trend down">▼ 比上季 −1.2pp</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="section">
+        <h3>季度入库趋势 <small>近 8 季度</small></h3>
+        <div class="chart-container"><canvas id="chTrend"></canvas></div>
+      </div>
+      <div class="section">
+        <h3>Farming mode分布 <small>按文献Quantity</small></h3>
+        <div class="chart-container"><canvas id="chMode"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="section">
+        <h3>近五年Water quality关键Indicator趋势 <small>5 种Farming modeMean</small></h3>
+        <div class="chart-container"><canvas id="chWater"></canvas></div>
+      </div>
+      <div class="section">
+        <h3>不同ModeCost-profit ratio <small>2023-2026 · 元/亩</small></h3>
+        <div class="chart-container"><canvas id="chCost"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>最新入库文献 (Top 6)</h3>
+      <table>
+        <thead><tr><th>文献Source</th><th>Farming mode</th><th>地域</th><th>Year</th><th>关键Indicator</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td>Song et al. 2024 — Pollutants in organisms</td><td><span class="tag teal">Industrial water exchange</span></td><td>Qingdao, Shandong</td><td>2024</td><td>WT 28.92℃ · DO 6.02 · Salinity 27.8</td><td><span class="tag green">已审核</span></td></tr>
+          <tr><td>Gladys et al. 2024 — Stage-dependent bioaccumulation</td><td><span class="tag teal">Industrial water exchange</span></td><td>山东日照</td><td>2024</td><td>NH₃-N 0.64 · NO₂⁻-N 56.81</td><td><span class="tag amber">Anomaly待核</span></td></tr>
+          <tr><td>Akange et al. 2024 — Probiotic BFT</td><td><span class="tag teal">Industrial biofloc</span></td><td>Malaysia · Terengganu</td><td>2024</td><td>FCR 1.41 · 成活率 49.3%</td><td><span class="tag green">已审核</span></td></tr>
+          <tr><td>孙跃 2023 博士论文 — LCA 优化研究</td><td><span class="tag teal">多Mode comparison</span></td><td>中国海洋大学</td><td>2023</td><td>5 Mode × 16 项Indicator</td><td><span class="tag blue">主索引文献</span></td></tr>
+          <tr><td>Niu et al. 2023 — LED Biofloc</td><td><span class="tag teal">Industrial water exchange</span></td><td>Qingdao, Shandong</td><td>2023</td><td>WT 28.17-29.33 · DO 5.72-6.22</td><td><span class="tag green">已审核</span></td></tr>
+          <tr><td>Song et al. 2023 — 密度对Water quality的影响</td><td><span class="tag teal">Industrial water exchange</span></td><td>Hangzhou, Zhejiang / Tianjin</td><td>2023</td><td>NH₃-N 0.15 · NO₂⁻-N 7.43</td><td><span class="tag amber">待Labor确认</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== Literature search ===== -->
+  <div class="tab-content" data-pane="search">
+    <div class="section">
+      <h3>检索构造器 <small>YAML 维护 · 32 个 query 已就绪</small></h3>
+      <div class="grid-3">
+        <div>
+          <label style="font-size:12px;color:var(--c-muted);display:block;margin-bottom:4px;">Data source (可多选)</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="tag teal">✓ WoS Core</span>
+            <span class="tag teal">✓ Scopus</span>
+            <span class="tag teal">✓ ScienceDirect</span>
+            <span class="tag teal">✓ 知网</span>
+            <span class="tag teal">✓ Wanfang</span>
+            <span class="tag teal">✓ 维普</span>
+            <span class="tag teal">✓ AGRIS</span>
+            <span class="tag teal">✓ CAB</span>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--c-muted);display:block;margin-bottom:4px;">Time窗</label>
+          <select style="width:100%;padding:7px 10px;border:1px solid var(--c-border);border-radius:6px;">
+            <option>2025-09 ~ 2026-09 (季度窗口)</option>
+            <option>2024-01 ~ 2026-09</option>
+            <option>近 5 年</option>
+            <option>全部</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--c-muted);display:block;margin-bottom:4px;">文献Type</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="tag teal">✓ Article</span>
+            <span class="tag teal">✓ Review</span>
+            <span class="tag teal">✓ Conference</span>
+            <span class="tag teal">✓ 行业报告</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label style="font-size:12px;color:var(--c-muted);display:block;margin-bottom:4px;">查询语句 (WoS Format示例)</label>
+        <pre style="background:#0c1e2c;color:#94a3b8;padding:12px 14px;border-radius:6px;font-size:12px;margin:0;">TS=("Litopenaeus vannamei" OR "Penaeus vannamei") AND TS=("recirculating aquaculture" OR "biofloc" OR "RAS") AND TS=("water quality" OR "FCR" OR "economic*")
+Timespan=2025-2026 · DocumentType=Article,Review,Proceeding · Language=English,Chinese</pre>
+      </div>
+      <div class="row-flex" style="margin-top:14px;">
+        <button class="btn">▶ 立即执行检索</button>
+        <button class="btn ghost">仅PreviewHit数</button>
+        <span style="margin-left:auto;color:var(--c-muted);font-size:12px;">预计Hit <strong style="color:var(--c-primary);">~487</strong> 条</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>本次检索结果 (Hit 487 条 · 展示前 8 records)</h3>
+      <table>
+        <thead><tr><th>题目</th><th>作者</th><th>期刊</th><th>DOI</th><th>Year</th><th>语言</th><th>全文</th><th>Extract</th></tr></thead>
+        <tbody>
+          <tr><td>Biofloc technology for sustainable Pacific white shrimp production</td><td>Costa et al.</td><td>Aquacultural Engineering</td><td>10.1016/j.aquaeng.2026.01.012</td><td>2026</td><td><span class="tag">EN</span></td><td><span class="tag green">✓ PDF</span></td><td><span class="tag amber">已Extract</span></td></tr>
+          <tr><td>Economic analysis of RAS vs pond culture in Hainan</td><td>Wang, Liu</td><td>Aquaculture Economics</td><td>10.1111/aea.12456</td><td>2026</td><td><span class="tag">EN</span></td><td><span class="tag green">✓ PDF</span></td><td><span class="tag green">已校核</span></td></tr>
+          <tr><td>Litopenaeus vannameiBiofloc farming密度对Water quality的影响</td><td>黄, 张, 李</td><td>水产学报</td><td>10.11964/2025.SC.0419</td><td>2025</td><td><span class="tag teal">CN</span></td><td><span class="tag amber">摘要</span></td><td><span class="tag red">待Extract</span></td></tr>
+          <tr><td>Ammonia toxicity mitigation in intensive shrimp ponds</td><td>Pinho et al.</td><td>Aquaculture</td><td>10.1016/j.aquaculture.2025.737221</td><td>2025</td><td><span class="tag">EN</span></td><td><span class="tag green">✓ PDF</span></td><td><span class="tag green">已校核</span></td></tr>
+          <tr><td>LCA of five Litopenaeus vannamei culture modes</td><td>Sun, Pan</td><td>Journal of Cleaner Production</td><td>10.1016/j.jclepro.2025.118022</td><td>2025</td><td><span class="tag">EN</span></td><td><span class="tag green">✓ PDF</span></td><td><span class="tag green">已校核</span></td></tr>
+          <tr><td>Elevated (high-level) pond与Greenhouse (plastic-tunnel) farmingCost收益对比研究</td><td>陈, 王</td><td>中国渔业Economic</td><td>CNKI:SUN:ZYCB:202511018</td><td>2025</td><td><span class="tag teal">CN</span></td><td><span class="tag amber">摘要</span></td><td><span class="tag amber">Extract中 67%</span></td></tr>
+          <tr><td>Nitrite nitrogen dynamics in BFT shrimp culture</td><td>Krummenauer et al.</td><td>Aquacultural Engineering</td><td>10.1016/j.aquaeng.2025.10.044</td><td>2025</td><td><span class="tag">EN</span></td><td><span class="tag green">✓ PDF</span></td><td><span class="tag green">已校核</span></td></tr>
+          <tr><td>Industrial RASshrimp farming技术规范 (DB46/T 562-2025)</td><td>海南省市场监督管理局</td><td>地方标准</td><td>—</td><td>2025</td><td><span class="tag teal">CN</span></td><td><span class="tag green">✓ 全文</span></td><td><span class="tag blue">规范文档</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>灰文献与公报流 <small>月度补采</small></h3>
+      <div class="grid-3">
+        <div class="kpi"><div class="kpi-label">FAO / NACA 月报</div><div class="kpi-value">28</div><div class="kpi-trend">▲ 本月 4 篇</div></div>
+        <div class="kpi"><div class="kpi-label">政府公报 RSS</div><div class="kpi-value">17</div><div class="kpi-trend">▲ 本月 2 篇</div></div>
+        <div class="kpi"><div class="kpi-label">行业咨询报告</div><div class="kpi-value">42</div><div class="kpi-trend">▲ 本月 6 篇</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ETL Pipeline ===== -->
+  <div class="tab-content" data-pane="pipeline">
+    <div class="section">
+      <h3>ETL Pipeline状态 <small>当前Batch 2026Q3 · 进度 68%</small></h3>
+      <div style="margin-bottom:14px;">
+        <div class="progressbar"><div style="width:68%;"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--c-muted);margin-top:4px;">
+          <span>开始于 2026-09-08 02:00</span><span>预计 09-09 06:00 完成</span>
+        </div>
+      </div>
+      <div class="pipeline-step"><div class="pipeline-num">1</div><div style="flex:1;"><strong>Literature search</strong> — 32 query × 6 source, 已并发执行<div style="color:var(--c-muted);font-size:12px;">Hit 487 · Dedup后 462</div></div><span class="pipeline-status success">✓ 完成</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">2</div><div style="flex:1;"><strong>元数据归一化</strong><div style="color:var(--c-muted);font-size:12px;">462 → 458 (4 条被识别为重复)</div></div><span class="pipeline-status success">✓ 完成</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">3</div><div style="flex:1;"><strong>全文获取</strong> — PDF / HTML / XML 三模<div style="color:var(--c-muted);font-size:12px;">已Download 312 / 458 · 队列 146</div></div><span class="pipeline-status running">⏳ Running 68%</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">4</div><div style="flex:1;"><strong>解析 (Layout/OCR)</strong><div style="color:var(--c-muted);font-size:12px;">PyMuPDF + Docling · 队列 280 · failed 2</div></div><span class="pipeline-status running">⏳ Running 60%</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">5</div><div style="flex:1;"><strong>表格/Value定位</strong></div><span class="pipeline-status running">⏳ 198 / 280</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">6</div><div style="flex:1;"><strong>规则Extract</strong><div style="color:var(--c-muted);font-size:12px;">Hit率 41% · 3922 个字段</div></div><span class="pipeline-status running">⏳ 156 / 280</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">7</div><div style="flex:1;"><strong>LLM extraction</strong> — GPT-4o-mini + Claude-3.5<div style="color:var(--c-muted);font-size:12px;">⌛ 等待 Step 6 退出后启动</div></div><span class="pipeline-status queued">⌛ 队列中</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">8</div><div style="flex:1;"><strong>规则后置校验</strong></div><span class="pipeline-status queued">⌛ 队列中</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">9</div><div style="flex:1;"><strong>Unit换算 + 标准化</strong></div><span class="pipeline-status queued">⌛ 队列中</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">10</div><div style="flex:1;"><strong>Data-quality validation</strong> — 12 类规则</div><span class="pipeline-status queued">⌛ 队列中</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">11</div><div style="flex:1;"><strong>草稿入存储</strong></div><span class="pipeline-status queued">⌛ 队列中</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">12</div><div style="flex:1;"><strong>Labor审核推送</strong></div><span class="pipeline-status queued">⌛ 队列中</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">13</div><div style="flex:1;"><strong>Merge入主库</strong></div><span class="pipeline-status queued">⌛ 队列中</span></div>
+    </div>
+
+    <div class="section">
+      <h3>DLQ exceptions队列 <small>Failed重试 → 自动重试 3 次后Labor介入</small></h3>
+      <table>
+        <thead><tr><th>任务</th><th>错误Type</th><th>文献</th><th>重试</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td>解析 PDF</td><td><span class="tag red">OCR Failed</span></td><td>地方标准 DB46/T 562-2025 第 12 页扫描件</td><td>3 / 3</td><td><button class="btn ghost" style="font-size:12px;padding:4px 10px;">手动重跑</button></td></tr>
+          <tr><td>LLM extraction</td><td><span class="tag amber">Token 超限</span></td><td>LCA of five L. vannamei culture modes</td><td>2 / 3</td><td><button class="btn ghost" style="font-size:12px;padding:4px 10px;">分块重试</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 审核队列 ===== -->
+  <div class="tab-content" data-pane="review">
+    <div class="section">
+      <h3>Labor审核工作流 <small>23 条Pending review · Mean耗时 4.2 min/条</small></h3>
+      <div class="row-flex" style="margin-bottom:14px;">
+        <span class="tag green">High confidence度 12</span>
+        <span class="tag amber">Medium confidence度 8</span>
+        <span class="tag red">低置信度 3</span>
+        <button class="btn secondary" style="margin-left:auto;">批量 Approve</button>
+        <button class="btn ghost">Export草稿</button>
+      </div>
+
+      <div class="review-card confidence-high">
+        <h4>📄 Wang & Liu, 2026 — Economic analysis of RAS vs pond culture in Hainan <span style="float:right;color:var(--c-muted);font-weight:400;">置信度 <span class="confidence-bar" style="width:46px;background:var(--c-success);"></span>96%</span></h4>
+        <div style="color:var(--c-muted);font-size:12px;">Aquaculture Economics · DOI 10.1111/aea.12456 · 第 4 章 Table 2 · HitSource页码 P.218</div>
+        <div class="excerpt">"The net profit of RAS mode was 23,187 CNY per mu, while pond culture reached 40,038 CNY per mu with FCR of 1.33 and 1.16 respectively..."</div>
+        <div class="extracted">
+          <div class="field"><div class="k">Mode</div><div class="v">Industrial RAS</div></div>
+          <div class="field"><div class="k">Net profit</div><div class="v">23,187 元/亩</div></div>
+          <div class="field"><div class="k">FCR</div><div class="v">1.33</div></div>
+          <div class="field"><div class="k">Site</div><div class="v">海南 · 18.5°N</div></div>
+          <div class="field"><div class="k">成活率</div><div class="v">72.1%</div></div>
+          <div class="field"><div class="k">单产</div><div class="v">2,013 kg/亩</div></div>
+          <div class="field"><div class="k">投苗密度</div><div class="v">450 ind/m²</div></div>
+          <div class="field"><div class="k">culture cycle</div><div class="v">110 天</div></div>
+        </div>
+        <div class="row-flex" style="margin-top:8px;">
+          <button class="btn">✓ Approve</button>
+          <button class="btn secondary">✗ Reject</button>
+          <button class="btn ghost">✎ 编辑字段</button>
+          <span style="margin-left:auto;color:var(--c-muted);font-size:12px;">证据页码 ✓ · Unit已归一 ✓</span>
+        </div>
+      </div>
+
+      <div class="review-card confidence-mid">
+        <h4>📄 Krummenauer et al., 2025 — Nitrite nitrogen dynamics in BFT shrimp culture <span style="float:right;color:var(--c-muted);font-weight:400;">置信度 <span class="confidence-bar" style="width:28px;background:var(--c-warning);"></span>78%</span></h4>
+        <div style="color:var(--c-muted);font-size:12px;">Aquacultural Engineering · DOI 10.1016/j.aquaeng.2025.10.044</div>
+        <div class="excerpt">"Nitrite-N concentration ranged from 0.27 to 56.81 mg/L across the five sampling periods..."</div>
+        <div class="extracted">
+          <div class="field"><div class="k">Mode</div><div class="v">Industrial biofloc</div></div>
+          <div class="field"><div class="k">NO₂⁻-N</div><div class="v">56.81 mg/L ⚠</div></div>
+          <div class="field"><div class="k">WT</div><div class="v">28.92℃</div></div>
+          <div class="field"><div class="k">DO</div><div class="v">6.02 mg/L</div></div>
+        </div>
+        <div style="background:#fef3c7;padding:8px 10px;border-radius:6px;margin-top:8px;font-size:12px;color:#92400e;">
+          ⚠ <strong>Anomaly: </strong> NO₂⁻-N=56.81 mg/L 已超出 SANITY RANGE(0-50), RecommendationLabor核对Source图表确认小数点位置.
+        </div>
+        <div class="row-flex" style="margin-top:8px;">
+          <button class="btn">✓ Approve</button>
+          <button class="btn secondary">✗ Reject</button>
+          <button class="btn ghost">✎ 编辑字段</button>
+        </div>
+      </div>
+
+      <div class="review-card confidence-low">
+        <h4>📄 黄, 张, 李, 2025 — Litopenaeus vannameiBiofloc farming密度对Water quality的影响 <span style="float:right;color:var(--c-muted);font-weight:400;">置信度 <span class="confidence-bar" style="width:14px;background:var(--c-danger);"></span>51%</span></h4>
+        <div style="color:var(--c-muted);font-size:12px;">水产学报 · CNKI:SUN:SCKX:202511018 · 仅获取摘要, Source未授权</div>
+        <div class="excerpt">"在 800, 1200, 1600 ind/m³ 三种密度下, Ammonia-N浓度分别稳定在..." (仅摘要, Source表格不可读)</div>
+        <div class="extracted">
+          <div class="field"><div class="k">Mode</div><div class="v">Industrial biofloc</div></div>
+          <div class="field"><div class="k">Seedling release密度</div><div class="v">[800,1200,1600] ind/m³</div></div>
+          <div class="field"><div class="k">pH</div><div class="v">—</div></div>
+          <div class="field"><div class="k">Site</div><div class="v">?</div></div>
+        </div>
+        <div style="background:#fee2e2;padding:8px 10px;border-radius:6px;margin-top:8px;font-size:12px;color:#991b1b;">
+          ⛔ <strong>证据不足: </strong> Source不可Visit, 仅基于摘要Extract.需提交馆际互借或Labor transcription.
+        </div>
+        <div class="row-flex" style="margin-top:8px;">
+          <button class="btn">✓ Approve</button>
+          <button class="btn secondary">✗ Reject</button>
+          <button class="btn ghost">📚 申请全文</button>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:var(--c-muted);padding:14px;font-size:13px;">— 还有 20 条Pending review · 点击展开 —</div>
+    </div>
+  </div>
+
+  <!-- ===== Data quality ===== -->
+  <div class="tab-content" data-pane="quality">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="kpi"><div class="kpi-label">完整度</div><div class="kpi-value">87.4%</div><div class="kpi-trend down">▼ −1.2pp</div></div>
+      <div class="kpi"><div class="kpi-label">Sanity check Pass率</div><div class="kpi-value">94.2%</div><div class="kpi-trend up">▲ +0.3pp</div></div>
+      <div class="kpi"><div class="kpi-label">Unit一致性</div><div class="kpi-value">99.1%</div><div class="kpi-trend up">▲ +0.1pp</div></div>
+      <div class="kpi"><div class="kpi-label">Cost比例约束</div><div class="kpi-value">81.6%</div><div class="kpi-trend down">▼ −2.4pp</div></div>
+    </div>
+
+    <div class="section">
+      <h3>12 类Validation rules执行结果 <small>rule-as-code, Great Expectations + Soda Core</small></h3>
+      <div class="quality-row">
+        <span class="tag green">R01</span>
+        <div class="quality-rule"><strong>必填字段非空</strong> <code>source_id, doi/title, literature_id, year</code></div>
+        <span class="quality-count">9,142 Pass</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R02</span>
+        <div class="quality-rule"><strong>主键唯一性</strong> <code>record_id</code></div>
+        <span class="quality-count">9,142 Pass</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R03</span>
+        <div class="quality-rule"><strong>ValueType强校验</strong></div>
+        <span class="quality-count">9,138 / 9,142</span><span class="tag amber" style="margin-left:8px;">WARN ×4</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag amber">R04</span>
+        <div class="quality-rule"><strong>Sanity range</strong> — WT ∈ [5,40] / DO ∈ [0,20] / pH ∈ [5,11] / NH₃-N ∈ [0,50]</div>
+        <span class="quality-count">8,612 / 9,142</span><span class="tag amber" style="margin-left:8px;">WARN ×528</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R05</span>
+        <div class="quality-rule"><strong>逻辑一致性</strong> — Seedling release密度 × 养成Size × 周期约束</div>
+        <span class="quality-count">9,021 / 9,142</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag amber">R06</span>
+        <div class="quality-rule"><strong>CostShareTotal = 100% ± 0.5%</strong></div>
+        <span class="quality-count">7,461 / 9,142</span><span class="tag amber" style="margin-left:8px;">WARN ×1,681</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R07</span>
+        <div class="quality-rule"><strong>Unit归一化</strong> — mg/L · μg/L · g/m³ 三者互转</div>
+        <span class="quality-count">9,060 / 9,142</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R08</span>
+        <div class="quality-rule"><strong>货币 CPI Time归一</strong> — 2025 基准</div>
+        <span class="quality-count">Auto-convert</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R09</span>
+        <div class="quality-rule"><strong>跨表交叉验证</strong> — 同 lit_id Water quality vs Growth WT 偏差 ≤ 3℃</div>
+        <span class="quality-count">2,124 / 2,217</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R10</span>
+        <div class="quality-rule"><strong>Source可追溯</strong> — evidence_text + page_no + extraction_prompt_ver</div>
+        <span class="quality-count">9,142 Pass</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag amber">R11</span>
+        <div class="quality-rule"><strong>Latitude / longitude一致性</strong> — 偏差 > 0.2° 提示</div>
+        <span class="quality-count">3,802 / 4,210</span><span class="tag amber" style="margin-left:8px;">WARN ×408</span>
+      </div>
+      <div class="quality-row">
+        <span class="tag green">R12</span>
+        <div class="quality-rule"><strong>可重复性</strong> — 同篇二次Extract差异 > 5% 字段</div>
+        <span class="quality-count">巡检中</span><span class="tag green" style="margin-left:8px;">PASS</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="section">
+        <h3>校验Failed按字段分布 <small>本季度累计</small></h3>
+        <div class="chart-container"><canvas id="chQFail"></canvas></div>
+      </div>
+      <div class="section">
+        <h3>AnomalyType分布 <small>PASS / WARN / BLOCKED / CRITICAL</small></h3>
+        <div class="chart-container"><canvas id="chQSev"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Dedup ===== -->
+  <div class="tab-content" data-pane="dedup">
+    <div class="section">
+      <h3>三级Dedup漏斗 <small>累计处理 9,876 条 · HitMerge 312 条</small></h3>
+      <div class="pipeline-step"><div class="pipeline-num">L1</div><div style="flex:1;"><strong>DOI / PMID / CN 号 Exact match</strong></div><span class="pipeline-status success">Hit 178 (60%)</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">L2</div><div style="flex:1;"><strong>Title SimHash 汉明距 ≤ 3</strong></div><span class="pipeline-status success">Hit 92 (31%)</span></div>
+      <div class="pipeline-step"><div class="pipeline-num">L3</div><div style="flex:1;"><strong>嵌入向量 pgvector cosine ≥ 0.93</strong></div><span class="pipeline-status success">Hit 42 (14%)</span></div>
+    </div>
+
+    <div class="section">
+      <h3>重复聚类候选 <small>待Labor确认Merge策略</small></h3>
+      <div class="dup-cluster">
+        <h4>📚 聚类 #2026-CLS-0184 — 同研究双源收录 (3 records)</h4>
+        <div class="dup-row">① Song et al. 2024 — The occurrence of pollutants in organisms… 　(WoS:10.1016/j.marpolbul.2024.116522)</div>
+        <div class="dup-row">② Song et al. 2024 — Pollutant accumulation in L. vannamei… 　(Scopus:2-s2.0-8519xxxxxxx)</div>
+        <div class="dup-row">③ 王等 2024 — Litopenaeus vannamei对污染物的enriched特征 (CNKI)</div>
+        <div style="margin-top:8px;" class="row-flex">
+          <button class="btn">Merge为主源 (#1)</button>
+          <button class="btn ghost">保留 3 条互链</button>
+          <button class="btn secondary">拒绝</button>
+        </div>
+      </div>
+
+      <div class="dup-cluster">
+        <h4>📚 聚类 #2026-CLS-0203 — 姊妹篇 (同数据多版本)</h4>
+        <div class="dup-row">① Niu et al. 2023 — LED illumination effect on BFT shrimp muscle</div>
+        <div class="dup-row">② Niu et al. 2024 — Extended LED spectrum experiments (同实验扩展)</div>
+        <div class="div-row"></div>
+        <div style="margin-top:8px;" class="row-flex">
+          <button class="btn">保留两条</button>
+          <button class="btn ghost">标记 related_paper_of</button>
+        </div>
+      </div>
+
+      <div class="dup-cluster">
+        <h4>📚 聚类 #2026-CLS-0211 — 待决议: 会议vs期刊同源</h4>
+        <div class="dup-row">① 海南对虾 LCA 会议论文 (2025 ICAS)</div>
+        <div class="dup-row">② LCA of five L. vannamei culture modes (JCP 期刊版)</div>
+        <div style="margin-top:8px;" class="row-flex">
+          <button class="btn">Merge为期刊版</button>
+          <button class="btn ghost">保留两条</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Main Database Browser ===== -->
+  <div class="tab-content" data-pane="maindata">
+    <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);">
+      <div class="kpi"><div class="kpi-label">Water quality记录</div><div class="kpi-value">3,521</div></div>
+      <div class="kpi"><div class="kpi-label">Growth记录</div><div class="kpi-value">1,856</div></div>
+      <div class="kpi"><div class="kpi-label">Cost记录</div><div class="kpi-value">1,432</div></div>
+      <div class="kpi"><div class="kpi-label">收益记录</div><div class="kpi-value">724</div></div>
+      <div class="kpi"><div class="kpi-label">文献实体</div><div class="kpi-value">1,348</div></div>
+    </div>
+
+    <div class="section">
+      <h3>fact_record 主表 <small>本季度Add 197 条 · 全部Merged into main database</small></h3>
+      <table>
+        <thead><tr><th>文献</th><th>Mode</th><th>地域</th><th>周期</th><th>WT</th><th>DO</th><th>pH</th><th>NH₃-N</th><th>FCR</th><th>成活率</th><th>Net profit</th><th>Merge</th></tr></thead>
+        <tbody>
+          <tr><td>Song 2024</td><td><span class="tag teal">Industrial water exchange</span></td><td>Qingdao, Shandong</td><td>120d</td><td>28.92</td><td>6.02</td><td>8.69</td><td>0.32</td><td>—</td><td>—</td><td>—</td><td><span class="tag green">✓</span></td></tr>
+          <tr><td>Gladys 2024</td><td><span class="tag teal">Industrial water exchange</span></td><td>山东日照</td><td>—</td><td>28.92</td><td>6.02</td><td>8.69</td><td>0.64</td><td>—</td><td>—</td><td>—</td><td><span class="tag green">✓</span></td></tr>
+          <tr><td>Song 2024</td><td><span class="tag teal">Pond monoculture</span></td><td>Mexico</td><td>—</td><td>26.5</td><td>7.03</td><td>8.71</td><td>1.64</td><td>—</td><td>—</td><td>—</td><td><span class="tag green">✓</span></td></tr>
+          <tr><td>Niu 2023</td><td><span class="tag teal">Industrial water exchange</span></td><td>Qingdao, Shandong</td><td>—</td><td>28.17</td><td>5.72</td><td>7.62</td><td>4.07</td><td>—</td><td>—</td><td>—</td><td><span class="tag green">✓</span></td></tr>
+          <tr><td>孙跃 2023</td><td><span class="tag teal">5 Mode comparison</span></td><td>中国海大</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>1.10</td><td>68.1%</td><td>—</td><td><span class="tag green">✓</span></td></tr>
+          <tr><td>Akange 2024</td><td><span class="tag teal">Industrial biofloc</span></td><td>Malaysia</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>1.41</td><td>49.3%</td><td>—</td><td><span class="tag green">✓</span></td></tr>
+          <tr><td>Wang 2026</td><td><span class="tag teal">Industrial RAS</span></td><td>海南</td><td>110d</td><td>—</td><td>—</td><td>—</td><td>—</td><td>1.33</td><td>72.1%</td><td>23,187元/亩</td><td><span class="tag green">✓</span></td></tr>
+        </tbody>
+      </table>
+      <div style="text-align:center;color:var(--c-muted);padding:14px;font-size:13px;">— 共 1,348 条 · 分页 1 / 113 —</div>
+    </div>
+
+    <div class="section">
+      <h3>Water quality × Growth 对应数据视图 <small>融合Preview, 便于关联分析</small></h3>
+      <table>
+        <thead><tr><th>文献</th><th>Mode</th><th>WT</th><th>DO</th><th>pH</th><th>初体重</th><th>终体重</th><th>成活率</th><th>FCR</th><th>产量</th></tr></thead>
+        <tbody>
+          <tr><td>Song 2024</td><td>ISIC</td><td>28.92</td><td>6.02</td><td>8.69</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>孙跃 2023</td><td>RAS</td><td>—</td><td>—</td><td>—</td><td>0.08</td><td>16.02</td><td>68.1%</td><td>1.10</td><td>8.62</td></tr>
+          <tr><td>孙跃 2023</td><td>BFT</td><td>—</td><td>—</td><td>—</td><td>0.08</td><td>16.26</td><td>60.5%</td><td>1.19</td><td>4.43</td></tr>
+          <tr><td>孙跃 2023</td><td>IWE</td><td>—</td><td>—</td><td>—</td><td>0.08</td><td>16.14</td><td>72.2%</td><td>1.17</td><td>10.03</td></tr>
+          <tr><td>孙跃 2023</td><td>HPP</td><td>—</td><td>—</td><td>—</td><td>0.08</td><td>15.68</td><td>64.0%</td><td>1.33</td><td>1.55</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== Schema ===== -->
+  <div class="tab-content" data-pane="schema">
+    <div class="section">
+      <h3>统一Field Dictionary <small>Version 1.0 · 156 个Standard field</small></h3>
+      <table>
+        <thead><tr><th>Standard field</th><th>中文名</th><th>Type</th><th>Unit</th><th>范围/约束</th><th>Source映射 (旧字段名)</th></tr></thead>
+        <tbody>
+          <tr><td><code>wt_c</code></td><td>Water temperature</td><td>NUMERIC</td><td>°C</td><td>[5, 40]</td><td>Water temp (°C) / Water temperature</td></tr>
+          <tr><td><code>do_mg_l</code></td><td>溶解氧</td><td>NUMERIC</td><td>mg/L</td><td>[0, 20]</td><td>Dissolved oxygen (mg/L) / Dissolved oxygen</td></tr>
+          <tr><td><code>ph</code></td><td>pH 值</td><td>NUMERIC</td><td>—</td><td>[5, 11]</td><td>pH / PH</td></tr>
+          <tr><td><code>salinity_ppt</code></td><td>Salinity</td><td>NUMERIC</td><td>‰</td><td>[0, 50]</td><td>Salinity / Salinity</td></tr>
+          <tr><td><code>nh3n_mg_l</code></td><td>Ammonia-N</td><td>NUMERIC</td><td>mg/L as N</td><td>[0, 50]</td><td>Ammonia-N (mg/L) / NH₃-N</td></tr>
+          <tr><td><code>no2n_mg_l</code></td><td>Nitrite-N</td><td>NUMERIC</td><td>mg/L as N</td><td>[0, 50]</td><td>nitrite-N (mg/L) / NO₂⁻-N / Nitrite nitrogen</td></tr>
+          <tr><td><code>no3n_mg_l</code></td><td>Nitrate-N</td><td>NUMERIC</td><td>mg/L as N</td><td>[0, 200]</td><td>Nitrate-N (mg/L) / NO₃⁻-N / Nitrate nitrogen</td></tr>
+          <tr><td><code>cod_mg_l</code></td><td>chemical oxygen demand</td><td>NUMERIC</td><td>mg/L</td><td>[0, 500]</td><td>COD (mg/L)</td></tr>
+          <tr><td><code>fcr</code></td><td>Feed conversion ratio</td><td>NUMERIC</td><td>ratio</td><td>[0.5, 3.0]</td><td>Feed conversion ratio / FCR / Feed Conversion Ratio</td></tr>
+          <tr><td><code>survival_rate</code></td><td>成活率</td><td>NUMERIC</td><td>%</td><td>[0, 100]</td><td>survival rate / Survival rate</td></tr>
+          <tr><td><code>yield_per_unit</code></td><td>单产</td><td>NUMERIC</td><td>kg/亩 or kg/m³</td><td>—</td><td>Yield (kg/m³) / Actual yield (kg/亩)</td></tr>
+          <tr><td><code>cycle_days</code></td><td>culture cycle</td><td>INT</td><td>day</td><td>[20, 365]</td><td>culture cycle / Culture cycle</td></tr>
+          <tr><td><code>culture_mode</code></td><td>Farming mode</td><td>TEXT</td><td>—</td><td>ENUM 14</td><td>Industrial water exchange / RAS / BFT / Greenhouse / HDPE / IMTA…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>核心表 ER 关系 <small>PostgreSQL · 13 张表</small></h3>
+      <pre style="background:#0c1e2c;color:#94a3b8;padding:14px;border-radius:8px;font-size:12px;line-height:1.55;">
+<b style="color:#94e2d5;">literature</b> ─┬─&lt; <b style="color:#fbd38d;">fact_record</b> ─┬─&lt; <b style="color:#fbd38d;">water_quality_fact</b>
+            │ ├─&lt; <b style="color:#fbd38d;">growth_fact</b>
+            │ ├─&lt; <b style="color:#fbd38d;">cost_fact</b>
+            │ └─&lt; <b style="color:#fbd38d;">benefit_fact</b>
+            │
+            ├─1:1─ <b style="color:#a5b4fc;">lit_embedding</b> (pgvector 1536d)
+            ├─1:1─ <b style="color:#a5b4fc;">author</b> &lt;─ <b style="color:#a5b4fc;">affiliation</b>
+            └─1:N─ <b style="color:#a5b4fc;">extraction_draft</b>
+
+<b style="color:#fca5a5;">quality_rule</b> ─validates─&gt; <b style="color:#fbd38d;">fact_record</b>
+<b style="color:#fca5a5;">audit_log</b> ─traces─&gt; all writes</pre>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2026 shrimp farming产业数据库 · 由 WorkBuddy 协助构建 · 基于现有 “Shrimp Farming Industry Database 2.xlsx”</span>
+    <span>v1.0 · Mode: 季度 ETL + Labor审核 · 最后构建 2026-09-08</span>
+  </footer>
+</main>
+</div>
+
+<script>
+// ===== Tab 切换 =====
+document.querySelectorAll('.nav li').forEach(li => {
+  li.addEventListener('click', () => {
+    const target = li.getAttribute('data-tab');
+    document.querySelectorAll('.nav li').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    li.classList.add('active');
+    document.querySelector(`[data-pane="${target}"]`).classList.add('active');
+    const titles = {
+      overview: ['Overview dashboard', '截至 2026-09-08 · 季度Batch 2026Q3'],
+      search: ['Literature Search & Collection', '32 query × 6 源 · 季度触发'],
+      pipeline: ['ETL Pipeline监控', '13 步 · 当前Batch 2026Q3'],
+      review: ['Data review队列', '23 条Pending review · Mean 4.2 分钟/条'],
+      quality: ['Data-quality monitoring', '12 类规则 · Great Expectations + Soda Core'],
+      dedup: ['Duplicate paper deduplication', 'Three-stage funnel · pgvector + SimHash'],
+      maindata: ['Main Database Browser', '13 张表 · fact_record 1,348 条'],
+      schema: ['Field Dictionary & Schema', 'Version 1.0 · 156 个Standard field']
+    };
+    document.getElementById('page-title').textContent = titles[target][0];
+    document.getElementById('page-subtitle').textContent = titles[target][1];
+  });
+});
+
+// ===== Chart.js 配置 =====
+const palette = ['#0c8a8a', '#f97316', '#2563eb', '#16a34a', '#9333ea', '#ec4899', '#eab308'];
+Chart.defaults.font.family = '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#475569';
+
+// 1. 趋势
+new Chart(document.getElementById('chTrend'), {
+  type: 'line',
+  data: {
+    labels: ['2024Q4', '2025Q1', '2025Q2', '2025Q3', '2025Q4', '2026Q1', '2026Q2', '2026Q3'],
+    datasets: [
+      { label: '入库文献', data: [124, 138, 156, 142, 168, 175, 188, 197], borderColor: '#0c8a8a', backgroundColor: 'rgba(12,138,138,0.1)', tension: 0.35, fill: true, pointRadius: 4 },
+      { label: 'Extract字段数', data: [2410, 2680, 3020, 2780, 3210, 3380, 3640, 3922], borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', tension: 0.35, fill: true, pointRadius: 4 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+});
+
+// 2. Mode分布
+new Chart(document.getElementById('chMode'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Industrial biofloc', 'Industrial water exchange', 'Pond monoculture', 'IMTA', 'Industrial RAS', 'Elevated (high-level) pond', 'Other'],
+    datasets: [{ data: [62, 36, 36, 25, 16, 9, 4], backgroundColor: palette }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+});
+
+// 3. Water quality趋势
+new Chart(document.getElementById('chWater'), {
+  type: 'line',
+  data: {
+    labels: ['2022', '2023', '2024', '2025', '2026'],
+    datasets: [
+      { label: 'Water temperature(℃)', data: [27.4, 27.8, 28.1, 28.5, 28.9], borderColor: '#0c8a8a', tension: 0.3 },
+      { label: '溶解氧', data: [6.1, 6.0, 6.05, 5.95, 6.02], borderColor: '#2563eb', tension: 0.3, yAxisID: 'y2' },
+      { label: 'pH×10', data: [82.4, 81.9, 81.5, 80.8, 80.5], borderColor: '#f97316', tension: 0.3, yAxisID: 'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } },
+    scales: {
+      y: { beginAtZero: false, position: 'left', title: { display: true, text: 'Water temperature℃' } },
+      y2: { beginAtZero: false, position: 'right', grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+// 4. Cost-profit ratio
+new Chart(document.getElementById('chCost'), {
+  type: 'bar',
+  data: {
+    labels: ['Industrial water exchange', 'Industrial RAS', 'Industrial biofloc', 'IMTA', 'Elevated (high-level) pond', 'Greenhouse', 'Pond monoculture'],
+    datasets: [
+      { label: 'total cost (CNY/mu)', data: [203843, 143266, 179746, 6308, 48500, 56200, 6365], backgroundColor: '#94a3b8' },
+      { label: 'Net profit(元/亩)', data: [78594, 23187, 72322, 6292, 18500, 21400, 4038], backgroundColor: '#0c8a8a' }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: false } } }
+});
+
+// 5. 校验Failed字段分布
+new Chart(document.getElementById('chQFail'), {
+  type: 'bar',
+  data: {
+    labels: ['Water temperature', '溶解氧', 'Salinity', 'pH', 'NH₃-N', 'NO₂⁻-N', 'NO₃⁻-N', 'COD', 'Total nitrogen', 'Total phosphorus', 'Latitude / longitude', 'Cost比例'],
+    datasets: [{ label: 'Failed/告警次数', data: [42, 38, 56, 18, 92, 188, 67, 24, 71, 35, 408, 1681], backgroundColor: '#f97316' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+});
+
+// 6. Anomaly分布
+new Chart(document.getElementById('chQSev'), {
+  type: 'pie',
+  data: {
+    labels: ['PASS', 'WARN', 'BLOCKED', 'CRITICAL'],
+    datasets: [{ data: [72800, 8420, 2150, 142], backgroundColor: ['#16a34a', '#ea580c', '#2563eb', '#dc2626'] }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+});
+</script>
+</body>
+</html>

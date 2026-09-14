@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Duplicate Paper Deduplication · Shrimp Aquaculture Industry Database Workbench</title>
+<style>
+:root{
+  --c-primary:#0c8a8a;--c-primary-d:#0a6f6f;--c-primary-l:#e8f4f4;
+  --c-accent:#f97316;--c-success:#10b981;--c-warn:#f59e0b;
+  --c-danger:#ef4444;--c-info:#3b82f6;
+  --c-text:#1f2937;--c-muted:#6b7280;--c-border:#e5e7eb;
+  --c-bg:#f6f8fa;--c-panel:#fff;--r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--c-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:focus-visible{box-shadow:0 0 0 3px rgba(12,138,138,.35)}
+
+.topbar{background:linear-gradient(135deg,#0c8a8a,#16a3a3);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
+.topbar .brand-logo{width:34px;height:34px;background:rgba(255,255,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav a{color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;opacity:.85;transition:.2s}
+.topbar nav a:hover{background:rgba(255,255,255,.14);opacity:1;text-decoration:none}
+.topbar .meta{font-size:12px;opacity:.85;display:flex;gap:14px}
+.topbar .meta .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;margin-right:4px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 24px 60px}
+.page-head{margin-bottom:18px}
+.page-head h1{margin:0 0 6px;font-size:22px;font-weight:700}
+.page-head p{margin:0;color:var(--c-muted);font-size:13px}
+.crumbs{font-size:12px;color:var(--c-muted);margin-bottom:6px}
+.crumbs a{color:var(--c-muted)}
+
+.panel{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600}
+.panel-h .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:500;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:var(--c-primary-d)}
+.btn-ghost{background:#fff;color:var(--c-text);border-color:var(--c-border)}
+.btn-ghost:hover{background:var(--c-bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:var(--c-danger);color:#fff}
+.btn-warn{background:var(--c-warn);color:#fff}
+.btn-success{background:var(--c-success);color:#fff}
+.btn-link{background:transparent;color:var(--c-primary);border:1px dashed var(--c-primary);padding:5px 10px;font-size:12px}
+.btn-link:hover{background:var(--c-primary-l)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--c-primary)}
+.kpi.warn::before{background:var(--c-warn)}.kpi.danger::before{background:var(--c-danger)}
+.kpi.success::before{background:var(--c-success)}.kpi.info::before{background:var(--c-info)}
+.kpi .label{font-size:11px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;color:var(--c-text);line-height:1.1}
+.kpi .sub{font-size:11px;margin-top:5px;color:var(--c-muted)}
+.kpi .delta{font-size:11px;margin-top:4px;color:var(--c-success)}
+.kpi .delta.down{color:var(--c-danger)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:#fafbfc;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+tbody tr:hover{background:#fafbfc}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--c-border);border-radius:6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:#f3f4f6;color:#374151}
+.tag.success{background:#d1fae5;color:#065f46}.tag.warn{background:#fef3c7;color:#92400e}
+.tag.danger{background:#fee2e2;color:#991b1b}.tag.info{background:#dbeafe;color:#1e40af}
+.tag.primary{background:var(--c-primary-l);color:var(--c-primary-d)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:var(--r)}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--c-border);border-radius:6px;font-size:12.5px;background:#fff;font-family:inherit;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 3px rgba(12,138,138,.12)}
+.toolbar label{font-size:12px;color:var(--c-muted)}
+
+.bar{height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;position:relative}
+.bar-fill{height:100%;background:var(--c-primary);transition:width .5s}
+.bar-fill.warn{background:var(--c-warn)}.bar-fill.danger{background:var(--c-danger)}
+.bar-fill.success{background:var(--c-success)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--c-border);margin-bottom:18px;flex-wrap:wrap;background:#fff;padding:0 8px;border-radius:6px 6px 0 0;box-shadow:var(--shadow)}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--c-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--c-text);background:var(--c-bg)}
+.tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary);background:var(--c-primary-l)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.alert{padding:12px 16px;border-radius:var(--r);border-left:4px solid var(--c-info);background:#eff6ff;color:#1e40af;margin-bottom:14px;font-size:13px}
+.alert.warn{border-left-color:var(--c-warn);background:#fffbeb;color:#92400e}
+.alert.danger{border-left-color:var(--c-danger);background:#fef2f2;color:#991b1b}
+.alert.success{border-left-color:var(--c-success);background:#f0fdf4;color:#065f46}
+
+.steps{display:flex;gap:6px;overflow-x:auto;padding:6px 0}
+.step{flex:0 0 auto;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;padding:10px 14px;min-width:140px}
+.step .no{font-size:10px;color:var(--c-muted);margin-bottom:3px}
+.step .name{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.step .stat{font-size:11px;color:var(--c-muted)}
+.step.done{border-left:3px solid var(--c-success)}
+.step.running{border-left:3px solid var(--c-primary);background:var(--c-primary-l)}
+.step.failed{border-left:3px solid var(--c-danger);background:#fef2f2}
+
+.review-card{border:1px solid var(--c-border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:var(--c-panel);box-shadow:var(--shadow)}
+.review-card.high{border-left:4px solid var(--c-success)}
+.review-card.mid{border-left:4px solid var(--c-warn)}
+.review-card.low{border-left:4px solid var(--c-danger)}
+.review-card .head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.review-card .head h3{margin:0 0 4px;font-size:14.5px}
+.review-card .head .meta{font-size:11.5px;color:var(--c-muted)}
+.review-card .conf{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:4px}
+.review-card .conf.high{background:#d1fae5;color:#065f46}
+.review-card .conf.mid{background:#fef3c7;color:#92400e}
+.review-card .conf.low{background:#fee2e2;color:#991b1b}
+.review-card .quote{background:#f9fafb;border:1px solid var(--c-border);border-radius:6px;padding:10px 12px;font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.7;font-style:italic}
+.review-card .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.review-card .field{background:#fafbfc;border:1px solid var(--c-border);border-radius:6px;padding:7px 9px}
+.review-card .field .k{font-size:10.5px;color:var(--c-muted);margin-bottom:2px}
+.review-card .field .v{font-size:12.5px;font-weight:600}
+.review-card .actions{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--c-border);flex-wrap:wrap}
+
+.canvas-wrap{position:relative;height:280px}
+.canvas-wrap.tall{height:340px}
+
+.external-link{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:8px;background:#fff;transition:.15s}
+.external-link:hover{border-color:var(--c-primary);text-decoration:none;background:var(--c-primary-l)}
+.external-link .info{flex:1}
+.external-link .info .name{font-weight:600;color:var(--c-text);font-size:13px}
+.external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+.external-link .icon{color:var(--c-muted);font-size:18px}
+
+.footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
+.footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
+
+@media (max-width:860px){
+  .topbar{flex-direction:column;align-items:flex-start}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🦐</div>
+    Shrimp Aquaculture Industry Database Workbench
+  </div>
+  <nav>
+      <a href="index.html" >📊 Overview</a>
+      <a href="search.html" >🔍 Literature search</a>
+      <a href="etl.html" >⚙️ ETL Pipeline</a>
+      <a href="review.html" >✅ Data Review</a>
+      <a href="quality.html" >🛡️ Data quality</a>
+      <a href="dedup.html" style="background:rgba(255,255,255,.2);opacity:1;font-weight:600">🔁 Dedup</a>
+      <a href="newlit.html" >🆕 New papers</a>
+      <a href="benefit.html" >📈 Benefit evaluation</a>
+      <a href="database.html" >💾 Main database</a>
+      <a href="schema.html" >📐 Schema</a>
+      <a href="summary.html" >📑 Database reviews</a>
+  </nav>
+  <div class="meta">
+    <span><span class="dot"></span>System normal</span>
+    <span>2026 Q3</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="page-head">
+  <div class="crumbs"><a href="index.html">Home</a> / Duplicate Deduplication</div>
+  <h1>🔁 Duplicate paper deduplication</h1>
+  <p>Three-stage funnel · 4 pending clusters · merge / keep / split actions</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi primary"><div class="label">DOI exact match</div><div class="value">23</div><div class="sub">100% hit rate</div></div>
+  <div class="kpi info"><div class="label">SimHash title</div><div class="value">17</div><div class="sub">Threshold 0.92</div></div>
+  <div class="kpi warn"><div class="label">pgvector cosine</div><div class="value">8</div><div class="sub">Threshold 0.93</div></div>
+  <div class="kpi danger"><div class="label">Pending clusters</div><div class="value">4</div><div class="sub">48 source entries</div></div>
+  <div class="kpi success"><div class="label">Dedup rate</div><div class="value">28.1%</div><div class="sub">vs last quarter +3.2%</div></div>
+  <div class="kpi"><div class="label">3 min per 10k records</div><div class="value">—</div><div class="sub">Live funnel performance</div></div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📊 Three-stage funnel</h2>
+  </div>
+  <div class="grid grid-3">
+    <div style="text-align:center;padding:18px;background:#fff;border:1px solid var(--c-border);border-radius:8px">
+      <div style="font-size:32px;font-weight:700;color:var(--c-primary)">2,529</div>
+      <div style="font-size:12px;color:var(--c-muted);margin-top:6px">Raw hits</div>
+    </div>
+    <div style="text-align:center;padding:18px;background:#fff;border:1px solid var(--c-border);border-radius:8px">
+      <div style="font-size:32px;font-weight:700;color:var(--c-info)">1,820</div>
+      <div style="font-size:12px;color:var(--c-muted);margin-top:6px">after DOI / SimHash</div>
+    </div>
+    <div style="text-align:center;padding:18px;background:#fff;border:1px solid var(--c-border);border-radius:8px">
+      <div style="font-size:32px;font-weight:700;color:var(--c-success)">1,812</div>
+      <div style="font-size:12px;color:var(--c-muted);margin-top:6px">after cosine deduplication</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📚 4 pending clusters</h2>
+    <div class="actions">
+      <button class="btn btn-success btn-sm" onclick="alert('✅ 4 clusters merged in bulk')">🔀 Merge all (apply recommendation)</button>
+      <button class="btn btn-ghost" onclick="exportCSV('Dedup report')">📥 Export dedup report</button>
+    </div>
+  </div>
+  <div style="padding:14px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:10px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div>
+              <span class="tag primary">Cluster C001</span>
+              <b style="margin-left:6px">2 papers</b>
+              <span class="num" style="color:var(--c-muted);font-size:12px;margin-left:8px">cosine similarity 0.96</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-success btn-sm" onclick="alert('✅ Cluster C001 merged · recommendation: keep the 2024 version (updated)')">🔀 Merge</button>
+              <button class="btn btn-warn btn-sm" onclick="alert('⚠️ Marked to keep the latest')">⚐ Keep latest</button>
+              <button class="btn btn-ghost btn-sm" onclick="alert('separated · marked as not duplicated')">⊘ Split</button>
+            </div>
+          </div>
+          <ul style="margin:0;padding-left:20px;font-size:13px;color:#374151"><li style="margin:4px 0">Song et al. 2024 · The occurrence of pollutants in organisms and water (industrial water exchange, Qingdao, Shandong)</li><li style="margin:4px 0">Song et al. 2023 · earlier work by the same team (preprint in a different journal)</li></ul>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--c-primary-l);border-radius:4px;font-size:12px;color:var(--c-primary-d)">
+            💡 <b>Recommendation</b> · keep the 2024 version (updated)
+          </div>
+        </div><div style="padding:14px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:10px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div>
+              <span class="tag primary">Cluster C002</span>
+              <b style="margin-left:6px">2 papers</b>
+              <span class="num" style="color:var(--c-muted);font-size:12px;margin-left:8px">cosine similarity 0.94</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-success btn-sm" onclick="alert('✅ Cluster C002 merged · recommendation: merge into the journal version')">🔀 Merge</button>
+              <button class="btn btn-warn btn-sm" onclick="alert('⚠️ Marked to keep the latest')">⚐ Keep latest</button>
+              <button class="btn btn-ghost btn-sm" onclick="alert('separated · marked as not duplicated')">⊘ Split</button>
+            </div>
+          </div>
+          <ul style="margin:0;padding-left:20px;font-size:13px;color:#374151"><li style="margin:4px 0">Niu et al. 2023 · Effects of LED lighting on the muscle nutrient composition of Litopenaeus vannamei under biofloc conditions</li><li style="margin:4px 0">Niu et al. 2022 · same dataset · conference paper (Ocean University of China)</li></ul>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--c-primary-l);border-radius:4px;font-size:12px;color:var(--c-primary-d)">
+            💡 <b>Recommendation</b> · merge into the journal version
+          </div>
+        </div><div style="padding:14px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:10px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div>
+              <span class="tag primary">Cluster C003</span>
+              <b style="margin-left:6px">3 papers</b>
+              <span class="num" style="color:var(--c-muted);font-size:12px;margin-left:8px">cosine similarity 0.91</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-success btn-sm" onclick="alert('✅ Cluster C003 merged · recommendation: keep the 2024 journal version · discard preprint')">🔀 Merge</button>
+              <button class="btn btn-warn btn-sm" onclick="alert('⚠️ Marked to keep the latest')">⚐ Keep latest</button>
+              <button class="btn btn-ghost btn-sm" onclick="alert('separated · marked as not duplicated')">⊘ Split</button>
+            </div>
+          </div>
+          <ul style="margin:0;padding-left:20px;font-size:13px;color:#374151"><li style="margin:4px 0">Akange et al. 2024 · Determination of optimum probiotic (Malaysia)</li><li style="margin:4px 0">Akange et al. 2023 · same dataset, different indicator (Aquaculture Reports)</li><li style="margin:4px 0">Akange et al. 2022 · preprint (bioRxiv)</li></ul>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--c-primary-l);border-radius:4px;font-size:12px;color:var(--c-primary-d)">
+            💡 <b>Recommendation</b> · keep the 2024 journal version · discard the preprint
+          </div>
+        </div><div style="padding:14px;border:1px solid var(--c-border);border-radius:6px;margin-bottom:10px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div>
+              <span class="tag primary">Cluster C004</span>
+              <b style="margin-left:6px">2 papers</b>
+              <span class="num" style="color:var(--c-muted);font-size:12px;margin-left:8px">cosine similarity 0.88</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-success btn-sm" onclick="alert('✅ Cluster C004 merged · recommendation: keep the 2023 full version')">🔀 Merge</button>
+              <button class="btn btn-warn btn-sm" onclick="alert('⚠️ Marked to keep the latest')">⚐ Keep latest</button>
+              <button class="btn btn-ghost btn-sm" onclick="alert('separated · marked as not duplicated')">⊘ Split</button>
+            </div>
+          </div>
+          <ul style="margin:0;padding-left:20px;font-size:13px;color:#374151"><li style="margin:4px 0">Espinoza-Ortega et al. 2023 · Feeding frequency (Mexico)</li><li style="margin:4px 0">Espinoza-Ortega et al. 2022 · same trial, different sampling times</li></ul>
+          <div style="margin-top:8px;padding:8px 10px;background:var(--c-primary-l);border-radius:4px;font-size:12px;color:var(--c-primary-d)">
+            💡 <b>Recommendation</b> · keep the full 2023 version
+          </div>
+        </div>
+</div>
+
+<div class="panel">
+  <div class="panel-h">
+    <h2>📈 Dedup trend (last 6 quarters)</h2>
+  </div>
+  <div class="canvas-wrap tall"><canvas id="chDedup"></canvas></div>
+</div>
+
+<script src="chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('chDedup'),{type:'bar',data:{labels:['2024 Q4','2025 Q1','2025 Q2','2025 Q3','2025 Q4','2026 Q1','2026 Q2','2026 Q3'],datasets:[{label:'Before dedup',data:[1850,2100,1950,2300,2480,2150,1980,0],backgroundColor:'#94a3b8',borderRadius:4},{label:'Ingested after dedup',data:[1320,1480,1410,1620,1820,1560,1440,0],backgroundColor:'#10b981',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+function exportCSV(name){
+  const tb = document.querySelector('table[data-name="'+name+'"]');
+  if(!tb){
+    const rows=[['Export name',name],['Export time',new Date().toISOString()],['Notes','This panel has no exportable table (it may be a chart)']];
+    const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+    const csv='\ufeff'+rows.map(r=>r.map(c=>esc(c)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    return;
+  }
+  const esc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[];
+  if(tb.tHead && tb.tHead.rows[0]) rows.push(Array.from(tb.tHead.rows[0].cells).map(c=>esc(c.innerText.trim())));
+  if(tb.tBodies && tb.tBodies[0]) Array.from(tb.tBodies[0].rows).forEach(tr=>{if(tr.style.display==='none')return;rows.push(Array.from(tr.cells).map(c=>esc(c.innerText.trim())));});
+  const csv='\ufeff'+rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  console.log('Exported '+name+': '+rows.length+' rows');
+}
+</script>
+
+<div class="footer">
+Shrimp Aquaculture Industry Database Workbench · Data source: <code>/Users/mac/Desktop/Shrimp Aquaculture Industry Database 2.xlsx</code> · 1,585 valid records in total · 17 new papers pending confirmation (auto-searched every Wednesday 08:00, merged into the main database after manual confirmation)<br>
+<a href="index.html">Back to home</a> · <a href="newlit.html">New papers</a> · <a href="database.html">Browse the main database</a> · <a href="schema.html">Schema Dictionary</a>
+</div>
+</div>
+</body>
+</html>

@@ -143,6 +143,35 @@ tbody tr:hover{background:#fafbfc}
 .external-link .info .desc{font-size:11.5px;color:var(--c-muted);margin-top:2px}
 .external-link .icon{color:var(--c-muted);font-size:18px}
 
+/* ---- Global research site distribution · world map (3D bars) ---- */
+.wm-wrap{position:relative;margin:12px 0 0;border-radius:10px;overflow:hidden;border:1px solid #0e2d3f;background:#1b4965}
+.wm-svg{display:block;width:100%;height:auto}
+.wm-bg{fill:#1b4965}
+.wm-grat{fill:none;stroke:#0e2d3f;stroke-width:.4;stroke-dasharray:3 5;opacity:.5}
+.wm-land{fill:#f4f1de;stroke:#0e2d3f;stroke-width:.4;stroke-linejoin:round}
+.wm-frame{fill:none;stroke:#0e2d3f;stroke-width:1;opacity:.7}
+.wm-site{cursor:pointer}
+.wm-bar-front{fill:#e76f51;stroke:#5c2414;stroke-width:.45;transition:fill .15s}
+.wm-bar-top {fill:#f4a261;stroke:#5c2414;stroke-width:.45;stroke-linejoin:round}
+.wm-bar-side {fill:#b04a30;stroke:#5c2414;stroke-width:.45;stroke-linejoin:round}
+.wm-site:hover .wm-bar-front{fill:#f48166}
+.wm-site:hover .wm-bar-side {fill:#c25a3d}
+.wm-num{font-size:9px;font-weight:600;fill:#fef3c7;paint-order:stroke;stroke:#5c2414;stroke-width:2.4px;stroke-linejoin:round;pointer-events:none}
+.wm-tip{position:absolute;left:0;top:0;pointer-events:none;opacity:0;transition:opacity .12s;background:rgba(14,45,63,.95);color:#fff;font-size:12px;line-height:1.55;padding:7px 10px;border-radius:8px;max-width:280px;box-shadow:0 8px 20px rgba(0,0,0,.28);z-index:6;border:1px solid #5c2414}
+.wm-tip .t{font-weight:600;font-size:12.5px;margin-bottom:2px;color:#f4a261}
+.wm-tip .d{color:#cbd5e1;font-size:11.5px}
+.wm-legend{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--c-muted)}
+.wm-legend-bar{display:inline-flex;align-items:flex-end;width:18px;height:18px;margin-right:4px;vertical-align:bottom;position:relative}
+.wm-legend-bar .f{position:absolute;left:0;bottom:0;width:10px;height:14px;background:#e76f51;border:.5px solid #5c2414;border-radius:1px}
+.wm-legend-bar .s{position:absolute;left:10px;bottom:0;width:5px;height:14px;background:#b04a30;border:.5px solid #5c2414;border-radius:0 1px 1px 0}
+.wm-legend-bar .t{position:absolute;left:0;top:0;width:15px;height:4px;background:#f4a261;border:.5px solid #5c2414;border-radius:1px 1px 0 0}
+.wm-legend em{font-style:normal;background:#1b4965;color:#f4f1de;padding:1px 6px;border-radius:4px;font-size:10.5px;margin-right:4px}
+.wm-note{margin-top:8px;font-size:11.5px;color:#9ca3af;line-height:1.75}
+.wm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.wm-chip{display:inline-flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid var(--c-border);border-radius:999px;padding:4px 10px;font-size:11.5px;color:#374151}
+.wm-chip b{color:#b91c1c;font-weight:600}
+.wm-chip .n{background:#fee2e2;color:#991b1b;border-radius:999px;padding:0 6px;font-size:10.5px;font-weight:600}
+
 .footer{padding:24px 0;text-align:center;color:var(--c-muted);font-size:12px;border-top:1px solid var(--c-border);margin-top:30px}
 .footer code{background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:11px}
 
